@@ -68,6 +68,22 @@ class ValidationError(AppError):
         )
 
 
+class NotImplementedAppError(AppError):
+    """Endpoint or feature not yet implemented (501)."""
+
+    def __init__(
+        self,
+        code: str = "NOT_IMPLEMENTED",
+        detail: str = "This endpoint is not yet implemented",
+    ):
+        super().__init__(
+            code=code,
+            detail=detail,
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            error_type="error:not-implemented",
+        )
+
+
 async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
     """Global exception handler for AppError returning RFC 7807 Problem Details."""
     trace_id = get_trace_id()

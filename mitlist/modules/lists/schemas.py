@@ -91,3 +91,59 @@ class ItemResponse(ItemBase):
     version_id: int
     created_at: datetime
     updated_at: datetime
+
+
+class ItemBulkCreate(BaseModel):
+    """Schema for bulk-adding items to a list."""
+
+    items: list[ItemBase] = Field(..., min_length=1)
+
+
+class ItemBulkResponse(BaseModel):
+    """Schema for bulk-add response - list of created items."""
+
+    items: list[ItemResponse]
+
+
+# ====================
+# InventoryItem Schemas
+# ====================
+class InventoryItemBase(BaseModel):
+    """Base inventory item schema."""
+
+    quantity_value: Optional[float] = Field(None, ge=0)
+    quantity_unit: Optional[str] = Field(None, max_length=50)
+    expiration_date: Optional[datetime] = None
+    opened_date: Optional[datetime] = None
+    restock_threshold: Optional[float] = Field(None, ge=0)
+
+
+class InventoryItemCreate(InventoryItemBase):
+    """Schema for creating an inventory item."""
+
+    group_id: int
+    location_id: Optional[int] = None
+    concept_id: Optional[int] = None
+
+
+class InventoryItemUpdate(BaseModel):
+    """Schema for updating an inventory item (quantity, mark out of stock)."""
+
+    quantity_value: Optional[float] = Field(None, ge=0)
+    quantity_unit: Optional[str] = Field(None, max_length=50)
+    expiration_date: Optional[datetime] = None
+    opened_date: Optional[datetime] = None
+    restock_threshold: Optional[float] = Field(None, ge=0)
+
+
+class InventoryItemResponse(InventoryItemBase):
+    """Schema for inventory item response."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    group_id: int
+    location_id: Optional[int] = None
+    concept_id: Optional[int] = None
+    created_at: datetime
+    updated_at: datetime

@@ -1,8 +1,8 @@
-"""Lists module FastAPI router."""
+"""Lists module FastAPI router. Lists + Items + Inventory."""
 
 from typing import List as ListType
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mitlist.api.deps import get_db
@@ -10,6 +10,7 @@ from mitlist.core.errors import NotFoundError
 from mitlist.modules.lists import interface, schemas
 
 router = APIRouter(prefix="/lists", tags=["lists"])
+inventory_router = APIRouter(prefix="/inventory", tags=["inventory"])
 
 
 @router.get("", response_model=ListType[schemas.ListResponse])
@@ -76,3 +77,137 @@ async def update_list(
         is_archived=data.is_archived,
     )
     return schemas.ListResponse.model_validate(list_obj)
+
+
+# ---------- List items ----------
+@router.get("/{list_id}/items", response_model=ListType[schemas.ItemResponse])
+async def get_list_items(
+    list_id: int,
+    db: AsyncSession = Depends(get_db),
+) -> ListType[schemas.ItemResponse]:
+    """Get all items on a specific list."""
+    list_obj = await interface.get_list_by_id(db, list_id)
+    if not list_obj:
+        raise NotFoundError(code="LIST_NOT_FOUND", detail=f"List {list_id} not found")
+    items = await interface.get_items_by_list_id(db, list_id)
+    return [schemas.ItemResponse.model_validate(i) for i in items]
+
+
+@router.post(
+    "/{list_id}/items",
+    response_model=schemas.ItemResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def add_list_item(
+    list_id: int,
+    data: schemas.ItemCreate,
+    db: AsyncSession = Depends(get_db),
+) -> schemas.ItemResponse:
+    """Add item to list."""
+    if data.list_id != list_id:
+        raise NotFoundError(code="LIST_MISMATCH", detail="list_id in body must match path")
+    list_obj = await interface.get_list_by_id(db, list_id)
+    if not list_obj:
+        raise NotFoundError(code="LIST_NOT_FOUND", detail=f"List {list_id} not found")
+    item = await interface.create_item(
+        db,
+        list_id=list_id,
+        name=data.name,
+        quantity_value=data.quantity_value,
+        quantity_unit=data.quantity_unit,
+        is_checked=data.is_checked,
+        price_estimate=data.price_estimate,
+        priority=data.priority,
+        notes=data.notes,
+    )
+    return schemas.ItemResponse.model_validate(item)
+
+
+@router.patch("/{list_id}/items/{item_id}", response_model=schemas.ItemResponse)
+async def update_list_item(
+    list_id: int,
+    item_id: int,
+    data: schemas.ItemUpdate,
+    db: AsyncSession = Depends(get_db),
+) -> schemas.ItemResponse:
+    """Check/uncheck or update item."""
+    item = await interface.get_item_by_id(db, item_id)
+    if not item or item.list_id != list_id:
+        raise NotFoundError(code="ITEM_NOT_FOUND", detail=f"Item {item_id} not found")
+    item = await interface.update_item(
+        db,
+        item_id=item_id,
+        name=data.name,
+        quantity_value=data.quantity_value,
+        quantity_unit=data.quantity_unit,
+        is_checked=data.is_checked,
+        price_estimate=data.price_estimate,
+        priority=data.priority,
+        notes=data.notes,
+    )
+    return schemas.ItemResponse.model_validate(item)
+
+
+@router.delete("/{list_id}/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_list_item(
+    list_id: int,
+    item_id: int,
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    """Remove item from list."""
+    item = await interface.get_item_by_id(db, item_id)
+    if not item or item.list_id != list_id:
+        raise NotFoundError(code="ITEM_NOT_FOUND", detail=f"Item {item_id} not found")
+    await interface.delete_item(db, item_id)
+
+
+@router.post(
+    "/{list_id}/items/bulk",
+    response_model=schemas.ItemBulkResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def bulk_add_list_items(
+    list_id: int,
+    data: schemas.ItemBulkCreate,
+    db: AsyncSession = Depends(get_db),
+) -> schemas.ItemBulkResponse:
+    """Add multiple items to list (e.g. from recipe)."""
+    list_obj = await interface.get_list_by_id(db, list_id)
+    if not list_obj:
+        raise NotFoundError(code="LIST_NOT_FOUND", detail=f"List {list_id} not found")
+    items_data = [i.model_dump() for i in data.items]
+    created = await interface.bulk_add_items(db, list_id, items_data)
+    return schemas.ItemBulkResponse(items=[schemas.ItemResponse.model_validate(i) for i in created])
+
+
+# ---------- Inventory ----------
+@inventory_router.get("", response_model=ListType[schemas.InventoryItemResponse])
+async def get_inventory(
+    group_id: int,
+    db: AsyncSession = Depends(get_db),
+) -> ListType[schemas.InventoryItemResponse]:
+    """List current pantry/household inventory for a group."""
+    items = await interface.list_inventory(db, group_id)
+    return [schemas.InventoryItemResponse.model_validate(i) for i in items]
+
+
+@inventory_router.patch("/{inventory_id}", response_model=schemas.InventoryItemResponse)
+async def patch_inventory_item(
+    inventory_id: int,
+    data: schemas.InventoryItemUpdate,
+    db: AsyncSession = Depends(get_db),
+) -> schemas.InventoryItemResponse:
+    """Update quantity or mark out of stock."""
+    inv = await interface.get_inventory_item_by_id(db, inventory_id)
+    if not inv:
+        raise NotFoundError(code="INVENTORY_ITEM_NOT_FOUND", detail=f"Inventory item {inventory_id} not found")
+    inv = await interface.update_inventory_item(
+        db,
+        inventory_id=inventory_id,
+        quantity_value=data.quantity_value,
+        quantity_unit=data.quantity_unit,
+        expiration_date=data.expiration_date,
+        opened_date=data.opened_date,
+        restock_threshold=data.restock_threshold,
+    )
+    return schemas.InventoryItemResponse.model_validate(inv)

@@ -118,6 +118,12 @@ class ChoreAssignmentRateRequest(BaseModel):
     quality_rating: int = Field(..., ge=1, le=5)
 
 
+class ChoreAssignmentReassignRequest(BaseModel):
+    """Schema for reassigning a chore to another member."""
+
+    assigned_to_id: int
+
+
 class ChoreAssignmentResponse(ChoreAssignmentBase):
     """Schema for chore assignment response."""
 
