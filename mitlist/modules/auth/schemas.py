@@ -1,0 +1,341 @@
+"""Auth module Pydantic schemas for request/response models."""
+
+from datetime import datetime
+from typing import Any, Optional
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
+
+
+# ====================
+# User Schemas
+# ====================
+class UserBase(BaseModel):
+    """Base user schema."""
+
+    email: EmailStr
+    name: str = Field(..., min_length=1, max_length=255)
+    phone_number: Optional[str] = Field(None, max_length=50)
+    birth_date: Optional[datetime] = None
+    avatar_url: Optional[str] = Field(None, max_length=500)
+    language_code: str = Field("en", max_length=10)
+
+
+class UserCreate(UserBase):
+    """Schema for creating a user."""
+
+    password: str = Field(..., min_length=8)
+
+
+class UserUpdate(BaseModel):
+    """Schema for updating a user."""
+
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
+    phone_number: Optional[str] = Field(None, max_length=50)
+    birth_date: Optional[datetime] = None
+    avatar_url: Optional[str] = Field(None, max_length=500)
+    language_code: Optional[str] = Field(None, max_length=10)
+    preferences: Optional[dict[str, Any]] = None
+
+
+class UserResponse(UserBase):
+    """Schema for user response - returned directly, no envelope."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    is_superuser: bool
+    is_active: bool
+    preferences: Optional[dict[str, Any]] = None
+    last_login_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class UserLoginRequest(BaseModel):
+    """Schema for user login."""
+
+    email: EmailStr
+    password: str
+
+
+class UserLoginResponse(BaseModel):
+    """Schema for login response."""
+
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
+
+
+# ====================
+# Group Schemas
+# ====================
+class GroupBase(BaseModel):
+    """Base group schema."""
+
+    name: str = Field(..., min_length=1, max_length=255)
+    default_currency: str = Field("USD", max_length=3, pattern="^[A-Z]{3}$")
+    timezone: str = Field("UTC", max_length=50)
+    description: Optional[str] = None
+    avatar_url: Optional[str] = Field(None, max_length=500)
+    address: Optional[str] = None
+
+
+class GroupCreate(GroupBase):
+    """Schema for creating a group."""
+
+    lease_start_date: Optional[datetime] = None
+    lease_end_date: Optional[datetime] = None
+
+
+class GroupUpdate(BaseModel):
+    """Schema for updating a group."""
+
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
+    default_currency: Optional[str] = Field(None, max_length=3, pattern="^[A-Z]{3}$")
+    timezone: Optional[str] = Field(None, max_length=50)
+    description: Optional[str] = None
+    avatar_url: Optional[str] = Field(None, max_length=500)
+    address: Optional[str] = None
+    lease_start_date: Optional[datetime] = None
+    lease_end_date: Optional[datetime] = None
+    landlord_contact_id: Optional[int] = None
+
+
+class GroupResponse(GroupBase):
+    """Schema for group response - returned directly, no envelope."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    created_by_id: int
+    lease_start_date: Optional[datetime] = None
+    lease_end_date: Optional[datetime] = None
+    landlord_contact_id: Optional[int] = None
+    created_at: datetime
+    updated_at: datetime
+
+
+# ====================
+# UserGroup (Membership) Schemas
+# ====================
+class UserGroupBase(BaseModel):
+    """Base user-group membership schema."""
+
+    role: str = Field(..., pattern="^(ADMIN|MEMBER|GUEST|CHILD)$")
+    nickname: Optional[str] = Field(None, max_length=255)
+
+
+class UserGroupCreate(UserGroupBase):
+    """Schema for creating a user-group membership."""
+
+    user_id: int
+    group_id: int
+
+
+class UserGroupUpdate(BaseModel):
+    """Schema for updating a user-group membership."""
+
+    role: Optional[str] = Field(None, pattern="^(ADMIN|MEMBER|GUEST|CHILD)$")
+    nickname: Optional[str] = Field(None, max_length=255)
+
+
+class UserGroupResponse(UserGroupBase):
+    """Schema for user-group membership response."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    user_id: int
+    group_id: int
+    joined_at: datetime
+    left_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class GroupMemberResponse(BaseModel):
+    """Schema for group member with user details."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    user_id: int
+    role: str
+    nickname: Optional[str] = None
+    joined_at: datetime
+    user: UserResponse
+
+
+# ====================
+# Invite Schemas
+# ====================
+class InviteBase(BaseModel):
+    """Base invite schema."""
+
+    email_hint: Optional[str] = Field(None, max_length=255)
+    role: str = Field("MEMBER", pattern="^(ADMIN|MEMBER|GUEST|CHILD)$")
+    max_uses: int = Field(1, ge=1)
+
+
+class InviteCreate(InviteBase):
+    """Schema for creating an invite."""
+
+    group_id: int
+    expires_at: Optional[datetime] = None
+
+
+class InviteResponse(InviteBase):
+    """Schema for invite response."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    group_id: int
+    created_by_id: int
+    code: str
+    use_count: int
+    expires_at: Optional[datetime] = None
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class InviteAcceptRequest(BaseModel):
+    """Schema for accepting an invite."""
+
+    code: str
+
+
+# ====================
+# Location Schemas
+# ====================
+class LocationBase(BaseModel):
+    """Base location schema."""
+
+    name: str = Field(..., min_length=1, max_length=255)
+    floor_level: Optional[int] = None
+    sunlight_direction: Optional[str] = Field(None, pattern="^(NORTH|SOUTH|EAST|WEST)$")
+    humidity_level: Optional[str] = Field(None, pattern="^(LOW|MEDIUM|HIGH)$")
+    temperature_avg_celsius: Optional[float] = None
+    notes: Optional[str] = None
+
+
+class LocationCreate(LocationBase):
+    """Schema for creating a location."""
+
+    group_id: int
+
+
+class LocationUpdate(BaseModel):
+    """Schema for updating a location."""
+
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
+    floor_level: Optional[int] = None
+    sunlight_direction: Optional[str] = Field(None, pattern="^(NORTH|SOUTH|EAST|WEST)$")
+    humidity_level: Optional[str] = Field(None, pattern="^(LOW|MEDIUM|HIGH)$")
+    temperature_avg_celsius: Optional[float] = None
+    notes: Optional[str] = None
+
+
+class LocationResponse(LocationBase):
+    """Schema for location response."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    group_id: int
+    created_at: datetime
+    updated_at: datetime
+
+
+# ====================
+# ServiceContact Schemas
+# ====================
+class ServiceContactBase(BaseModel):
+    """Base service contact schema."""
+
+    name: str = Field(..., min_length=1, max_length=255)
+    job_title: str = Field(
+        ...,
+        pattern="^(VET|PLUMBER|ELECTRICIAN|DOCTOR|LANDLORD|CLEANER|HANDYMAN|OTHER)$",
+    )
+    company_name: Optional[str] = Field(None, max_length=255)
+    phone: Optional[str] = Field(None, max_length=50)
+    email: Optional[EmailStr] = None
+    address: Optional[str] = None
+    website_url: Optional[str] = Field(None, max_length=500)
+    emergency_contact: bool = False
+    notes: Optional[str] = None
+
+
+class ServiceContactCreate(ServiceContactBase):
+    """Schema for creating a service contact."""
+
+    group_id: int
+
+
+class ServiceContactUpdate(BaseModel):
+    """Schema for updating a service contact."""
+
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
+    job_title: Optional[str] = Field(
+        None,
+        pattern="^(VET|PLUMBER|ELECTRICIAN|DOCTOR|LANDLORD|CLEANER|HANDYMAN|OTHER)$",
+    )
+    company_name: Optional[str] = Field(None, max_length=255)
+    phone: Optional[str] = Field(None, max_length=50)
+    email: Optional[EmailStr] = None
+    address: Optional[str] = None
+    website_url: Optional[str] = Field(None, max_length=500)
+    emergency_contact: Optional[bool] = None
+    notes: Optional[str] = None
+
+
+class ServiceContactResponse(ServiceContactBase):
+    """Schema for service contact response."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    group_id: int
+    created_at: datetime
+    updated_at: datetime
+
+
+# ====================
+# CommonItemConcept Schemas
+# ====================
+class CommonItemConceptBase(BaseModel):
+    """Base common item concept schema."""
+
+    name: str = Field(..., min_length=1, max_length=255)
+    default_category_id: Optional[int] = None
+    barcode: Optional[str] = Field(None, max_length=100)
+    average_price: Optional[float] = Field(None, ge=0)
+    image_url: Optional[str] = Field(None, max_length=500)
+
+
+class CommonItemConceptCreate(CommonItemConceptBase):
+    """Schema for creating a common item concept."""
+
+    pass
+
+
+class CommonItemConceptUpdate(BaseModel):
+    """Schema for updating a common item concept."""
+
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
+    default_category_id: Optional[int] = None
+    barcode: Optional[str] = Field(None, max_length=100)
+    average_price: Optional[float] = Field(None, ge=0)
+    image_url: Optional[str] = Field(None, max_length=500)
+
+
+class CommonItemConceptResponse(CommonItemConceptBase):
+    """Schema for common item concept response."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    created_at: datetime
+    updated_at: datetime
