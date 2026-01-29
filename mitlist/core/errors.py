@@ -68,6 +68,54 @@ class ValidationError(AppError):
         )
 
 
+class UnauthorizedError(AppError):
+    """Authentication/authorization failure (401)."""
+
+    def __init__(
+        self,
+        code: str = "UNAUTHORIZED",
+        detail: str = "Not authenticated",
+    ):
+        super().__init__(
+            code=code,
+            detail=detail,
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            error_type="error:unauthorized",
+        )
+
+
+class ForbiddenError(AppError):
+    """Authenticated but not allowed (403)."""
+
+    def __init__(
+        self,
+        code: str = "FORBIDDEN",
+        detail: str = "You do not have permission to perform this action",
+    ):
+        super().__init__(
+            code=code,
+            detail=detail,
+            status_code=status.HTTP_403_FORBIDDEN,
+            error_type="error:forbidden",
+        )
+
+
+class GoneError(AppError):
+    """Endpoint removed/deprecated (410)."""
+
+    def __init__(
+        self,
+        code: str = "GONE",
+        detail: str = "This endpoint is no longer available",
+    ):
+        super().__init__(
+            code=code,
+            detail=detail,
+            status_code=status.HTTP_410_GONE,
+            error_type="error:gone",
+        )
+
+
 class NotImplementedAppError(AppError):
     """Endpoint or feature not yet implemented (501)."""
 

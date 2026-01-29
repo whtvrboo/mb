@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mitlist.api.deps import get_db
+from mitlist.api.deps import require_introspection_user
 from mitlist.core.errors import NotImplementedAppError
 from mitlist.modules.documents import schemas
 
@@ -47,5 +48,9 @@ async def post_credentials(data: schemas.SharedCredentialCreate, db: AsyncSessio
 
 
 @router.get("/credentials/{credential_id}/reveal", response_model=schemas.SharedCredentialWithPasswordResponse)
-async def get_credentials_reveal(credential_id: int, db: AsyncSession = Depends(get_db)):
+async def get_credentials_reveal(
+    credential_id: int,
+    db: AsyncSession = Depends(get_db),
+    _user=Depends(require_introspection_user),
+):
     _stub("GET /credentials/{id}/reveal is not yet implemented")

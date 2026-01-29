@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mitlist.api.deps import get_db
-from mitlist.core.errors import NotImplementedAppError
+from mitlist.api.deps import require_introspection_user
+from mitlist.core.errors import GoneError, NotImplementedAppError
 from mitlist.modules.auth import schemas
 
 router = APIRouter(tags=["auth", "users", "groups", "invites"])
@@ -13,36 +14,39 @@ router = APIRouter(tags=["auth", "users", "groups", "invites"])
 def _stub(msg: str):
     raise NotImplementedAppError(detail=msg)
 
+def _gone(msg: str):
+    raise GoneError(code="USE_ZITADEL_OIDC", detail=msg)
+
 
 # ---------- Auth ----------
 @router.post("/auth/register")
 async def auth_register(data: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
-    _stub("POST /auth/register is not yet implemented")
+    _gone("Local auth is disabled. Use Zitadel OIDC to obtain an access token.")
 
 
 @router.post("/auth/login", response_model=schemas.UserLoginResponse)
 async def auth_login(data: schemas.UserLoginRequest, db: AsyncSession = Depends(get_db)):
-    _stub("POST /auth/login is not yet implemented")
+    _gone("Local auth is disabled. Use Zitadel OIDC to obtain an access token.")
 
 
 @router.post("/auth/refresh")
 async def auth_refresh(db: AsyncSession = Depends(get_db)):
-    _stub("POST /auth/refresh is not yet implemented")
+    _gone("Local auth is disabled. Use Zitadel OIDC refresh flow in your client.")
 
 
 @router.post("/auth/logout")
 async def auth_logout(db: AsyncSession = Depends(get_db)):
-    _stub("POST /auth/logout is not yet implemented")
+    _gone("Local auth is disabled. Use Zitadel logout/end-session flow in your client.")
 
 
 @router.post("/auth/password-reset-request")
 async def auth_password_reset_request(db: AsyncSession = Depends(get_db)):
-    _stub("POST /auth/password-reset-request is not yet implemented")
+    _gone("Local auth is disabled. Use Zitadel password reset flows.")
 
 
 @router.post("/auth/password-reset-confirm")
 async def auth_password_reset_confirm(db: AsyncSession = Depends(get_db)):
-    _stub("POST /auth/password-reset-confirm is not yet implemented")
+    _gone("Local auth is disabled. Use Zitadel password reset flows.")
 
 
 # ---------- Users ----------
@@ -57,7 +61,10 @@ async def patch_users_me(data: schemas.UserUpdate, db: AsyncSession = Depends(ge
 
 
 @router.delete("/users/me", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_users_me(db: AsyncSession = Depends(get_db)):
+async def delete_users_me(
+    db: AsyncSession = Depends(get_db),
+    _user=Depends(require_introspection_user),
+):
     _stub("DELETE /users/me is not yet implemented")
 
 
@@ -83,7 +90,11 @@ async def patch_group(group_id: int, data: schemas.GroupUpdate, db: AsyncSession
 
 
 @router.delete("/groups/{group_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_group(group_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_group(
+    group_id: int,
+    db: AsyncSession = Depends(get_db),
+    _user=Depends(require_introspection_user),
+):
     _stub("DELETE /groups/{id} is not yet implemented")
 
 

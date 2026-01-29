@@ -21,6 +21,23 @@ class Settings(BaseSettings):
     # Security
     SECRET_KEY: str
 
+    # Zitadel (OIDC)
+    # Self-hosted base URL, e.g. https://zitadel.example.com
+    ZITADEL_BASE_URL: str = ""
+    # OIDC issuer. If empty, defaults to ZITADEL_BASE_URL.
+    ZITADEL_ISSUER: str = ""
+    # Expected audience for access tokens (your API / project audience)
+    ZITADEL_AUDIENCE: str = ""
+    # JWKS cache TTL
+    ZITADEL_JWKS_CACHE_TTL_SECONDS: int = 3600
+    # Clock skew leeway in seconds for exp/nbf checks
+    ZITADEL_CLOCK_SKEW_SECONDS: int = 10
+    # Introspection client auth (client_secret_basic)
+    ZITADEL_INTROSPECTION_CLIENT_ID: str = ""
+    ZITADEL_INTROSPECTION_CLIENT_SECRET: str = ""
+    # User mapping behavior
+    ZITADEL_USER_AUTOCREATE: bool = True
+
     # Observability (optional)
     OTEL_EXPORTER_OTLP_ENDPOINT: str = ""
     OTEL_SERVICE_NAME: str = "mitlist"
@@ -32,6 +49,23 @@ class Settings(BaseSettings):
             f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
             f"@{self.POSTGRES_SERVER}/{self.POSTGRES_DB}"
         )
+
+    @property
+    def zitadel_discovery_url(self) -> str:
+        """OIDC discovery endpoint."""
+        base = self.ZITADEL_BASE_URL.rstrip("/")
+        return f"{base}/.well-known/openid-configuration" if base else ""
+
+    @property
+    def zitadel_introspection_url(self) -> str:
+        """OAuth introspection endpoint."""
+        base = self.ZITADEL_BASE_URL.rstrip("/")
+        return f"{base}/oauth/v2/introspect" if base else ""
+
+    @property
+    def zitadel_issuer(self) -> str:
+        """Expected issuer for tokens."""
+        return (self.ZITADEL_ISSUER or self.ZITADEL_BASE_URL).rstrip("/")
 
     @property
     def is_production(self) -> bool:
