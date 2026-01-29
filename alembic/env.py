@@ -12,8 +12,71 @@ from mitlist.core.config import settings
 from mitlist.db.base import Base
 
 # Import all models so Alembic can detect them
-from mitlist.modules.auth.models import CommonItemConcept, Group, User  # noqa: F401
-from mitlist.modules.lists.models import Item, List  # noqa: F401
+from mitlist.modules.auth.models import (  # noqa: F401
+    CommonItemConcept,
+    Group,
+    Invite,
+    Location,
+    ServiceContact,
+    User,
+    UserGroup,
+)
+from mitlist.modules.lists.models import InventoryItem, Item, List, ListShare  # noqa: F401
+from mitlist.modules.finance.models import (  # noqa: F401
+    BalanceSnapshot,
+    Budget,
+    Category,
+    Expense,
+    ExpenseSplit,
+    RecurringExpense,
+    Settlement,
+    SplitPreset,
+    SplitPresetMember,
+)
+from mitlist.modules.chores.models import (  # noqa: F401
+    Chore,
+    ChoreAssignment,
+    ChoreDependency,
+    ChoreTemplate,
+)
+from mitlist.modules.governance.models import (  # noqa: F401
+    BallotOption,
+    Proposal,
+    VoteDelegation,
+    VoteRecord,
+)
+from mitlist.modules.plants.models import Plant, PlantLog, PlantSchedule, PlantSpecies  # noqa: F401
+from mitlist.modules.pets.models import Pet, PetLog, PetMedicalRecord, PetSchedule  # noqa: F401
+from mitlist.modules.assets.models import (  # noqa: F401
+    AssetInsurance,
+    HomeAsset,
+    MaintenanceLog,
+    MaintenanceTask,
+)
+from mitlist.modules.documents.models import Document, DocumentShare, SharedCredential  # noqa: F401
+from mitlist.modules.recipes.models import (  # noqa: F401
+    MealPlan,
+    MealPlanShoppingSync,
+    Recipe,
+    RecipeIngredient,
+    RecipeStep,
+)
+from mitlist.modules.notifications.models import (  # noqa: F401
+    Comment,
+    Mention,
+    Notification,
+    NotificationPreference,
+    Reaction,
+)
+from mitlist.modules.gamification.models import (  # noqa: F401
+    Achievement,
+    Leaderboard,
+    Streak,
+    UserAchievement,
+    UserPoints,
+)
+from mitlist.modules.calendar.models import CalendarEvent, EventAttendee, Reminder  # noqa: F401
+from mitlist.modules.audit.models import AuditLog, ReportSnapshot, Tag, TagAssignment  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -45,6 +45,32 @@ class List(BaseModel, TimestampMixin):
     items: Mapped[list["Item"]] = relationship("Item", back_populates="list", cascade="all, delete-orphan")
 
 
+class ListShare(BaseModel, TimestampMixin):
+    """List share - share list with non-group members."""
+
+    __tablename__ = "list_shares"
+
+    list_id: Mapped[int] = mapped_column(ForeignKey("lists.id"), nullable=False, index=True)
+    share_code: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
+    can_edit: Mapped[bool] = mapped_column(default=False, nullable=False)
+    expires_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+
+
+class InventoryItem(BaseModel, TimestampMixin):
+    """Inventory item - pantry tracking with expiration."""
+
+    __tablename__ = "inventory_items"
+
+    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False, index=True)
+    location_id: Mapped[Optional[int]] = mapped_column(ForeignKey("locations.id"), nullable=True)
+    concept_id: Mapped[Optional[int]] = mapped_column(ForeignKey("common_item_concepts.id"), nullable=True)
+    quantity_value: Mapped[Optional[float]] = mapped_column(nullable=True)
+    quantity_unit: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    expiration_date: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    opened_date: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    restock_threshold: Mapped[Optional[float]] = mapped_column(nullable=True)
+
+
 class Item(BaseModel, TimestampMixin, VersionMixin):
     """
     Item model - represents an item in a list.
