@@ -1,7 +1,10 @@
-export default defineNuxtPlugin((nuxtApp) => {
+export default defineNuxtPlugin(async (nuxtApp) => {
   const config = useRuntimeConfig()
   const apiBase = config.public.apiBase as string
-  const tokenState = useState<string | null>('api-token', () => null)
+  
+  // Get session from nuxt-auth-utils
+  const { data: session } = await useFetch('/api/_auth/session')
+  const tokenState = useState<string | null>('api-token', () => session.value?.accessToken || null)
 
   const api = $fetch.create({
     baseURL: apiBase,

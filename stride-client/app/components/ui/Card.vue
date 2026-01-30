@@ -1,37 +1,18 @@
 <script setup lang="ts">
-interface Props {
-  variant?: 'default' | 'outlined'
-}
-
-withDefaults(defineProps<Props>(), {
-  variant: 'default',
-})
-
-const cardClasses = computed(() => {
-  const base = [
-    'rounded-lg shadow-sm',
-    'bg-white dark:bg-gray-800',
-  ]
-
-  if (props.variant === 'outlined') {
-    base.push('border border-gray-200 dark:border-gray-700')
-  } else {
-    base.push('shadow-md')
-  }
-
-  return base
-})
+// Simple wrapper component for the Neobrutalist card style
 </script>
 
 <template>
-  <div :class="cardClasses">
-    <div v-if="$slots.header" class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+  <div class="card bg-white border-[3px] border-background-dark rounded-xl p-5 shadow-neobrutalism-lg overflow-hidden">
+    <div v-if="$slots.header" class="mb-4">
       <slot name="header" />
     </div>
-    <div class="px-6 py-4">
+    
+    <div class="card-body">
       <slot />
     </div>
-    <div v-if="$slots.footer" class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+
+    <div v-if="$slots.footer" class="mt-4 pt-4 border-t-2 border-dashed border-gray-200">
       <slot name="footer" />
     </div>
   </div>

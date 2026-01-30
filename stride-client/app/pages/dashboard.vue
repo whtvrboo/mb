@@ -1,32 +1,37 @@
 <script setup lang="ts">
-// TODO: Add auth middleware when authentication is implemented
-// definePageMeta({
-//   middleware: 'auth',
-// })
+import type { UserResponse, GroupResponse } from '~/types/auth'
 
-const user = ref(null)
-const isLoading = ref(true)
+const { user: sessionUser, clear } = useUserSession()
+const auth = useAuth()
+const groupId = useCurrentGroupId()
 
-// TODO: Fetch user data when auth is implemented
-// onMounted(async () => {
-//   try {
-//     user.value = await $fetch('/api/v1/users/me')
-//   } catch (err) {
-//     await navigateTo('/login')
-//   } finally {
-//     isLoading.value = false
-//   }
-// })
-onMounted(() => {
-  isLoading.value = false
-})
+// Fetch full user data from backend
+const { data: user, error: userError, status: userStatus } = await auth.getMe()
+
+// Fetch user's groups
+const { data: groups, error: groupsError } = await auth.listGroups()
+
+// Set current group if user has groups
+if (groups.value && groups.value.length > 0 && !groupId.value) {
+  groupId.value = groups.value[0].id
+}
+
+async function handleLogout() {
+  await clear()
+  await navigateTo('/login')
+}
 </script>
 
 <template>
   <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-6">Dashboard</h1>
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-bold">Dashboard</h1>
+      <UiButton @click="handleLogout" variant="outline">
+        Sign Out
+      </UiButton>
+    </div>
 
-    <div v-if="isLoading" class="flex justify-center items-center py-12">
+    <div v-if="userStatus === 'pending'" class="flex justify-center items-center py-12">
       <svg
         class="animate-spin h-8 w-8 text-gray-600 dark:text-gray-400"
         xmlns="http://www.w3.org/2000/svg"
@@ -49,14 +54,73 @@ onMounted(() => {
       </svg>
     </div>
 
-    <div v-else>
+    <div v-else-if="userError" class="space-y-4">
+      <UiAlert variant="error" title="Failed to load user data">
+        {{ userError }}
+      </UiAlert>
+    </div>
+
+    <div v-else-if="user" class="space-y-6">
       <UiCard>
         <template #header>
-          <h2 class="text-xl font-semibold">Welcome</h2>
+          <h2 class="text-xl font-semibold">Welcome, {{ user.name }}</h2>
+        </template>
+
+        <div class="space-y-2">
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            <span class="font-medium">Email:</span> {{ user.email }}
+          </p>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            <span class="font-medium">Language:</span> {{ user.language_code }}
+          </p>
+          <p v-if="user.last_login_at" class="text-sm text-gray-600 dark:text-gray-400">
+            <span class="font-medium">Last login:</span> {{ new Date(user.last_login_at).toLocaleString() }}
+          </p>
+        </div>
+      </UiCard>
+
+      <UiCard v-if="groups && groups.length > 0">
+        <template #header>
+          <h2 class="text-xl font-semibold">Your Groups</h2>
+        </template>
+
+        <div class="space-y-2">
+          <div
+            v-for="group in groups"
+            :key="group.id"
+            class="p-3 border rounded-lg"
+            :class="{ 'border-blue-500 bg-blue-50 dark:bg-blue-950': group.id === groupId }"
+          >
+            <div class="flex justify-between items-center">
+              <div>
+                <h3 class="font-medium">{{ group.name }}</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  {{ group.timezone }} • {{ group.default_currency }}
+                </p>
+              </div>
+              <UiButton
+                v-if="group.id !== groupId"
+                @click="groupId = group.id"
+                size="sm"
+                variant="outline"
+              >
+                Select
+              </UiButton>
+              <span v-else class="text-sm font-medium text-blue-600 dark:text-blue-400">
+                Active
+              </span>
+            </div>
+          </div>
+        </div>
+      </UiCard>
+
+      <UiCard v-else>
+        <template #header>
+          <h2 class="text-xl font-semibold">No Groups</h2>
         </template>
 
         <p class="text-gray-600 dark:text-gray-400">
-          This is your dashboard. User data will be displayed here once authentication is implemented.
+          You're not a member of any groups yet. Create or join a group to get started.
         </p>
       </UiCard>
     </div>
