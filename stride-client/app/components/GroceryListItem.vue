@@ -49,7 +49,7 @@ const labelId = useId()
             :aria-labelledby="labelId"
           />
           <div 
-            class="size-6 border-2 border-background-dark rounded bg-white peer-checked:bg-primary transition-colors flex items-center justify-center"
+            class="size-6 border-2 border-background-dark rounded bg-white peer-checked:bg-primary transition-colors flex items-center justify-center peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-background-dark"
             :class="{ 'border-gray-400 bg-gray-200 peer-checked:bg-gray-400': isChecked }"
           >
              <span class="material-symbols-outlined text-sm opacity-0 peer-checked:opacity-100 font-bold transition-opacity">check</span>
@@ -77,7 +77,7 @@ const labelId = useId()
 
       <button 
         @click="$emit('delete')"
-        class="opacity-0 group-hover:opacity-100 transition-opacity"
+        class="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
         :class="isChecked ? 'text-gray-400' : 'text-background-dark'"
         :aria-label="'Delete ' + label"
       >
