@@ -88,6 +88,7 @@ class Pet(BaseModel, TimestampMixin):
         "PetMedicalRecord", back_populates="pet", cascade="all, delete-orphan"
     )
     logs: Mapped[list["PetLog"]] = relationship("PetLog", back_populates="pet", cascade="all, delete-orphan")
+    schedules: Mapped[list["PetSchedule"]] = relationship("PetSchedule", back_populates="pet", cascade="all, delete-orphan")
 
 
 class PetMedicalRecord(BaseModel, TimestampMixin):
@@ -140,3 +141,6 @@ class PetSchedule(BaseModel, TimestampMixin):
     assigned_to_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
     is_rotating: Mapped[bool] = mapped_column(default=False, nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
+
+    # Relationships
+    pet: Mapped["Pet"] = relationship("Pet", back_populates="schedules")

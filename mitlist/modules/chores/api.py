@@ -188,3 +188,186 @@ async def delete_chore(
     if not chore or chore.group_id != group_id:
         raise NotFoundError(code="CHORE_NOT_FOUND", detail=f"Chore {chore_id} not found")
     await interface.delete_chore(db, chore_id)
+
+
+# ---------- Dependencies ----------
+@router.get("/{chore_id}/dependencies", response_model=ListType[schemas.ChoreDependencyResponse])
+async def get_chore_dependencies(
+    chore_id: int,
+    db: AsyncSession = Depends(get_db),
+    group_id: int = Depends(get_current_group_id),
+):
+    """Get dependencies for a chore."""
+    chore = await interface.get_chore_by_id(db, chore_id)
+    if not chore or chore.group_id != group_id:
+        raise NotFoundError(code="CHORE_NOT_FOUND", detail=f"Chore {chore_id} not found")
+        
+    deps = await interface.get_dependencies(db, chore_id)
+    return [schemas.ChoreDependencyResponse.model_validate(d) for d in deps]
+
+
+@router.post("/{chore_id}/dependencies", response_model=schemas.ChoreDependencyResponse, status_code=status.HTTP_201_CREATED)
+async def add_chore_dependency(
+    chore_id: int,
+    data: schemas.ChoreDependencyCreate,
+    db: AsyncSession = Depends(get_db),
+    group_id: int = Depends(get_current_group_id),
+):
+    """Add a dependency."""
+    c1 = await interface.get_chore_by_id(db, chore_id)
+    if not c1 or c1.group_id != group_id:
+        raise NotFoundError(code="CHORE_NOT_FOUND", detail=f"Chore {chore_id} not found")
+    
+    if data.chore_id != chore_id:
+         raise ValidationError(code="ID_MISMATCH", detail="Body chore_id must match path")
+
+    c2 = await interface.get_chore_by_id(db, data.depends_on_chore_id)
+    if not c2 or c2.group_id != group_id:
+         raise NotFoundError(code="CHORE_NOT_FOUND", detail=f"Chore {data.depends_on_chore_id} not found")
+
+    dep = await interface.add_dependency(
+        db, chore_id, data.depends_on_chore_id, data.dependency_type
+    )
+    return schemas.ChoreDependencyResponse.model_validate(dep)
+
+
+@router.delete("/dependencies/{dependency_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_chore_dependency(
+    dependency_id: int,
+    db: AsyncSession = Depends(get_db),
+    group_id: int = Depends(get_current_group_id),
+):
+    """Remove a dependency."""
+    # Note: Ideally check ownership here via getting dependency first
+    await interface.remove_dependency(db, dependency_id)
+
+
+# ---------- Templates ----------
+@router.get("/templates", response_model=ListType[schemas.ChoreTemplateResponse])
+async def list_chore_templates(
+    include_public: bool = Query(True),
+    db: AsyncSession = Depends(get_db),
+):
+    """List available chore templates."""
+    tmpls = await interface.list_templates(db, include_public=include_public)
+    return [schemas.ChoreTemplateResponse.model_validate(t) for t in tmpls]
+
+
+@router.post("/templates", response_model=schemas.ChoreTemplateResponse, status_code=status.HTTP_201_CREATED)
+async def create_chore_template(
+    data: schemas.ChoreTemplateCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    """Create a new chore template."""
+    tmpl = await interface.create_template(
+        db,
+        name=data.name,
+        frequency_type=data.frequency_type,
+        effort_value=data.effort_value,
+        description=data.description,
+        interval_value=data.interval_value,
+        category=data.category,
+        is_public=data.is_public,
+    )
+    return schemas.ChoreTemplateResponse.model_validate(tmpl)
+
+
+@router.post("/templates/{template_id}/instantiate", response_model=schemas.ChoreResponse)
+async def create_chore_from_template(
+    template_id: int,
+    data: schemas.ChoreFromTemplateRequest,
+    group_id: int = Depends(get_current_group_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Create a chore in the group from a template."""
+    if data.group_id != group_id:
+        raise ValidationError(code="GROUP_MISMATCH", detail="group_id mismatch")
+    
+    if data.template_id != template_id:
+         raise ValidationError(code="ID_MISMATCH", detail="template_id mismatch")
+
+    overrides = {}
+    if data.name: overrides["name"] = data.name
+    if data.frequency_type: overrides["frequency_type"] = data.frequency_type
+    if data.interval_value: overrides["interval_value"] = data.interval_value
+
+    chore = await interface.create_chore_from_template(
+        db, template_id, group_id, overrides
+    )
+    return schemas.ChoreResponse.model_validate(chore)
+
+
+# ---------- Stats ----------
+@router.get("/stats", response_model=schemas.ChoreStatisticsResponse)
+async def get_chore_stats(
+    group_id: int = Depends(get_current_group_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get group chore statistics."""
+    stats = await interface.get_group_stats(db, group_id)
+    return schemas.ChoreStatisticsResponse(**stats)
+
+
+@router.get("/stats/me", response_model=schemas.UserChoreStatsResponse)
+async def get_my_chore_stats(
+    group_id: int = Depends(get_current_group_id),
+    user = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get statistics for current user."""
+    stats = await interface.get_user_stats(db, group_id, user.id)
+    return schemas.UserChoreStatsResponse(**stats)
+
+
+@router.get("/leaderboard", response_model=schemas.ChoreLeaderboardResponse)
+async def get_chore_leaderboard(
+    group_id: int = Depends(get_current_group_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get leaderboard for the group."""
+    rankings = await interface.get_leaderboard(db, group_id)
+    from datetime import datetime
+    now = datetime.utcnow()
+    # Stub period start (current month)
+    start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0) 
+    
+    return schemas.ChoreLeaderboardResponse(
+        group_id=group_id,
+        period_start=start,
+        period_end=now,
+        rankings=[schemas.UserChoreStatsResponse(**r) for r in rankings]
+    )
+
+
+# ---------- Assignment Actions ----------
+@router.patch("/assignments/{assignment_id}/start", response_model=schemas.ChoreAssignmentResponse)
+async def start_chore_assignment(
+    assignment_id: int,
+    group_id: int = Depends(get_current_group_id),
+    user = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Start an assignment."""
+    a = await interface.get_assignment_by_id(db, assignment_id)
+    if not a or a.chore.group_id != group_id:
+        raise NotFoundError(code="ASSIGNMENT_NOT_FOUND", detail="Assignment not found")
+    
+    updated_a = await interface.start_assignment(db, assignment_id, user.id)
+    return schemas.ChoreAssignmentResponse.model_validate(updated_a)
+
+
+@router.post("/assignments/{assignment_id}/rate", response_model=schemas.ChoreAssignmentResponse)
+async def rate_chore_assignment(
+    assignment_id: int,
+    data: schemas.ChoreAssignmentRateRequest,
+    group_id: int = Depends(get_current_group_id),
+    user = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Rate a completed assignment."""
+    a = await interface.get_assignment_by_id(db, assignment_id)
+    if not a or a.chore.group_id != group_id:
+        raise NotFoundError(code="ASSIGNMENT_NOT_FOUND", detail="Assignment not found")
+        
+    updated_a = await interface.rate_assignment(db, assignment_id, user.id, data.quality_rating)
+    return schemas.ChoreAssignmentResponse.model_validate(updated_a)

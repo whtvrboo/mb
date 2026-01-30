@@ -19,6 +19,22 @@ __all__ = [
     "skip_assignment",
     "reassign_assignment",
     "list_chore_history",
+    # Dependencies
+    "add_dependency",
+    "remove_dependency",
+    "get_dependencies",
+    "check_dependencies_met",
+    # Templates
+    "list_templates",
+    "create_template",
+    "create_chore_from_template",
+    # Stats
+    "get_group_stats",
+    "get_user_stats",
+    "get_leaderboard",
+    # Actions
+    "start_assignment",
+    "rate_assignment",
 ]
 
 list_chores = service.list_chores
@@ -32,3 +48,23 @@ complete_assignment = service.complete_assignment
 skip_assignment = service.skip_assignment
 reassign_assignment = service.reassign_assignment
 list_chore_history = service.list_chore_history
+
+# Dependencies
+add_dependency = service.add_dependency
+remove_dependency = service.remove_dependency
+get_dependencies = service.get_dependencies
+check_dependencies_met = service.check_dependencies_met
+
+# Templates
+list_templates = service.list_templates
+create_template = service.create_template
+create_chore_from_template = service.create_chore_from_template
+
+# Stats
+get_group_stats = service.get_group_stats
+get_user_stats = service.get_user_stats
+get_leaderboard = service.get_leaderboard
+
+# Actions
+start_assignment = service.start_assignment
+rate_assignment = service.rate_assignment

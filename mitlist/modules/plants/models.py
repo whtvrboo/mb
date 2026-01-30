@@ -116,6 +116,11 @@ class Plant(BaseModel, TimestampMixin):
     death_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
+    # Relationships
+    species: Mapped["PlantSpecies"] = relationship("PlantSpecies")
+    logs: Mapped[list["PlantLog"]] = relationship("PlantLog", back_populates="plant", cascade="all, delete-orphan")
+    schedules: Mapped[list["PlantSchedule"]] = relationship("PlantSchedule", back_populates="plant", cascade="all, delete-orphan")
+
 
 class PlantLog(BaseModel, TimestampMixin):
     """Plant log - care activity record."""
@@ -131,6 +136,9 @@ class PlantLog(BaseModel, TimestampMixin):
     photo_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     occurred_at: Mapped[datetime] = mapped_column(nullable=False)
 
+    # Relationships
+    plant: Mapped["Plant"] = relationship("Plant", back_populates="logs")
+
 
 class PlantSchedule(BaseModel, TimestampMixin):
     """Plant schedule - next care actions."""
@@ -142,3 +150,6 @@ class PlantSchedule(BaseModel, TimestampMixin):
     next_due_date: Mapped[datetime] = mapped_column(nullable=False)
     frequency_days: Mapped[int] = mapped_column(nullable=False)
     assigned_to_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+
+    # Relationships
+    plant: Mapped["Plant"] = relationship("Plant", back_populates="schedules")
