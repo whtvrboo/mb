@@ -158,18 +158,33 @@ async def generate_report(
             select(Budget).where(Budget.group_id == group_id)
         )
         budgets = budgets_result.scalars().all()
-        budget_data = []
-        for budget in budgets:
-            spent_result = await db.execute(
-                select(func.sum(Expense.amount)).where(
+
+        # Optimize: Fetch all relevant expenses in one query
+        budget_category_ids = [b.category_id for b in budgets]
+        expense_map = {}
+
+        if budget_category_ids:
+            expenses_result = await db.execute(
+                select(
+                    Expense.category_id,
+                    func.sum(Expense.amount).label("total_spent"),
+                )
+                .where(
                     Expense.group_id == group_id,
-                    Expense.category_id == budget.category_id,
+                    Expense.category_id.in_(budget_category_ids),
                     Expense.expense_date >= period_start_date,
                     Expense.expense_date <= period_end_date,
                     Expense.deleted_at.is_(None),
                 )
+                .group_by(Expense.category_id)
             )
-            spent = spent_result.scalar_one() or 0
+
+            # Map category_id -> total_spent
+            expense_map = {row.category_id: (row.total_spent or 0) for row in expenses_result.all()}
+
+        budget_data = []
+        for budget in budgets:
+            spent = expense_map.get(budget.category_id, 0)
             budget_data.append({
                 "budget_id": budget.id,
                 "category_id": budget.category_id,
