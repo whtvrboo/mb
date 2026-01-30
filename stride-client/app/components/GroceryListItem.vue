@@ -43,11 +43,11 @@ const labelId = useId()
         <!-- Neo Checkbox -->
         <label class="relative cursor-pointer mt-1 shrink-0">
           <input 
-            type="checkbox" 
             v-model="isChecked"
+            type="checkbox"
             class="peer sr-only"
             :aria-labelledby="labelId"
-          />
+          >
           <div 
             class="size-6 border-2 border-background-dark rounded bg-white peer-checked:bg-primary transition-colors flex items-center justify-center"
             :class="{ 'border-gray-400 bg-gray-200 peer-checked:bg-gray-400': isChecked }"
@@ -76,10 +76,10 @@ const labelId = useId()
       </div>
 
       <button 
-        @click="$emit('delete')"
-        class="opacity-0 group-hover:opacity-100 transition-opacity"
+        class="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background-dark focus-visible:ring-offset-2 transition-opacity rounded"
         :class="isChecked ? 'text-gray-400' : 'text-background-dark'"
         :aria-label="'Delete ' + label"
+        @click="$emit('delete')"
       >
         <span class="material-symbols-outlined text-lg">delete</span>
       </button>
