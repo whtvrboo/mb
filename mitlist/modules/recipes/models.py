@@ -107,6 +107,9 @@ class MealPlan(BaseModel, TimestampMixin):
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     is_completed: Mapped[bool] = mapped_column(default=False, nullable=False)
 
+    # Relationships
+    recipe: Mapped[Optional["Recipe"]] = relationship("Recipe")
+
 
 class MealPlanShoppingSync(BaseModel, TimestampMixin):
     """Meal plan shopping sync - link meal plan to shopping list."""
