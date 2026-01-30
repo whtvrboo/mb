@@ -181,9 +181,7 @@ async def get_calendar_feed(
     except Exception:
         pass
 
-    # 6. Member Birthdays (if stored in user profiles)
-    # This would require a birthday field in the User model
-    # For now, we skip this as it's not commonly stored
+    # 6. Member birthdays: skipped (would require birthday on User model)
 
     # Sort events by date
     events.sort(key=lambda e: e.get("date", ""))

@@ -238,7 +238,12 @@ async def remove_chore_dependency(
     group_id: int = Depends(get_current_group_id),
 ):
     """Remove a dependency."""
-    # Note: Ideally check ownership here via getting dependency first
+    dep = await interface.get_dependency_by_id(db, dependency_id)
+    if not dep:
+        raise NotFoundError(code="DEPENDENCY_NOT_FOUND", detail=f"Dependency {dependency_id} not found")
+    chore = await interface.get_chore_by_id(db, dep.chore_id)
+    if not chore or chore.group_id != group_id:
+        raise NotFoundError(code="DEPENDENCY_NOT_FOUND", detail=f"Dependency {dependency_id} not found")
     await interface.remove_dependency(db, dependency_id)
 
 
@@ -328,8 +333,7 @@ async def get_chore_leaderboard(
     rankings = await interface.get_leaderboard(db, group_id)
     from datetime import datetime
     now = datetime.utcnow()
-    # Stub period start (current month)
-    start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0) 
+    start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)  # period: current month 
     
     return schemas.ChoreLeaderboardResponse(
         group_id=group_id,

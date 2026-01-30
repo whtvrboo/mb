@@ -259,6 +259,16 @@ async def create_pet_log(
 
 
 # ---------- Schedules ----------
+async def get_schedule_by_id(db: AsyncSession, schedule_id: int) -> Optional[PetSchedule]:
+    """Get pet schedule by ID with pet loaded (for group ownership check)."""
+    result = await db.execute(
+        select(PetSchedule)
+        .where(PetSchedule.id == schedule_id)
+        .options(selectinload(PetSchedule.pet))
+    )
+    return result.scalar_one_or_none()
+
+
 async def list_pet_schedules(db: AsyncSession, pet_id: int) -> list[PetSchedule]:
     """List schedules."""
     result = await db.execute(

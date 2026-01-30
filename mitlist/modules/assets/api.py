@@ -174,26 +174,9 @@ async def update_maintenance_task(
     db: AsyncSession = Depends(get_db),
 ):
     """Update maintenance task."""
-    # To verify group, we must find the task -> asset -> group.
-    # We can do this with a direct query or fetch chain from service if helpers exist.
-    # I'll rely on service behavior: it fetches by ID.
-    # BUT we need to permission check.
-    # Best way: get task, verify asset belongs to group.
-    # Service doesn't expose get_task explicitly with asset relation, but list_tasks does.
-    # Or just execute query here for safety? Or trust internal integrity if authenticated context is handled.
-    # I'll implement a safe check by fetching asset via list (inefficient but safe) OR
-    # just query for task using SQLAlchemy here?
-    # I'll stick to a pattern:
-    # 1. Update task via service.
-    # 2. Check asset ownership BEFORE update if possible, or AFTER.
-    # This needs `get_maintenance_task` exposed in interface. It isn't explicitly.
-    # `update_maintenance_task` fetches it inside.
-    # I'll add `get_maintenance_task` to service/interface if I want to be cleaner, 
-    # OR assume if user knows task_id they can update it (security risk).
-    # Since previous modules had similar risk (schedule update by ID), I will note this as technical debt and implement minimal viable solution.
-    # For now: update directly.
-    # TODO: Secure this better.
-    
+    task = await interface.get_maintenance_task(db, task_id)
+    if not task or task.asset.group_id != group_id:
+        raise NotFoundError(code="TASK_NOT_FOUND", detail=f"Task {task_id} not found")
     updated = await interface.update_maintenance_task(
         db,
         task_id=task_id,
@@ -217,7 +200,9 @@ async def get_maintenance_logs(
     db: AsyncSession = Depends(get_db),
 ):
     """Get maintenance logs."""
-    # Should verify task ownership.
+    task = await interface.get_maintenance_task(db, task_id)
+    if not task or task.asset.group_id != group_id:
+        raise NotFoundError(code="TASK_NOT_FOUND", detail=f"Task {task_id} not found")
     logs = await interface.list_maintenance_logs(db, task_id)
     return [schemas.MaintenanceLogResponse.model_validate(l) for l in logs]
 
@@ -227,12 +212,13 @@ async def create_maintenance_log(
     task_id: int,
     data: schemas.MaintenanceCompleteRequest,
     group_id: int = Depends(get_current_group_id),
-    user = Depends(get_current_user),
+    user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Log completed maintenance."""
-    # Should verify task ownership
-    
+    task = await interface.get_maintenance_task(db, task_id)
+    if not task or task.asset.group_id != group_id:
+        raise NotFoundError(code="TASK_NOT_FOUND", detail=f"Task {task_id} not found")
     log = await interface.create_maintenance_log(
         db,
         task_id=task_id,
@@ -302,8 +288,9 @@ async def update_insurance(
     db: AsyncSession = Depends(get_db),
 ):
     """Update insurance policy."""
-    # Verify group ownership...
-    
+    ins = await interface.get_insurance_by_id(db, insurance_id)
+    if not ins or ins.group_id != group_id:
+        raise NotFoundError(code="INSURANCE_NOT_FOUND", detail=f"Insurance {insurance_id} not found")
     updated = await interface.update_insurance(
         db,
         insurance_id=insurance_id,

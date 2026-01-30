@@ -21,6 +21,7 @@ __all__ = [
     "list_chore_history",
     # Dependencies
     "add_dependency",
+    "get_dependency_by_id",
     "remove_dependency",
     "get_dependencies",
     "check_dependencies_met",
@@ -51,6 +52,7 @@ list_chore_history = service.list_chore_history
 
 # Dependencies
 add_dependency = service.add_dependency
+get_dependency_by_id = service.get_dependency_by_id
 remove_dependency = service.remove_dependency
 get_dependencies = service.get_dependencies
 check_dependencies_met = service.check_dependencies_met

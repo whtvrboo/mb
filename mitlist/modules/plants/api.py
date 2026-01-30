@@ -197,26 +197,13 @@ async def mark_schedule_completed(
     schedule_id: int,
     data: schemas.PlantScheduleMarkDoneRequest,
     group_id: int = Depends(get_current_group_id),
-    user = Depends(get_current_user),
+    user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Mark schedule as done."""
-    # We need to verify ownership. Getting schedule first is safest but service mark_schedule_done does it by ID.
-    # To verify group, we should get schedule, check plant, check group.
-    # I'll implement a quick check here if service doesn't expose "get_schedule_by_id" (it doesn't in interface).
-    # I'll rely on the fact that if it doesn't exist, service raises.
-    # BUT permissions!
-    # I'll add get_schedule_by_id to service if I want to be strict.
-    # Or just implementation details:
-    # Since this is MVP, I might skip strict ownership check for this specific endpoint OR 
-    # use a direct query. 
-    # For now, I'll trust the user belongs to the group of the plant. 
-    # Wait, blindly updating by ID allows cross-group modification.
-    # I should really fetch it.
-    # I'll let it slide for now to match the speed of implementation required, 
-    # or I can use `list_plant_schedules` to find it if I really want to be safe, but that requires knowing plant_id.
-    # I'll stick to basic implementation.
-    
+    sched = await interface.get_schedule_by_id(db, schedule_id)
+    if not sched or sched.plant.group_id != group_id:
+        raise NotFoundError(code="SCHEDULE_NOT_FOUND", detail=f"Schedule {schedule_id} not found")
     updated = await interface.mark_schedule_done(
         db,
         schedule_id=schedule_id,

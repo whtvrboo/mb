@@ -150,7 +150,7 @@ async def get_balances(
     group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
 ) -> schemas.GroupBalanceSummaryResponse:
-    """Calculate real-time group balances."""
+    """Calculate group balances."""
     gid, balances, total_owed, currency = await interface.calculate_group_balances(db, group_id)
 
     balance_responses = [schemas.UserBalanceResponse.model_validate(b) for b in balances]
@@ -182,7 +182,7 @@ async def get_categories(
     group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
 ) -> ListType[schemas.CategoryResponse]:
-    """List global + group-specific categories."""
+    """List categories."""
     categories = await interface.list_categories(db, group_id=group_id)
     return [schemas.CategoryResponse.model_validate(c) for c in categories]
 
@@ -270,7 +270,7 @@ async def create_settlement(
     user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> schemas.SettlementResponse:
-    """Record settlement (payer = current user)."""
+    """Record settlement."""
     settlement = await interface.create_settlement(
         db,
         group_id=group_id,
@@ -307,7 +307,7 @@ async def delete_settlement(
     group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
 ) -> None:
-    """Delete/reverse settlement."""
+    """Delete settlement."""
     settlement = await interface.get_settlement_by_id(db, settlement_id)
     if not settlement or settlement.group_id != group_id:
         raise NotFoundError(
@@ -541,7 +541,7 @@ async def generate_recurring_expense(
     group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
 ) -> schemas.ExpenseResponse:
-    """Manually generate an expense from recurring template."""
+    """Generate expense from recurring."""
     recurring = await interface.get_recurring_expense_by_id(db, recurring_id)
     if not recurring or recurring.group_id != group_id:
         raise NotFoundError(
@@ -553,7 +553,6 @@ async def generate_recurring_expense(
     return schemas.ExpenseResponse.model_validate(expense)
 
 
-# ---------- Split Presets ----------
 @router.get("/split-presets", response_model=ListType[schemas.SplitPresetResponse])
 async def get_split_presets(
     group_id: int = Depends(get_current_group_id),

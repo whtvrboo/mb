@@ -148,6 +148,16 @@ async def dispose_asset(
 
 
 # ---------- Maintenance Tasks ----------
+async def get_maintenance_task(db: AsyncSession, task_id: int) -> Optional[MaintenanceTask]:
+    """Get maintenance task by ID with asset loaded (for group ownership check)."""
+    result = await db.execute(
+        select(MaintenanceTask)
+        .where(MaintenanceTask.id == task_id)
+        .options(selectinload(MaintenanceTask.asset))
+    )
+    return result.scalar_one_or_none()
+
+
 async def list_maintenance_tasks(db: AsyncSession, asset_id: int) -> list[MaintenanceTask]:
     """List maintenance tasks for an asset."""
     result = await db.execute(
@@ -275,6 +285,14 @@ async def create_maintenance_log(
 
 
 # ---------- Insurance ----------
+async def get_insurance_by_id(db: AsyncSession, insurance_id: int) -> Optional[AssetInsurance]:
+    """Get insurance by ID (for group ownership check)."""
+    result = await db.execute(
+        select(AssetInsurance).where(AssetInsurance.id == insurance_id)
+    )
+    return result.scalar_one_or_none()
+
+
 async def list_insurances(db: AsyncSession, group_id: int) -> list[AssetInsurance]:
     """List insurance policies."""
     result = await db.execute(

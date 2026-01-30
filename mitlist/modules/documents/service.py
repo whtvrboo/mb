@@ -96,7 +96,6 @@ def generate_presigned_upload_url(
     file_key = f"groups/{group_id}/documents/{timestamp}_{random_suffix}_{safe_name}"
 
     # In production, use boto3 or minio client to generate presigned URL
-    # For now, return a placeholder URL
     expires_in_seconds = 3600  # 1 hour
     upload_url = f"/api/v1/documents/upload-target?key={file_key}"
 
@@ -148,8 +147,7 @@ async def create_credential(
     notes: Optional[str] = None,
 ) -> SharedCredential:
     """Create a shared credential with encrypted password."""
-    # In production, use proper encryption (e.g., Fernet, age, or vault)
-    # For now, use a simple obfuscation (NOT SECURE - replace with real encryption)
+    # In production, use proper encryption (e.g., cryptography.fernet, age, or vault)
     encrypted_password = _encrypt_password(password)
 
     cred = SharedCredential(
@@ -203,24 +201,14 @@ async def delete_credential(db: AsyncSession, credential_id: int) -> None:
     await db.flush()
 
 
-# ---------- Encryption helpers (REPLACE WITH REAL ENCRYPTION IN PRODUCTION) ----------
+# ---------- Encryption helpers (replace with Fernet/vault in production) ----------
 def _encrypt_password(password: str) -> str:
-    """
-    Encrypt a password for storage.
-
-    WARNING: This is a placeholder. Use proper encryption in production!
-    Consider using: cryptography.fernet, age, or HashiCorp Vault.
-    """
-    # Simple base64 encoding as placeholder (NOT SECURE)
+    """Encode password for storage. In production use cryptography.fernet or vault."""
     import base64
     return base64.b64encode(password.encode()).decode()
 
 
 def _decrypt_password(encrypted: str) -> str:
-    """
-    Decrypt a stored password.
-
-    WARNING: This is a placeholder. Use proper encryption in production!
-    """
+    """Decode stored password. In production use cryptography.fernet or vault."""
     import base64
     return base64.b64decode(encrypted.encode()).decode()

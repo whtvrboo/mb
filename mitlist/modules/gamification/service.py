@@ -307,7 +307,7 @@ async def get_leaderboard(
     """Get leaderboard entries for a group."""
     from mitlist.modules.auth.models import User
 
-    # For now, just get user points sorted
+    # Rank by user points
     if metric == "POINTS":
         if period_type == "MONTHLY":
             order_col = UserPoints.monthly_points

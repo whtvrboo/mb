@@ -18,6 +18,7 @@ __all__ = [
     "mark_plant_dead",
     "list_plant_logs",
     "create_plant_log",
+    "get_schedule_by_id",
     "list_plant_schedules",
     "create_schedule",
     "mark_schedule_done",
@@ -37,6 +38,7 @@ mark_plant_dead = service.mark_plant_dead
 list_plant_logs = service.list_plant_logs
 create_plant_log = service.create_plant_log
 
+get_schedule_by_id = service.get_schedule_by_id
 list_plant_schedules = service.list_plant_schedules
 create_schedule = service.create_schedule
 mark_schedule_done = service.mark_schedule_done

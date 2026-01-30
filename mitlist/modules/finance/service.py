@@ -522,10 +522,7 @@ async def calculate_budget_status(
     db: AsyncSession,
     budget: Budget,
 ) -> dict:
-    """Calculate current spending status for a budget.
-
-    Returns dict with: current_spent, remaining, percentage_used, is_over_budget, is_alert_threshold_reached
-    """
+    """Calculate current spending status for a budget."""
     from decimal import Decimal as D
 
     from sqlalchemy import func
@@ -560,9 +557,6 @@ async def calculate_budget_status(
     }
 
 
-# ====================
-# Recurring Expenses
-# ====================
 def _calculate_next_due_date(
     start_date: datetime,
     frequency_type: str,
@@ -622,7 +616,7 @@ async def create_recurring_expense(
     auto_create_expense: bool = True,
     split_preset_id: Optional[int] = None,
 ) -> RecurringExpense:
-    """Create recurring expense with calculated next_due_date."""
+    """Create recurring expense."""
     next_due = _calculate_next_due_date(start_date, frequency_type, interval_value)
 
     recurring = RecurringExpense(
@@ -708,7 +702,7 @@ async def deactivate_recurring_expense(
     db: AsyncSession,
     recurring_expense_id: int,
 ) -> RecurringExpense:
-    """Deactivate recurring expense (soft delete)."""
+    """Deactivate recurring expense."""
     return await update_recurring_expense(db, recurring_expense_id, is_active=False)
 
 
@@ -752,9 +746,6 @@ async def generate_expense_from_recurring(
     return expense
 
 
-# ====================
-# Split Presets
-# ====================
 async def list_split_presets(
     db: AsyncSession,
     group_id: int,
@@ -824,7 +815,7 @@ async def update_split_preset(
     is_default: Optional[bool] = None,
     members: Optional[list[dict]] = None,
 ) -> SplitPreset:
-    """Update split preset (replaces members if provided)."""
+    """Update split preset."""
     result = await db.execute(
         select(SplitPreset)
         .where(SplitPreset.id == preset_id)
@@ -861,7 +852,7 @@ async def update_split_preset(
 
 
 async def delete_split_preset(db: AsyncSession, preset_id: int) -> None:
-    """Hard delete split preset (cascades to members)."""
+    """Hard delete split preset."""
     result = await db.execute(select(SplitPreset).where(SplitPreset.id == preset_id))
     preset = result.scalar_one_or_none()
     if not preset:

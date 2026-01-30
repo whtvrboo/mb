@@ -18,6 +18,7 @@ __all__ = [
     "get_expiring_vaccines",
     "list_pet_logs",
     "create_pet_log",
+    "get_schedule_by_id",
     "list_pet_schedules",
     "create_pet_schedule",
     "mark_schedule_done",
@@ -36,6 +37,7 @@ get_expiring_vaccines = service.get_expiring_vaccines
 list_pet_logs = service.list_pet_logs
 create_pet_log = service.create_pet_log
 
+get_schedule_by_id = service.get_schedule_by_id
 list_pet_schedules = service.list_pet_schedules
 create_pet_schedule = service.create_pet_schedule
 mark_schedule_done = service.mark_schedule_done

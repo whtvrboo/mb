@@ -230,6 +230,16 @@ async def create_plant_log(
 
 
 # ---------- Schedules ----------
+async def get_schedule_by_id(db: AsyncSession, schedule_id: int) -> Optional[PlantSchedule]:
+    """Get plant schedule by ID with plant loaded (for group ownership check)."""
+    result = await db.execute(
+        select(PlantSchedule)
+        .where(PlantSchedule.id == schedule_id)
+        .options(selectinload(PlantSchedule.plant))
+    )
+    return result.scalar_one_or_none()
+
+
 async def list_plant_schedules(db: AsyncSession, plant_id: int) -> list[PlantSchedule]:
     """List schedules for a plant."""
     result = await db.execute(

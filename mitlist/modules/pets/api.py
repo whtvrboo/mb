@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mitlist.api.deps import get_db, get_current_group_id, get_current_user
-from mitlist.core.errors import NotFoundError, ValidationError, NotImplementedAppError
+from mitlist.core.errors import NotFoundError, ValidationError
 from mitlist.modules.pets import interface, schemas
 
 router = APIRouter(prefix="/pets", tags=["pets"])
@@ -271,13 +271,13 @@ async def mark_schedule_completed(
     schedule_id: int,
     data: schemas.PetScheduleMarkDoneRequest,
     group_id: int = Depends(get_current_group_id),
-    user = Depends(get_current_user),
+    user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Mark schedule as done."""
-    # Assuming basic validation via successful execution or manual check if desired. 
-    # For now relying on service exception if not found, but permission check is minimal here without fetching schedule first.
-    
+    sched = await interface.get_schedule_by_id(db, schedule_id)
+    if not sched or sched.pet.group_id != group_id:
+        raise NotFoundError(code="SCHEDULE_NOT_FOUND", detail=f"Schedule {schedule_id} not found")
     updated = await interface.mark_schedule_done(
         db,
         schedule_id=schedule_id,

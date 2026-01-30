@@ -262,6 +262,14 @@ async def add_dependency(
     return dep
 
 
+async def get_dependency_by_id(db: AsyncSession, dependency_id: int) -> Optional[ChoreDependency]:
+    """Get dependency by ID (for group ownership check via chore_id)."""
+    result = await db.execute(
+        select(ChoreDependency).where(ChoreDependency.id == dependency_id)
+    )
+    return result.scalar_one_or_none()
+
+
 async def remove_dependency(db: AsyncSession, dependency_id: int) -> None:
     """Remove a dependency."""
     result = await db.execute(select(ChoreDependency).where(ChoreDependency.id == dependency_id))
