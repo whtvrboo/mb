@@ -5,20 +5,22 @@ from httpx import AsyncClient
 async def test_chores_lifecycle(authed_client: AsyncClient, auth_headers: dict):
     # 1. Create Chore 1
     chore1_data = {
-        "title": "Clean Kitchen",
-        "points": 10,
-        "frequency_days": 1,
+        "name": "Clean Kitchen",
+        "effort_value": 5,
+        "frequency_type": "DAILY",
+        "interval_value": 1,
         "group_id": int(auth_headers["X-Group-ID"])
     }
     response = await authed_client.post("/chores", json=chore1_data, headers=auth_headers)
-    assert response.status_code == 201
+    assert response.status_code == 201, f"Response: {response.text}"
     c1_id = response.json()["id"]
     
     # 2. Create Chore 2
     chore2_data = {
-        "title": "Cook Dinner",
-        "points": 20,
-        "frequency_days": 1,
+        "name": "Cook Dinner",
+        "effort_value": 8,
+        "frequency_type": "DAILY",
+        "interval_value": 1,
         "group_id": int(auth_headers["X-Group-ID"])
     }
     response = await authed_client.post("/chores", json=chore2_data, headers=auth_headers)
@@ -38,8 +40,9 @@ async def test_chores_lifecycle(authed_client: AsyncClient, auth_headers: dict):
     tpl_data = {
         "name": "Weekend Cleaning",
         "description": "Deep clean",
-        "default_points": 50,
-        "default_frequency_days": 7,
+        "effort_value": 8,
+        "frequency_type": "WEEKLY",
+        "interval_value": 1,
         "estimated_duration_minutes": 120,
         "group_id": int(auth_headers["X-Group-ID"])
     }

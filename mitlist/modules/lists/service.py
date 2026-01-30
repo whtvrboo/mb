@@ -13,6 +13,23 @@ from mitlist.modules.lists.models import InventoryItem, Item, List
 # Note: This is PRIVATE - other modules should import from interface.py
 
 
+async def list_lists(
+    db: AsyncSession,
+    group_id: int,
+    is_archived: Optional[bool] = None,
+    list_type: Optional[str] = None,
+) -> list[List]:
+    """List all lists for a group with optional filters."""
+    q = select(List).where(List.group_id == group_id)
+    if is_archived is not None:
+        q = q.where(List.is_archived == is_archived)
+    if list_type is not None:
+        q = q.where(List.type == list_type)
+    q = q.order_by(List.id)
+    result = await db.execute(q)
+    return list(result.scalars().all())
+
+
 async def get_list_by_id(db: AsyncSession, list_id: int) -> Optional[List]:
     """Get a list by ID with items loaded."""
     result = await db.execute(

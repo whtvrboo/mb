@@ -60,16 +60,31 @@ async def get_users_me(
 
 
 @router.patch("/users/me", response_model=schemas.UserResponse)
-async def patch_users_me(data: schemas.UserUpdate, db: AsyncSession = Depends(get_db)):
-    _stub("PATCH /users/me is not yet implemented")
+async def patch_users_me(
+    data: schemas.UserUpdate,
+    db: AsyncSession = Depends(get_db),
+    user=Depends(get_current_user),
+) -> schemas.UserResponse:
+    """Update the current user's profile."""
+    updated_user = await interface.update_user(
+        db,
+        user_id=user.id,
+        name=data.name,
+        avatar_url=data.avatar_url,
+        phone_number=data.phone_number,
+        language_code=data.language_code,
+        preferences=data.preferences,
+    )
+    return schemas.UserResponse.model_validate(updated_user)
 
 
 @router.delete("/users/me", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_users_me(
     db: AsyncSession = Depends(get_db),
-    _user=Depends(require_introspection_user),
+    user=Depends(require_introspection_user),
 ):
-    _stub("DELETE /users/me is not yet implemented")
+    """Delete (soft) the current user's account. Requires re-authentication."""
+    await interface.soft_delete_user(db, user.id)
 
 
 # ---------- Groups ----------

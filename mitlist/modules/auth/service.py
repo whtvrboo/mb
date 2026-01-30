@@ -18,6 +18,58 @@ def _now() -> datetime:
     return datetime.utcnow()
 
 
+# ---------- Users ----------
+async def get_user_by_id(db: AsyncSession, user_id: int) -> Optional[User]:
+    """Get user by ID."""
+    result = await db.execute(
+        select(User).where(User.id == user_id, User.deleted_at.is_(None))
+    )
+    return result.scalar_one_or_none()
+
+
+async def update_user(
+    db: AsyncSession,
+    user_id: int,
+    name: Optional[str] = None,
+    avatar_url: Optional[str] = None,
+    phone_number: Optional[str] = None,
+    language_code: Optional[str] = None,
+    preferences: Optional[dict] = None,
+) -> User:
+    """Update user profile."""
+    user = await get_user_by_id(db, user_id)
+    if not user:
+        raise NotFoundError(code="USER_NOT_FOUND", detail=f"User {user_id} not found")
+
+    if name is not None:
+        user.name = name
+    if avatar_url is not None:
+        user.avatar_url = avatar_url
+    if phone_number is not None:
+        user.phone_number = phone_number
+    if language_code is not None:
+        user.language_code = language_code
+    if preferences is not None:
+        user.preferences = preferences
+
+    await db.flush()
+    await db.refresh(user)
+    return user
+
+
+async def soft_delete_user(db: AsyncSession, user_id: int) -> None:
+    """Soft delete a user account."""
+    user = await get_user_by_id(db, user_id)
+    if not user:
+        raise NotFoundError(code="USER_NOT_FOUND", detail=f"User {user_id} not found")
+
+    user.deleted_at = _now()
+    user.is_active = False
+    # Anonymize email to allow re-registration
+    user.email = f"deleted_{user_id}_{user.email}"
+    await db.flush()
+
+
 def _generate_invite_code() -> str:
     # urlsafe, short-ish; collisions extremely unlikely but still checked
     return secrets.token_urlsafe(18)

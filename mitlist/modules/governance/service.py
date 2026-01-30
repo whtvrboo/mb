@@ -632,22 +632,43 @@ async def execute_proposal(db: AsyncSession, proposal_id: int, executed_by_id: i
 
     # Execute based on proposal type
     if proposal.type == ProposalType.EXPENSE_REQUEST:
-        # For expense requests, the linked_expense_id should already exist
-        # Just mark as executed
-        pass
+        # For expense requests, mark the linked expense as approved/executed
+        if proposal.linked_expense_id:
+            from mitlist.modules.finance.models import Expense
+            expense_result = await db.execute(
+                select(Expense).where(Expense.id == proposal.linked_expense_id)
+            )
+            expense = expense_result.scalar_one_or_none()
+            if expense:
+                expense.is_approved = True
+                execution_result["expense_approved"] = True
     elif proposal.type == ProposalType.CHORE_ASSIGNMENT:
-        # For chore assignments, the linked_chore_id should already exist
-        # Just mark as executed
-        pass
+        # For chore assignments, mark the assignment as approved
+        if proposal.linked_chore_id:
+            from mitlist.modules.chores.models import ChoreAssignment
+            assignment_result = await db.execute(
+                select(ChoreAssignment).where(ChoreAssignment.chore_id == proposal.linked_chore_id)
+                .order_by(ChoreAssignment.created_at.desc())
+                .limit(1)
+            )
+            assignment = assignment_result.scalar_one_or_none()
+            if assignment:
+                assignment.status = "APPROVED"
+                execution_result["chore_assignment_approved"] = True
     elif proposal.type == ProposalType.KICK_USER:
-        # Extract user_id from winner option metadata or proposal
-        # Remove user from group
-        from mitlist.modules.auth.interface import remove_member
+        # Extract user_id from winner option metadata
+        winner_opt_result = await db.execute(
+            select(BallotOption).where(BallotOption.id == winner_option_id)
+        )
+        winner_opt = winner_opt_result.scalar_one_or_none()
+        if winner_opt and winner_opt.option_metadata and "user_id" in winner_opt.option_metadata:
+            user_to_kick = winner_opt.option_metadata["user_id"]
+            from mitlist.modules.auth.interface import remove_member
+            await remove_member(db, proposal.group_id, user_to_kick)
+            execution_result["user_kicked"] = user_to_kick
 
-        # This would need user_id in execution_result or option metadata
-        # For now, we'll just mark as executed
-        pass
-
+    # Update the execution result with any new data
+    proposal.execution_result = execution_result
     proposal.executed_at = datetime.utcnow()
     proposal.status = ProposalStatus.EXECUTED
 

@@ -438,6 +438,18 @@ async def get_group_stats(db: AsyncSession, group_id: int) -> dict:
     if total_assigns > 0:
         completion_rate = completed_assigns / total_assigns
 
+    # Calculate average completion time from actual_duration_minutes
+    avg_time_result = await db.execute(
+        select(func.avg(ChoreAssignment.actual_duration_minutes))
+        .join(Chore)
+        .where(
+            Chore.group_id == group_id,
+            ChoreAssignment.status == "COMPLETED",
+            ChoreAssignment.actual_duration_minutes.isnot(None),
+        )
+    )
+    avg_completion_time = avg_time_result.scalar_one() or 0.0
+
     return {
         "total_chores": total_chores or 0,
         "active_chores": active_chores or 0,
@@ -446,7 +458,7 @@ async def get_group_stats(db: AsyncSession, group_id: int) -> dict:
         "pending_assignments": pending_assigns,
         "overdue_assignments": overdue_assigns,
         "completion_rate": completion_rate,
-        "average_completion_time_minutes": 15.0,  # Stub calculation
+        "average_completion_time_minutes": float(avg_completion_time),
     }
 
 

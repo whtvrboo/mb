@@ -337,6 +337,37 @@ async def get_entity_tags(
     return list(result.scalars().all())
 
 
+# ---------- Maintenance Mode ----------
+# In-memory state (in production, use Redis or a settings table)
+_maintenance_state = {
+    "enabled": False,
+    "message": "",
+    "enabled_at": None,
+    "enabled_by": None,
+}
+
+
+def get_maintenance_mode() -> dict[str, Any]:
+    """Get current maintenance mode status."""
+    return _maintenance_state.copy()
+
+
+def set_maintenance_mode(
+    enabled: bool,
+    message: str = "",
+    enabled_by: Optional[int] = None,
+) -> dict[str, Any]:
+    """Toggle maintenance mode."""
+    global _maintenance_state
+    _maintenance_state = {
+        "enabled": enabled,
+        "message": message,
+        "enabled_at": datetime.utcnow().isoformat() if enabled else None,
+        "enabled_by": enabled_by,
+    }
+    return _maintenance_state.copy()
+
+
 # ---------- Admin ----------
 async def get_system_stats(db: AsyncSession) -> dict[str, Any]:
     """Get system-wide statistics."""

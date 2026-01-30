@@ -17,14 +17,16 @@ inventory_router = APIRouter(prefix="/inventory", tags=["inventory"])
 async def get_lists(
     group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
+    is_archived: bool | None = None,
+    list_type: str | None = None,
 ) -> ListType[schemas.ListResponse]:
     """
     Get all lists for a group.
 
     Returns list directly (no envelope) per API contract.
     """
-    # TODO: Implement filtering logic
-    return []
+    lists = await interface.list_lists(db, group_id, is_archived=is_archived, list_type=list_type)
+    return [schemas.ListResponse.model_validate(lst) for lst in lists]
 
 
 @router.get("/{list_id}", response_model=schemas.ListResponse)

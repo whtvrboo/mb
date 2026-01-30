@@ -9,6 +9,10 @@ from mitlist.modules.auth import schemas, service
 
 __all__ = [
     "schemas",
+    # Users
+    "get_user_by_id",
+    "update_user",
+    "soft_delete_user",
     # Groups
     "list_groups_for_user",
     "create_group",
@@ -41,6 +45,10 @@ __all__ = [
     "update_service_contact",
     "delete_service_contact",
 ]
+
+get_user_by_id = service.get_user_by_id
+update_user = service.update_user
+soft_delete_user = service.soft_delete_user
 
 list_groups_for_user = service.list_groups_for_user
 create_group = service.create_group

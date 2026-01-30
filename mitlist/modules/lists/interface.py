@@ -20,6 +20,7 @@ __all__ = [
     "InventoryItemCreate",
     "InventoryItemUpdate",
     "InventoryItemResponse",
+    "list_lists",
     "get_list_by_id",
     "create_list",
     "update_list",
@@ -48,6 +49,7 @@ InventoryItemUpdate = schemas.InventoryItemUpdate
 InventoryItemResponse = schemas.InventoryItemResponse
 
 # Re-export service functions (public API)
+list_lists = service.list_lists
 get_list_by_id = service.get_list_by_id
 create_list = service.create_list
 update_list = service.update_list

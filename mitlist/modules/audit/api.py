@@ -113,16 +113,24 @@ async def get_entity_audit_history(
     )
 
 
-@router.post("/maintenance-mode", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/maintenance-mode")
 async def post_admin_maintenance_mode(
     enabled: bool,
     message: str = "",
     _user: User = Depends(require_introspection_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Toggle maintenance mode (stub - would set a global flag)."""
-    # In a real implementation, this would set a flag in Redis or a settings table
-    pass
+    """Toggle maintenance mode."""
+    from mitlist.modules.audit.service import set_maintenance_mode
+    result = set_maintenance_mode(enabled=enabled, message=message, enabled_by=_user.id)
+    return result
+
+
+@router.get("/maintenance-mode")
+async def get_admin_maintenance_mode():
+    """Get current maintenance mode status."""
+    from mitlist.modules.audit.service import get_maintenance_mode
+    return get_maintenance_mode()
 
 
 # ---------- Reports ----------
