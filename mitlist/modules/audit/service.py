@@ -410,24 +410,26 @@ async def broadcast_notification(
 ) -> int:
     """Broadcast a notification to all group members. Returns count sent."""
     from mitlist.modules.auth.models import UserGroup
-    from mitlist.modules.notifications.interface import create_notification
+    from mitlist.modules.notifications.interface import create_notifications_bulk
 
     result = await db.execute(
         select(UserGroup.user_id).where(UserGroup.group_id == group_id)
     )
     user_ids = result.scalars().all()
 
-    count = 0
-    for user_id in user_ids:
-        await create_notification(
-            db,
-            user_id=user_id,
-            type="BROADCAST",
-            title=title,
-            body=body,
-            group_id=group_id,
-            priority="HIGH",
-        )
-        count += 1
+    if not user_ids:
+        return 0
 
-    return count
+    notifications_data = [
+        {
+            "user_id": user_id,
+            "type": "BROADCAST",
+            "title": title,
+            "body": body,
+            "group_id": group_id,
+            "priority": "HIGH",
+        }
+        for user_id in user_ids
+    ]
+
+    return await create_notifications_bulk(db, notifications_data)

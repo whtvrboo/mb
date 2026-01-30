@@ -1,9 +1,9 @@
 """Notifications module service layer. PRIVATE - other modules import from interface.py."""
 
+from typing import Any, Optional
 from datetime import datetime, timezone
-from typing import Optional
 
-from sqlalchemy import delete, func, select, update
+from sqlalchemy import delete, func, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -60,6 +60,26 @@ async def create_notification(
     await db.flush()
     await db.refresh(notification)
     return notification
+
+
+async def create_notifications_bulk(
+    db: AsyncSession,
+    notifications_data: list[dict[str, Any]],
+) -> int:
+    """Create multiple notifications in bulk. Returns count created."""
+    if not notifications_data:
+        return 0
+
+    # Add default values
+    now = datetime.utcnow()
+    for data in notifications_data:
+        data.setdefault("delivered_at", now)
+        data.setdefault("is_read", False)
+        data.setdefault("priority", "MEDIUM")
+
+    stmt = insert(Notification).values(notifications_data)
+    result = await db.execute(stmt)
+    return result.rowcount
 
 
 async def get_notification_by_id(db: AsyncSession, notification_id: int) -> Optional[Notification]:

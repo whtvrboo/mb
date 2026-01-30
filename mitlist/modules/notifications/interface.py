@@ -12,6 +12,7 @@ __all__ = [
     # Notifications
     "list_notifications",
     "create_notification",
+    "create_notifications_bulk",
     "get_notification_by_id",
     "mark_read",
     "mark_all_read",
@@ -34,6 +35,7 @@ __all__ = [
 
 list_notifications = service.list_notifications
 create_notification = service.create_notification
+create_notifications_bulk = service.create_notifications_bulk
 get_notification_by_id = service.get_notification_by_id
 mark_read = service.mark_read
 mark_all_read = service.mark_all_read
