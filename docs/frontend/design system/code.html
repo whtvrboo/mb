@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mitlist Design Style Guide</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#eecd2b",
+                "background-light": "#f8f8f6",
+                "background-dark": "#221f10",
+              },
+              fontFamily: {
+                "display": ["Space Grotesk", "sans-serif"]
+              },
+              borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+            },
+          },
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-background-dark dark:text-white font-display overflow-x-hidden min-h-screen">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-50 bg-background-light border-b-[3px] border-background-dark px-5 h-16 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-3">
+<button class="flex items-center justify-center size-10 rounded-lg hover:bg-black/5 transition-colors">
+<span class="material-symbols-outlined text-[28px]">arrow_back</span>
+</button>
+</div>
+<h1 class="text-xl font-bold tracking-tight uppercase">Style Guide</h1>
+<div class="size-10 flex items-center justify-end">
+<span class="material-symbols-outlined text-[24px]">more_horiz</span>
+</div>
+</header>
+<main class="flex flex-col gap-10 p-5 pb-20 max-w-lg mx-auto w-full">
+<!-- Introduction -->
+<div class="flex flex-col gap-2 mt-2">
+<p class="text-3xl font-bold leading-tight">Mitlist Design System</p>
+<p class="text-base font-normal opacity-80 leading-relaxed">
+                A warm neobrutalist collection of UI components, typography, and colors designed for shared living.
+            </p>
+</div>
+<!-- Typography Section -->
+<section class="flex flex-col gap-5">
+<div class="flex items-center gap-3 border-b-[3px] border-background-dark pb-2 w-full">
+<span class="material-symbols-outlined">text_fields</span>
+<h2 class="text-xl font-bold uppercase tracking-wide">Typography</h2>
+</div>
+<div class="flex flex-col gap-4 bg-white border-[3px] border-background-dark shadow-[4px_4px_0px_0px_#221f10] rounded-lg p-5">
+<div class="flex flex-col gap-1 border-b border-black/10 pb-4">
+<span class="text-xs font-bold text-gray-500 uppercase">H1 Headline / 32px Bold</span>
+<h1 class="text-[32px] font-bold leading-none tracking-tight">Warm Living</h1>
+</div>
+<div class="flex flex-col gap-1 border-b border-black/10 pb-4">
+<span class="text-xs font-bold text-gray-500 uppercase">H2 Headline / 24px Bold</span>
+<h2 class="text-2xl font-bold leading-tight">Shared Spaces</h2>
+</div>
+<div class="flex flex-col gap-1 border-b border-black/10 pb-4">
+<span class="text-xs font-bold text-gray-500 uppercase">H3 Headline / 18px Bold</span>
+<h3 class="text-lg font-bold">Chore Assignments</h3>
+</div>
+<div class="flex flex-col gap-1">
+<span class="text-xs font-bold text-gray-500 uppercase">Body / 16px Regular</span>
+<p class="text-base leading-relaxed">
+                        Neobrutalism relies on bold, readable sans-serif typefaces like Space Grotesk. It combines raw aesthetics with warm colors.
+                    </p>
+</div>
+</div>
+</section>
+<!-- Color Palette Section -->
+<section class="flex flex-col gap-5">
+<div class="flex items-center gap-3 border-b-[3px] border-background-dark pb-2 w-full">
+<span class="material-symbols-outlined">palette</span>
+<h2 class="text-xl font-bold uppercase tracking-wide">Palette</h2>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<!-- Primary / Mustard -->
+<div class="flex flex-col group cursor-pointer">
+<div class="h-24 bg-primary border-[3px] border-background-dark rounded-t-lg shadow-[4px_4px_0px_0px_#221f10] transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none"></div>
+<div class="bg-white border-x-[3px] border-b-[3px] border-background-dark rounded-b-lg p-3 shadow-[4px_4px_0px_0px_#221f10] group-active:shadow-none group-active:translate-x-1 group-active:translate-y-1 transition-all">
+<p class="font-bold">Mustard</p>
+<p class="text-xs opacity-70">#EECD2B</p>
+</div>
+</div>
+<!-- Sage Green -->
+<div class="flex flex-col group cursor-pointer">
+<div class="h-24 bg-[#A3B18A] border-[3px] border-background-dark rounded-t-lg shadow-[4px_4px_0px_0px_#221f10] transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none"></div>
+<div class="bg-white border-x-[3px] border-b-[3px] border-background-dark rounded-b-lg p-3 shadow-[4px_4px_0px_0px_#221f10] group-active:shadow-none group-active:translate-x-1 group-active:translate-y-1 transition-all">
+<p class="font-bold">Sage</p>
+<p class="text-xs opacity-70">#A3B18A</p>
+</div>
+</div>
+<!-- Dusty Blue -->
+<div class="flex flex-col group cursor-pointer">
+<div class="h-24 bg-[#8E9DB3] border-[3px] border-background-dark rounded-t-lg shadow-[4px_4px_0px_0px_#221f10] transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none"></div>
+<div class="bg-white border-x-[3px] border-b-[3px] border-background-dark rounded-b-lg p-3 shadow-[4px_4px_0px_0px_#221f10] group-active:shadow-none group-active:translate-x-1 group-active:translate-y-1 transition-all">
+<p class="font-bold">Dusty Blue</p>
+<p class="text-xs opacity-70">#8E9DB3</p>
+</div>
+</div>
+<!-- Charcoal -->
+<div class="flex flex-col group cursor-pointer">
+<div class="h-24 bg-background-dark border-[3px] border-background-dark rounded-t-lg shadow-[4px_4px_0px_0px_#221f10] transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none"></div>
+<div class="bg-white border-x-[3px] border-b-[3px] border-background-dark rounded-b-lg p-3 shadow-[4px_4px_0px_0px_#221f10] group-active:shadow-none group-active:translate-x-1 group-active:translate-y-1 transition-all">
+<p class="font-bold">Charcoal</p>
+<p class="text-xs opacity-70">#221F10</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Components Section -->
+<section class="flex flex-col gap-6">
+<div class="flex items-center gap-3 border-b-[3px] border-background-dark pb-2 w-full">
+<span class="material-symbols-outlined">widgets</span>
+<h2 class="text-xl font-bold uppercase tracking-wide">Components</h2>
+</div>
+<!-- Buttons -->
+<div class="flex flex-col gap-4">
+<h3 class="text-sm font-bold uppercase text-gray-500 mb-1">Buttons</h3>
+<div class="flex flex-wrap gap-4">
+<button class="h-14 px-8 bg-primary rounded-lg border-[3px] border-background-dark font-bold text-lg shadow-[4px_4px_0px_0px_#221f10] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all flex items-center gap-2">
+<span>Primary Action</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+<button class="h-14 px-8 bg-white rounded-lg border-[3px] border-background-dark font-bold text-lg shadow-[4px_4px_0px_0px_#221f10] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">
+                        Secondary
+                    </button>
+</div>
+</div>
+<!-- Tags -->
+<div class="flex flex-col gap-4">
+<h3 class="text-sm font-bold uppercase text-gray-500 mb-1">Tags &amp; Status</h3>
+<div class="flex flex-wrap gap-3">
+<div class="inline-flex items-center px-4 py-2 bg-white border-[2px] border-background-dark rounded-full font-bold shadow-[2px_2px_0px_0px_#221f10]">
+                        #kitchen
+                    </div>
+<div class="inline-flex items-center px-4 py-2 bg-[#8E9DB3] text-white border-[2px] border-background-dark rounded-full font-bold shadow-[2px_2px_0px_0px_#221f10]">
+<span class="material-symbols-outlined text-[16px] mr-1">bolt</span>
+                        Urgent
+                    </div>
+<div class="inline-flex items-center px-4 py-2 bg-primary/30 border-[2px] border-background-dark rounded-full font-bold shadow-[2px_2px_0px_0px_#221f10]">
+<span class="material-symbols-outlined text-[16px] mr-1">attach_money</span>
+                        Pending
+                    </div>
+</div>
+</div>
+<!-- Chore Card Example -->
+<div class="flex flex-col gap-4">
+<h3 class="text-sm font-bold uppercase text-gray-500 mb-1">Interactive Cards</h3>
+<!-- Card 1: Active -->
+<div class="relative w-full bg-white border-[3px] border-background-dark rounded-xl p-5 shadow-[6px_6px_0px_0px_#221f10] flex flex-col gap-4 overflow-hidden">
+<div class="flex justify-between items-start">
+<div class="flex flex-col">
+<div class="flex items-center gap-2 mb-1">
+<span class="bg-primary/50 text-xs font-bold px-2 py-0.5 border border-background-dark rounded-md">DAILY</span>
+<span class="bg-[#A3B18A] text-xs font-bold px-2 py-0.5 border border-background-dark rounded-md">+20pts</span>
+</div>
+<h3 class="text-2xl font-bold leading-tight">Wash Dishes</h3>
+<p class="text-sm opacity-70 mt-1">Don't forget the pans!</p>
+</div>
+<div class="size-12 rounded-full border-[3px] border-background-dark overflow-hidden bg-gray-200 shrink-0">
+<img alt="Portrait of a user with glasses" class="w-full h-full object-cover" data-alt="User avatar portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdIeKSvSw4g0UUcuJweKw7YgtsfrLM5Eld5EIqorAUZk7VenHbkKixdWdj8iw-K0dr1dQoD2vI-tRFaqfrk1PZyA8s4mjhvR8QUAjBaKuWFc1jJ_EsRNXftMEyuwuE2_TbZ0pxpnD1wPv7XiAkmrOUy3vE2ruD7E0-r_QpIIqCmuOcKJgZl4MR2NaJRDy-lIVJYkf-hcPeOZtvr1-pZQzrCO3lxO2S_kcYiA64JDQGy-VbecLGkn7TuHbtZGBUIZdyw9UAj8zg5txZ"/>
+</div>
+</div>
+<div class="h-0.5 w-full bg-black/5"></div>
+<div class="flex justify-between items-center">
+<div class="flex items-center -space-x-2">
+<div class="size-8 rounded-full border-2 border-background-dark bg-gray-100 flex items-center justify-center text-xs font-bold z-10">JS</div>
+<div class="size-8 rounded-full border-2 border-background-dark bg-[#eecd2b] flex items-center justify-center text-xs font-bold z-0">You</div>
+</div>
+<button class="flex items-center gap-2 px-4 py-2 bg-white border-[2px] border-background-dark rounded-lg font-bold hover:bg-gray-50 active:translate-y-0.5 transition-all">
+<div class="size-5 border-[2px] border-background-dark rounded flex items-center justify-center"></div>
+                            Mark Done
+                        </button>
+</div>
+</div>
+<!-- Card 2: Completed with Stamp -->
+<div class="relative w-full bg-[#f0f0f0] border-[3px] border-background-dark rounded-xl p-5 shadow-[6px_6px_0px_0px_#221f10] flex flex-col gap-4 mt-2 opacity-90">
+<!-- The Stamp Effect -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 rotate-[-15deg] pointer-events-none">
+<div class="border-[4px] border-green-700 text-green-700 font-black text-3xl uppercase px-4 py-2 rounded-lg opacity-80 mix-blend-multiply flex items-center gap-2">
+<span class="material-symbols-outlined text-[32px] font-bold">verified</span>
+                            Done
+                        </div>
+</div>
+<div class="flex justify-between items-start opacity-50">
+<div class="flex flex-col">
+<div class="flex items-center gap-2 mb-1">
+<span class="bg-gray-300 text-xs font-bold px-2 py-0.5 border border-background-dark rounded-md">WEEKLY</span>
+</div>
+<h3 class="text-2xl font-bold leading-tight strike-through decoration-[3px]">Take out Trash</h3>
+</div>
+<div class="size-12 rounded-full border-[3px] border-background-dark overflow-hidden bg-gray-200 shrink-0 grayscale">
+<img alt="Portrait of a smiling man" class="w-full h-full object-cover" data-alt="User avatar portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuANI44Krw9NetR9sD8tlHK50tGn_Dpo_VtoJGodaCLSF4GHdr_aDWQv-QHoxwagrBkR9w6AdQY0IMZnd3mX_e8OTt1gkDJRYSyP1i_0FpNGa35l9SXE9PgBGHB6F9UOFHb79t9R-8RHTDcvt1Fn7GWODAzRsB0oEVT1fRPmhOStG8GU0mRspoKg0H2rRPlaBpkFIqWYW7lB7KlrebmM04JWxVUF1C0K2hphoictwaWNzoUXpCIps2Ecydkk2LFhtDW1khNM7r391PlN"/>
+</div>
+</div>
+<div class="flex justify-between items-center opacity-50">
+<p class="text-sm font-medium">Completed by Alex</p>
+<div class="flex items-center gap-2 px-4 py-2 bg-[#A3B18A] border-[2px] border-background-dark rounded-lg font-bold text-white">
+<span class="material-symbols-outlined">check</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Divider -->
+<div class="w-full h-1 border-t-[3px] border-dashed border-background-dark/30 my-5"></div>
+<!-- Inputs Section -->
+<section class="flex flex-col gap-6">
+<div class="flex items-center gap-3 border-b-[3px] border-background-dark pb-2 w-full">
+<span class="material-symbols-outlined">input</span>
+<h2 class="text-xl font-bold uppercase tracking-wide">Form Elements</h2>
+</div>
+<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-2">
+<label class="font-bold text-sm uppercase ml-1">Email Address</label>
+<div class="relative">
+<input class="w-full h-14 bg-white border-[3px] border-background-dark rounded-lg px-4 text-lg font-medium focus:ring-0 focus:border-primary placeholder:text-gray-400 shadow-[4px_4px_0px_0px_#221f10] transition-all" placeholder="hello@mitlist.com" type="text"/>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+<span class="material-symbols-outlined">mail</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-2 mt-2">
+<label class="font-bold text-sm uppercase ml-1">Roommates</label>
+<div class="flex items-center h-14 w-full bg-white border-[3px] border-background-dark rounded-lg px-2 shadow-[4px_4px_0px_0px_#221f10] gap-2">
+<div class="bg-primary/30 border border-background-dark rounded px-2 py-1 text-sm font-bold flex items-center gap-1">
+                            Alex <span class="material-symbols-outlined text-[14px] cursor-pointer">close</span>
+</div>
+<div class="bg-primary/30 border border-background-dark rounded px-2 py-1 text-sm font-bold flex items-center gap-1">
+                            Sam <span class="material-symbols-outlined text-[14px] cursor-pointer">close</span>
+</div>
+<input class="flex-1 bg-transparent border-none focus:ring-0 p-0 text-base" placeholder="Add..." type="text"/>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Mockup -->
+<nav class="fixed bottom-0 left-0 w-full bg-white border-t-[3px] border-background-dark pb-6 pt-3 px-6 flex justify-between items-center z-50">
+<div class="flex flex-col items-center gap-1 opacity-50">
+<span class="material-symbols-outlined text-[28px]">home</span>
+<span class="text-[10px] font-bold uppercase">Home</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-primary">
+<div class="bg-primary border-[2px] border-background-dark p-2 rounded-lg -mt-6 shadow-[3px_3px_0px_0px_#221f10]">
+<span class="material-symbols-outlined text-[28px] text-background-dark">style</span>
+</div>
+<span class="text-[10px] font-bold uppercase text-background-dark mt-1">Style</span>
+</div>
+<div class="flex flex-col items-center gap-1 opacity-50">
+<span class="material-symbols-outlined text-[28px]">settings</span>
+<span class="text-[10px] font-bold uppercase">Settings</span>
+</div>
+</nav>
+</body></html>
