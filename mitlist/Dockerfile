@@ -12,7 +12,7 @@ WORKDIR /app
 ENV UV_COMPILE_BYTECODE=1
 
 # Copy the lock file and pyproject.toml
-COPY uv.lock pyproject.toml /app/
+COPY uv.lock pyproject.toml README.md /app/
 
 # Install dependencies using uv
 # --frozen ensures we use the exact versions in uv.lock
@@ -20,7 +20,7 @@ COPY uv.lock pyproject.toml /app/
 RUN uv sync --frozen --no-install-project
 
 # Copy the rest of the application code
-COPY . /app/
+COPY mitlist /app/mitlist
 
 # Install the project itself
 RUN uv sync --frozen

@@ -13,10 +13,43 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mitlist"]
+      test: [ "CMD-SHELL", "pg_isready -U mitlist" ]
       interval: 5s
       timeout: 5s
       retries: 5
 
+  backend:
+    build:
+      context: .
+      dockerfile: mitlist/Dockerfile
+    container_name: mitlist_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_SERVER=db
+      - POSTGRES_USER=mitlist
+      - POSTGRES_PASSWORD=mitlist_dev_password
+      - POSTGRES_DB=mitlist
+      - ENVIRONMENT=local
+      - SECRET_KEY=dev_secret_key_change_in_prod
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./stride-client
+    container_name: mitlist_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NUXT_PUBLIC_API_BASE=http://localhost:8000/api/v1
+      - HOST=0.0.0.0
+      - PORT=3000
+    depends_on:
+      - backend
+
 volumes:
   postgres_data:
+
+
