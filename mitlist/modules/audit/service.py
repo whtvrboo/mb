@@ -1,6 +1,6 @@
 """Audit module service layer. PRIVATE - other modules import from interface.py."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Optional
 
 from sqlalchemy import delete, func, select

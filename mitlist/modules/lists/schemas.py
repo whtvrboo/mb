@@ -96,7 +96,7 @@ class ItemResponse(ItemBase):
 class ItemBulkCreate(BaseModel):
     """Schema for bulk-adding items to a list."""
 
-    items: list[ItemBase] = Field(..., min_length=1)
+    items: list[ItemBase] = Field(..., min_length=1, max_length=100)
 
 
 class ItemBulkResponse(BaseModel):
