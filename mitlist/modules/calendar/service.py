@@ -5,6 +5,7 @@ from typing import Any, Optional
 
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import contains_eager
 
 
 async def get_calendar_feed(
@@ -68,6 +69,7 @@ async def get_calendar_feed(
         result = await db.execute(
             select(ChoreAssignment)
             .join(Chore, ChoreAssignment.chore_id == Chore.id)
+            .options(contains_eager(ChoreAssignment.chore))
             .where(
                 Chore.group_id == group_id,
                 ChoreAssignment.status == "PENDING",
@@ -77,11 +79,7 @@ async def get_calendar_feed(
         )
         assignments = result.scalars().all()
         for assignment in assignments:
-            # Get chore name
-            chore_result = await db.execute(
-                select(Chore).where(Chore.id == assignment.chore_id)
-            )
-            chore = chore_result.scalar_one_or_none()
+            chore = assignment.chore
             events.append({
                 "id": f"chore_{assignment.id}",
                 "type": "CHORE",
