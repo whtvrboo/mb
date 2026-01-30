@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Any, Optional
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field
 
 
 # ====================
@@ -132,6 +132,13 @@ class UserGroupCreate(UserGroupBase):
     group_id: int
 
 
+class UserGroupCreate(BaseModel):
+    """Schema for creating a user-group membership."""
+
+    user_id: int
+    role: str = Field("MEMBER", pattern="^(ADMIN|MEMBER|GUEST|CHILD)$")
+
+
 class UserGroupUpdate(BaseModel):
     """Schema for updating a user-group membership."""
 
@@ -184,6 +191,12 @@ class InviteCreate(InviteBase):
     expires_at: Optional[datetime] = None
 
 
+class InviteCreateRequest(InviteBase):
+    """Schema for creating an invite (group_id comes from path)."""
+
+    expires_at: Optional[datetime] = None
+
+
 class InviteResponse(InviteBase):
     """Schema for invite response."""
 
@@ -198,6 +211,24 @@ class InviteResponse(InviteBase):
     is_active: bool
     created_at: datetime
     updated_at: datetime
+    
+    @computed_field
+    @property
+    def email(self) -> Optional[str]:
+        """Alias for email_hint."""
+        return self.email_hint
+    
+    @computed_field
+    @property  
+    def invite_code(self) -> str:
+        """Alias for code."""
+        return self.code
+    
+    @computed_field
+    @property
+    def status(self) -> str:
+        """Status string."""
+        return "PENDING" if self.is_active else "REVOKED"
 
 
 class InviteAcceptRequest(BaseModel):

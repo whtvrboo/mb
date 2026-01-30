@@ -32,6 +32,9 @@ __all__ = [
     "require_valid_invite",
     "accept_invite",
     "revoke_invite",
+    "list_invites_for_group",
+    # Members
+    "add_member",
     # Locations
     "list_locations",
     "get_location_by_id",
@@ -68,6 +71,9 @@ get_invite_by_code = service.get_invite_by_code
 require_valid_invite = service.require_valid_invite
 accept_invite = service.accept_invite
 revoke_invite = service.revoke_invite
+list_invites_for_group = service.list_invites_for_group
+
+add_member = service.add_member
 
 list_locations = service.list_locations
 get_location_by_id = service.get_location_by_id

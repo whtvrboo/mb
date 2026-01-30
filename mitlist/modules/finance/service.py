@@ -110,7 +110,14 @@ async def create_expense(
             )
             db.add(split)
         await db.flush()
-    await db.refresh(expense)
+    
+    # Reload expense with splits relationship loaded
+    result = await db.execute(
+        select(Expense)
+        .options(selectinload(Expense.splits))
+        .where(Expense.id == expense.id)
+    )
+    expense = result.scalar_one()
     return expense
 
 
@@ -157,7 +164,14 @@ async def update_expense(
     if exchange_rate is not None:
         expense.exchange_rate = exchange_rate
     await db.flush()
-    await db.refresh(expense)
+    
+    # Reload expense with splits relationship loaded
+    result = await db.execute(
+        select(Expense)
+        .options(selectinload(Expense.splits))
+        .where(Expense.id == expense.id)
+    )
+    expense = result.scalar_one()
     return expense
 
 
@@ -742,7 +756,14 @@ async def generate_expense_from_recurring(
     )
 
     await db.flush()
-    await db.refresh(expense)
+    
+    # Reload expense with splits relationship loaded
+    result = await db.execute(
+        select(Expense)
+        .options(selectinload(Expense.splits))
+        .where(Expense.id == expense.id)
+    )
+    expense = result.scalar_one()
     return expense
 
 
@@ -803,7 +824,15 @@ async def create_split_preset(
             db.add(member)
         await db.flush()
 
+    # Refresh with members loaded
     await db.refresh(preset)
+    # Load members relationship
+    result = await db.execute(
+        select(SplitPreset)
+        .where(SplitPreset.id == preset.id)
+        .options(selectinload(SplitPreset.members))
+    )
+    preset = result.scalar_one()
     return preset
 
 

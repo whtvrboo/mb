@@ -71,52 +71,54 @@ class TestInvites:
         response = await client.post(
             f"/api/v1/groups/{test_group.id}/invites",
             json={
-                "email": "newuser@example.com",
+                "email_hint": "newuser@example.com",
                 "role": "MEMBER",
                 "expires_at": (datetime.utcnow() + timedelta(days=7)).isoformat(),
             },
         )
         assert response.status_code == 201
         data = response.json()
-        assert data["email"] == "newuser@example.com"
+        assert data["email"] == "newuser@example.com"  # alias from model_dump
         assert data["role"] == "MEMBER"
-        assert data["status"] == "PENDING"
-        assert "invite_code" in data
+        assert data["status"] == "PENDING"  # alias from model_dump
+        assert "invite_code" in data  # alias from model_dump
 
-    async def test_list_invites(self, client: AsyncClient, test_group: Group, db: AsyncSession):
+    async def test_list_invites(self, client: AsyncClient, test_group: Group, db: AsyncSession, test_user: User):
         """Test listing group invites."""
-        invite = Invite(
+        from mitlist.modules.auth.service import create_invite
+        
+        invite = await create_invite(
+            db,
             group_id=test_group.id,
-            email="invite@example.com",
+            created_by_id=test_user.id,
             role="MEMBER",
-            invite_code="TEST123",
-            status="PENDING",
+            email_hint="invite@example.com",
             expires_at=datetime.utcnow() + timedelta(days=7),
         )
-        db.add(invite)
         await db.flush()
 
         response = await client.get(f"/api/v1/groups/{test_group.id}/invites")
         assert response.status_code == 200
         data = response.json()
         assert len(data) >= 1
-        assert any(i["email"] == "invite@example.com" for i in data)
+        assert any(i.get("email") == "invite@example.com" for i in data)
 
-    async def test_revoke_invite(self, client: AsyncClient, test_group: Group, db: AsyncSession):
+    async def test_revoke_invite(self, client: AsyncClient, test_group: Group, db: AsyncSession, test_user: User):
         """Test revoking an invite."""
-        invite = Invite(
+        from mitlist.modules.auth.service import create_invite
+        
+        invite = await create_invite(
+            db,
             group_id=test_group.id,
-            email="revoke@example.com",
+            created_by_id=test_user.id,
             role="MEMBER",
-            invite_code="REVOKE123",
-            status="PENDING",
+            email_hint="revoke@example.com",
             expires_at=datetime.utcnow() + timedelta(days=7),
         )
-        db.add(invite)
         await db.flush()
         await db.refresh(invite)
 
-        response = await client.delete(f"/api/v1/groups/{test_group.id}/invites/{invite.id}")
+        response = await client.delete(f"/api/v1/invites/{invite.id}")
         assert response.status_code == 204
 
 

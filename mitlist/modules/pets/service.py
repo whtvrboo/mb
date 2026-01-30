@@ -291,15 +291,29 @@ async def create_pet_schedule(
     is_rotating: bool = False,
 ) -> PetSchedule:
     """Create a schedule."""
+    from datetime import time as time_type
+    
     pet = await get_pet_by_id(db, pet_id)
     if not pet:
         raise NotFoundError(code="PET_NOT_FOUND", detail=f"Pet {pet_id} not found")
+
+    # Convert time object to string for SQLite compatibility if needed
+    # SQLite stores TIME as string, but SQLAlchemy expects datetime for DateTime columns
+    # Since the model uses datetime, we'll convert time to a datetime with today's date
+    time_value = None
+    if time_of_day is not None:
+        if isinstance(time_of_day, time_type):
+            # Convert time to datetime for SQLite compatibility
+            from datetime import datetime, date
+            time_value = datetime.combine(date.today(), time_of_day)
+        else:
+            time_value = time_of_day
 
     sched = PetSchedule(
         pet_id=pet_id,
         action_type=action_type,
         frequency_type=frequency_type,
-        time_of_day=time_of_day,
+        time_of_day=time_value,
         assigned_to_id=assigned_to_id,
         is_rotating=is_rotating,
         is_active=True,
@@ -336,4 +350,6 @@ async def mark_schedule_done(
         value_unit=value_unit,
     )
     
+    # Refresh schedule to ensure it's in a valid state
+    await db.refresh(sched)
     return sched

@@ -353,6 +353,42 @@ async def revoke_invite(db: AsyncSession, invite_id: int) -> Invite:
     return invite
 
 
+async def list_invites_for_group(db: AsyncSession, group_id: int) -> list[Invite]:
+    """List invites for a group."""
+    result = await db.execute(
+        select(Invite)
+        .where(Invite.group_id == group_id)
+        .order_by(Invite.created_at.desc())
+    )
+    return list(result.scalars().all())
+
+
+async def add_member(
+    db: AsyncSession,
+    group_id: int,
+    user_id: int,
+    role: str = "MEMBER",
+) -> UserGroup:
+    """Add a member to a group directly (without invite)."""
+    # Check if already a member
+    existing = await get_membership(db, group_id, user_id)
+    if existing:
+        raise ValidationError(code="ALREADY_MEMBER", detail="User is already a member of this group")
+    
+    ug = UserGroup(
+        user_id=user_id,
+        group_id=group_id,
+        role=role,
+        nickname=None,
+        joined_at=_now(),
+        left_at=None,
+    )
+    db.add(ug)
+    await db.flush()
+    await db.refresh(ug)
+    return ug
+
+
 # ---------- Locations ----------
 async def list_locations(db: AsyncSession, group_id: int) -> list[Location]:
     """List locations for a group."""

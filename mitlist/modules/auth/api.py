@@ -186,6 +186,19 @@ async def patch_group_member(
     return schemas.UserGroupResponse.model_validate(ug)
 
 
+@router.post("/groups/{group_id}/members", response_model=schemas.UserGroupResponse, status_code=status.HTTP_201_CREATED)
+async def post_group_member(
+    group_id: int,
+    data: schemas.UserGroupCreate,
+    db: AsyncSession = Depends(get_db),
+    user=Depends(get_current_user),
+) -> schemas.UserGroupResponse:
+    """Add a member to a group."""
+    await interface.require_admin(db, group_id, user.id)
+    ug = await interface.add_member(db, group_id, data.user_id, role=data.role)
+    return schemas.UserGroupResponse.model_validate(ug)
+
+
 @router.delete("/groups/{group_id}/members/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_group_member(
     group_id: int,
@@ -241,6 +254,39 @@ async def post_invites_join(
 ) -> schemas.UserGroupResponse:
     ug = await interface.accept_invite(db, data.code, user.id)
     return schemas.UserGroupResponse.model_validate(ug)
+
+
+@router.post("/groups/{group_id}/invites", response_model=schemas.InviteResponse, status_code=status.HTTP_201_CREATED)
+async def post_group_invites(
+    group_id: int,
+    data: schemas.InviteCreateRequest,
+    db: AsyncSession = Depends(get_db),
+    user=Depends(get_current_user),
+) -> schemas.InviteResponse:
+    """Create a group invite."""
+    await interface.require_admin(db, group_id, user.id)
+    invite = await interface.create_invite(
+        db,
+        group_id=group_id,
+        created_by_id=user.id,
+        role=data.role,
+        email_hint=data.email_hint,
+        max_uses=data.max_uses,
+        expires_at=data.expires_at,
+    )
+    return schemas.InviteResponse.model_validate(invite)
+
+
+@router.get("/groups/{group_id}/invites", response_model=list[schemas.InviteResponse])
+async def get_group_invites(
+    group_id: int,
+    db: AsyncSession = Depends(get_db),
+    user=Depends(get_current_user),
+) -> list[schemas.InviteResponse]:
+    """List invites for a group."""
+    await interface.require_admin(db, group_id, user.id)
+    invites = await interface.list_invites_for_group(db, group_id)
+    return [schemas.InviteResponse.model_validate(i) for i in invites]
 
 
 @router.delete("/invites/{invite_id}", status_code=status.HTTP_204_NO_CONTENT)
