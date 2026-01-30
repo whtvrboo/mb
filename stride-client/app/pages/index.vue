@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import confetti from 'canvas-confetti'
+
 // Mock Data for Dashboard
 const feedItems = [
   { type: 'bill', title: 'Internet Bill', amount: '$89.99', subtitle: '/ Spectrum', urgent: true, dueLabel: 'Due Today at 5 PM' },
@@ -9,6 +11,18 @@ const routineItems = [
   { title: 'Feed the Cat', subtitle: 'AM Kibble', type: 'Pet', icon: 'pets', completed: false },
   { title: 'Water Monstera', subtitle: 'Living Room', type: 'Plant', icon: 'potted_plant', completed: false },
 ]
+
+const isTrashChoreCompleted = ref(false)
+
+const handleChoreChange = () => {
+  if (isTrashChoreCompleted.value) {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+    })
+  }
+}
 </script>
 
 <template>
@@ -26,7 +40,8 @@ const routineItems = [
           <div class="w-full h-full bg-gray-300 flex items-center justify-center font-bold">You</div>
         </div>
         <button
-          class="flex items-center justify-center size-10 rounded-lg hover:bg-black/5 transition-colors border-[3px] border-transparent hover:border-background-dark">
+          class="flex items-center justify-center size-10 rounded-lg hover:bg-black/5 transition-colors border-[3px] border-transparent hover:border-background-dark"
+          aria-label="View notifications">
           <span class="material-symbols-outlined text-[28px]">notifications</span>
         </button>
       </div>
@@ -102,7 +117,12 @@ const routineItems = [
             <p class="text-sm font-medium opacity-80">Bins to the curb, recycling sorted.</p>
           </div>
           <label class="relative cursor-pointer">
-            <input class="peer sr-only" type="checkbox" />
+            <input
+              v-model="isTrashChoreCompleted"
+              class="peer sr-only"
+              type="checkbox"
+              aria-label="Mark Take Out Trash as done"
+              @change="handleChoreChange" />
             <div
               class="size-12 bg-white border-[3px] border-background-dark rounded-xl shadow-[3px_3px_0px_0px_#221f10] peer-checked:shadow-none peer-checked:translate-x-1 peer-checked:translate-y-1 peer-checked:bg-sage transition-all flex items-center justify-center">
               <span
@@ -136,7 +156,8 @@ const routineItems = [
           <div class="flex items-center justify-between mt-2">
             <span class="text-xs font-bold opacity-70">AM Kibble</span>
             <button
-              class="size-10 bg-white border-[2px] border-background-dark rounded-lg flex items-center justify-center shadow-[2px_2px_0px_0px_#221f10] active:translate-y-0.5 active:shadow-none">
+              class="size-10 bg-white border-[2px] border-background-dark rounded-lg flex items-center justify-center shadow-[2px_2px_0px_0px_#221f10] active:translate-y-0.5 active:shadow-none"
+              aria-label="Mark Feed the Cat as done">
               <span class="material-symbols-outlined text-lg">check</span>
             </button>
           </div>
@@ -154,7 +175,8 @@ const routineItems = [
           <div class="flex items-center justify-between mt-2">
             <span class="text-xs font-bold opacity-70">Living Room</span>
             <button
-              class="size-10 bg-white border-[2px] border-background-dark rounded-lg flex items-center justify-center shadow-[2px_2px_0px_0px_#221f10] active:translate-y-0.5 active:shadow-none">
+              class="size-10 bg-white border-[2px] border-background-dark rounded-lg flex items-center justify-center shadow-[2px_2px_0px_0px_#221f10] active:translate-y-0.5 active:shadow-none"
+              aria-label="Mark Water Monstera as done">
               <span class="material-symbols-outlined text-lg">water_drop</span>
             </button>
           </div>
