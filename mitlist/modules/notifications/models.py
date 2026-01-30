@@ -104,10 +104,14 @@ class Reaction(BaseModel, TimestampMixin):
     """Reaction - emoji reaction."""
 
     __tablename__ = "reactions"
+    __table_args__ = (
+        # Optimization: Composite index for polymorphic lookup to prevent inefficient scans
+        Index("ix_reactions_target_lookup", "target_type", "target_id"),
+    )
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     target_type: Mapped[str] = mapped_column(String(50), nullable=False)
-    target_id: Mapped[int] = mapped_column(nullable=False, index=True)
+    target_id: Mapped[int] = mapped_column(nullable=False)
     emoji_code: Mapped[str] = mapped_column(String(20), nullable=False)
 
     # For comments specifically
