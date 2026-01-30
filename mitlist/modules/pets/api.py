@@ -190,9 +190,7 @@ async def create_pet_medical_record(
         type=data.type,
         description=data.description,
         performed_at=data.performed_at,
-        performed_by=data.performed_at,  # Wait, schema has performed_by (str), data has performed_at (datetime). 
-        # Typo in create_medical_record definition? No, schema PetMedicalRecordCreate has performed_by.
-        # Check argument mapping.
+        performed_by=data.performed_by,
         expires_at=data.expires_at,
         reminder_days_before=data.reminder_days_before,
         notes=data.notes,
