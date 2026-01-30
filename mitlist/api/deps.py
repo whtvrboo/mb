@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Any
 
-from fastapi import Depends
+from fastapi import Depends, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,9 +11,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from mitlist.db.engine import get_db as get_db_session
 from mitlist.core.auth.zitadel import ZitadelTokenError, require_active_token, verify_access_token
 from mitlist.core.config import settings
-from mitlist.core.errors import UnauthorizedError
-from mitlist.core.request_context import set_user_id
-from mitlist.modules.auth.models import User
+from mitlist.core.errors import ForbiddenError, UnauthorizedError, ValidationError
+from mitlist.core.request_context import set_group_id, set_user_id
+from mitlist.modules.auth.models import User, UserGroup
 
 # Re-export for convenience
 __all__ = [
@@ -21,17 +21,20 @@ __all__ = [
     "get_bearer_token",
     "get_current_principal",
     "get_current_user",
+    "get_current_group_id",
+    "require_group_admin",
     "require_introspection_user",
 ]
 
 
-def get_db() -> AsyncSession:
+async def get_db() -> AsyncSession:
     """
     Dependency that yields an async database session.
 
-    This is a re-export from mitlist.db.engine for API convenience.
+    This is a re-export wrapper around mitlist.db.engine.get_db.
     """
-    return get_db_session()
+    async for session in get_db_session():
+        yield session
 
 
 security = HTTPBearer(auto_error=False)
@@ -112,3 +115,52 @@ async def require_introspection_user(
         return user
     except ZitadelTokenError as e:
         raise UnauthorizedError(code="TOKEN_NOT_ACTIVE", detail=str(e)) from e
+
+
+async def get_current_group_id(
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> int:
+    """
+    Resolve current group scope for request.
+
+    Priority:
+    1) Header `X-Group-ID`
+    2) Query parameter `group_id` (backward compat)
+    """
+    raw = request.headers.get("X-Group-ID") or request.query_params.get("group_id")
+    if not raw:
+        raise ValidationError(
+            code="MISSING_GROUP_ID",
+            detail="Missing group scope. Provide X-Group-ID header (preferred) or group_id query param.",
+        )
+    try:
+        group_id = int(raw)
+    except ValueError as e:
+        raise ValidationError(code="INVALID_GROUP_ID", detail="group_id must be an integer") from e
+
+    result = await db.execute(
+        select(UserGroup).where(UserGroup.group_id == group_id, UserGroup.user_id == user.id)
+    )
+    membership = result.scalar_one_or_none()
+    if not membership:
+        raise ForbiddenError(code="NOT_A_MEMBER", detail="User is not a member of this group")
+
+    set_group_id(group_id)
+    return group_id
+
+
+async def require_group_admin(
+    group_id: int = Depends(get_current_group_id),
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> int:
+    """Require ADMIN role in the current group."""
+    result = await db.execute(
+        select(UserGroup).where(UserGroup.group_id == group_id, UserGroup.user_id == user.id)
+    )
+    membership = result.scalar_one_or_none()
+    if not membership or membership.role != "ADMIN":
+        raise ForbiddenError(code="ADMIN_REQUIRED", detail="Admin role required for this action")
+    return group_id

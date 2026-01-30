@@ -5,8 +5,8 @@ from typing import List as ListType
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from mitlist.api.deps import get_db
-from mitlist.core.errors import NotFoundError
+from mitlist.api.deps import get_current_group_id, get_db
+from mitlist.core.errors import NotFoundError, ValidationError
 from mitlist.modules.lists import interface, schemas
 
 router = APIRouter(prefix="/lists", tags=["lists"])
@@ -15,7 +15,7 @@ inventory_router = APIRouter(prefix="/inventory", tags=["inventory"])
 
 @router.get("", response_model=ListType[schemas.ListResponse])
 async def get_lists(
-    group_id: int,
+    group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
 ) -> ListType[schemas.ListResponse]:
     """
@@ -30,6 +30,7 @@ async def get_lists(
 @router.get("/{list_id}", response_model=schemas.ListResponse)
 async def get_list(
     list_id: int,
+    group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
 ) -> schemas.ListResponse:
     """
@@ -40,12 +41,15 @@ async def get_list(
     list_obj = await interface.get_list_by_id(db, list_id)
     if not list_obj:
         raise NotFoundError(code="LIST_NOT_FOUND", detail=f"List {list_id} not found")
+    if list_obj.group_id != group_id:
+        raise NotFoundError(code="LIST_NOT_FOUND", detail=f"List {list_id} not found")
     return schemas.ListResponse.model_validate(list_obj)
 
 
 @router.post("", response_model=schemas.ListResponse, status_code=status.HTTP_201_CREATED)
 async def create_list(
     data: schemas.ListCreate,
+    group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
 ) -> schemas.ListResponse:
     """
@@ -53,7 +57,9 @@ async def create_list(
 
     Returns created list directly (no envelope) per API contract.
     """
-    list_obj = await interface.create_list(db, data.group_id, data.name, data.type)
+    if data.group_id != group_id:
+        raise ValidationError(code="GROUP_MISMATCH", detail="group_id in body must match current group")
+    list_obj = await interface.create_list(db, group_id, data.name, data.type)
     return schemas.ListResponse.model_validate(list_obj)
 
 
@@ -61,6 +67,7 @@ async def create_list(
 async def update_list(
     list_id: int,
     data: schemas.ListUpdate,
+    group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
 ) -> schemas.ListResponse:
     """
@@ -69,6 +76,10 @@ async def update_list(
     Returns updated list directly (no envelope) per API contract.
     Handles StaleDataError from optimistic locking.
     """
+    list_obj = await interface.get_list_by_id(db, list_id)
+    if not list_obj or list_obj.group_id != group_id:
+        raise NotFoundError(code="LIST_NOT_FOUND", detail=f"List {list_id} not found")
+
     list_obj = await interface.update_list(
         db,
         list_id,
@@ -83,11 +94,12 @@ async def update_list(
 @router.get("/{list_id}/items", response_model=ListType[schemas.ItemResponse])
 async def get_list_items(
     list_id: int,
+    group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
 ) -> ListType[schemas.ItemResponse]:
     """Get all items on a specific list."""
     list_obj = await interface.get_list_by_id(db, list_id)
-    if not list_obj:
+    if not list_obj or list_obj.group_id != group_id:
         raise NotFoundError(code="LIST_NOT_FOUND", detail=f"List {list_id} not found")
     items = await interface.get_items_by_list_id(db, list_id)
     return [schemas.ItemResponse.model_validate(i) for i in items]
@@ -101,13 +113,14 @@ async def get_list_items(
 async def add_list_item(
     list_id: int,
     data: schemas.ItemCreate,
+    group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
 ) -> schemas.ItemResponse:
     """Add item to list."""
     if data.list_id != list_id:
         raise NotFoundError(code="LIST_MISMATCH", detail="list_id in body must match path")
     list_obj = await interface.get_list_by_id(db, list_id)
-    if not list_obj:
+    if not list_obj or list_obj.group_id != group_id:
         raise NotFoundError(code="LIST_NOT_FOUND", detail=f"List {list_id} not found")
     item = await interface.create_item(
         db,
@@ -128,11 +141,15 @@ async def update_list_item(
     list_id: int,
     item_id: int,
     data: schemas.ItemUpdate,
+    group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
 ) -> schemas.ItemResponse:
     """Check/uncheck or update item."""
     item = await interface.get_item_by_id(db, item_id)
     if not item or item.list_id != list_id:
+        raise NotFoundError(code="ITEM_NOT_FOUND", detail=f"Item {item_id} not found")
+    list_obj = await interface.get_list_by_id(db, list_id)
+    if not list_obj or list_obj.group_id != group_id:
         raise NotFoundError(code="ITEM_NOT_FOUND", detail=f"Item {item_id} not found")
     item = await interface.update_item(
         db,
@@ -152,11 +169,15 @@ async def update_list_item(
 async def delete_list_item(
     list_id: int,
     item_id: int,
+    group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
 ) -> None:
     """Remove item from list."""
     item = await interface.get_item_by_id(db, item_id)
     if not item or item.list_id != list_id:
+        raise NotFoundError(code="ITEM_NOT_FOUND", detail=f"Item {item_id} not found")
+    list_obj = await interface.get_list_by_id(db, list_id)
+    if not list_obj or list_obj.group_id != group_id:
         raise NotFoundError(code="ITEM_NOT_FOUND", detail=f"Item {item_id} not found")
     await interface.delete_item(db, item_id)
 
@@ -169,11 +190,12 @@ async def delete_list_item(
 async def bulk_add_list_items(
     list_id: int,
     data: schemas.ItemBulkCreate,
+    group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
 ) -> schemas.ItemBulkResponse:
     """Add multiple items to list (e.g. from recipe)."""
     list_obj = await interface.get_list_by_id(db, list_id)
-    if not list_obj:
+    if not list_obj or list_obj.group_id != group_id:
         raise NotFoundError(code="LIST_NOT_FOUND", detail=f"List {list_id} not found")
     items_data = [i.model_dump() for i in data.items]
     created = await interface.bulk_add_items(db, list_id, items_data)
@@ -183,7 +205,7 @@ async def bulk_add_list_items(
 # ---------- Inventory ----------
 @inventory_router.get("", response_model=ListType[schemas.InventoryItemResponse])
 async def get_inventory(
-    group_id: int,
+    group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
 ) -> ListType[schemas.InventoryItemResponse]:
     """List current pantry/household inventory for a group."""
@@ -195,11 +217,12 @@ async def get_inventory(
 async def patch_inventory_item(
     inventory_id: int,
     data: schemas.InventoryItemUpdate,
+    group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
 ) -> schemas.InventoryItemResponse:
     """Update quantity or mark out of stock."""
     inv = await interface.get_inventory_item_by_id(db, inventory_id)
-    if not inv:
+    if not inv or inv.group_id != group_id:
         raise NotFoundError(code="INVENTORY_ITEM_NOT_FOUND", detail=f"Inventory item {inventory_id} not found")
     inv = await interface.update_inventory_item(
         db,

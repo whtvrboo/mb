@@ -86,6 +86,16 @@ class ExpenseCreate(ExpenseBase):
     linked_maintenance_log_id: Optional[int] = None
 
 
+class ExpenseCreateRequest(ExpenseBase):
+    """Request schema for creating expense (omits group_id and paid_by_user_id)."""
+
+    exchange_rate: Optional[Decimal] = Field(None, gt=0)
+    splits: list[ExpenseSplitInput] = Field(default_factory=list)
+    linked_proposal_id: Optional[int] = None
+    linked_pet_medical_id: Optional[int] = None
+    linked_maintenance_log_id: Optional[int] = None
+
+
 class ExpenseUpdate(BaseModel):
     """Schema for updating an expense."""
 
@@ -165,6 +175,12 @@ class RecurringExpenseCreate(RecurringExpenseBase):
     split_preset_id: Optional[int] = None
 
 
+class RecurringExpenseCreateRequest(RecurringExpenseBase):
+    """Request schema for creating recurring expense (omits group_id and paid_by_user_id)."""
+
+    split_preset_id: Optional[int] = None
+
+
 class RecurringExpenseUpdate(BaseModel):
     """Schema for updating a recurring expense."""
 
@@ -219,6 +235,12 @@ class SettlementCreate(SettlementBase):
     payee_id: int
 
 
+class SettlementCreateRequest(SettlementBase):
+    """Request schema for creating settlement (omits group_id, payer_id from auth)."""
+
+    payee_id: int
+
+
 class SettlementResponse(SettlementBase):
     """Schema for settlement response."""
 
@@ -257,6 +279,12 @@ class SplitPresetCreate(SplitPresetBase):
     """Schema for creating a split preset."""
 
     group_id: int
+    members: list[SplitPresetMemberInput] = Field(default_factory=list)
+
+
+class SplitPresetCreateRequest(SplitPresetBase):
+    """Request schema for creating split preset (omits group_id)."""
+
     members: list[SplitPresetMemberInput] = Field(default_factory=list)
 
 
@@ -316,6 +344,12 @@ class BudgetCreate(BudgetBase):
     """Schema for creating a budget."""
 
     group_id: int
+
+
+class BudgetCreateRequest(BudgetBase):
+    """Request schema for creating budget (omits group_id)."""
+
+    pass
 
 
 class BudgetUpdate(BaseModel):

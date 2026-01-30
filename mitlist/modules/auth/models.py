@@ -27,6 +27,13 @@ class User(BaseModel, TimestampMixin):
     last_login_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
     deleted_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
 
+    # Relationships
+    memberships: Mapped[list["UserGroup"]] = relationship(
+        "UserGroup",
+        primaryjoin="User.id==foreign(UserGroup.user_id)",
+        viewonly=True,
+    )
+
 
 class Group(BaseModel, TimestampMixin):
     """Group model - household/roommate group."""
@@ -61,6 +68,13 @@ class UserGroup(BaseModel, TimestampMixin):
     __table_args__ = (
         UniqueConstraint("user_id", "group_id", name="uq_user_group_active"),
         CheckConstraint("role IN ('ADMIN', 'MEMBER', 'GUEST', 'CHILD')", name="ck_user_group_role"),
+    )
+
+    # Relationships
+    user: Mapped["User"] = relationship(
+        "User",
+        primaryjoin="User.id==foreign(UserGroup.user_id)",
+        viewonly=True,
     )
 
 

@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from mitlist.core.errors import ForbiddenError, NotFoundError, ValidationError
-from mitlist.modules.auth.models import Group, Invite, User, UserGroup
+from mitlist.modules.auth.models import Group, Invite, Location, ServiceContact, User, UserGroup
 
 
 def _now() -> datetime:
@@ -252,6 +252,10 @@ async def get_invite_by_code(db: AsyncSession, code: str) -> Optional[Invite]:
     result = await db.execute(select(Invite).where(Invite.code == code))
     return result.scalar_one_or_none()
 
+async def get_invite_by_id(db: AsyncSession, invite_id: int) -> Optional[Invite]:
+    result = await db.execute(select(Invite).where(Invite.id == invite_id))
+    return result.scalar_one_or_none()
+
 
 async def require_valid_invite(db: AsyncSession, code: str) -> Invite:
     invite = await get_invite_by_code(db, code)
@@ -295,3 +299,184 @@ async def revoke_invite(db: AsyncSession, invite_id: int) -> Invite:
     await db.flush()
     await db.refresh(invite)
     return invite
+
+
+# ---------- Locations ----------
+async def list_locations(db: AsyncSession, group_id: int) -> list[Location]:
+    """List locations for a group."""
+    result = await db.execute(
+        select(Location).where(Location.group_id == group_id).order_by(Location.name)
+    )
+    return list(result.scalars().all())
+
+
+async def get_location_by_id(db: AsyncSession, location_id: int) -> Optional[Location]:
+    """Get location by ID."""
+    result = await db.execute(select(Location).where(Location.id == location_id))
+    return result.scalar_one_or_none()
+
+
+async def create_location(
+    db: AsyncSession,
+    group_id: int,
+    name: str,
+    floor_level: Optional[int] = None,
+    sunlight_direction: Optional[str] = None,
+    humidity_level: Optional[str] = None,
+    temperature_avg_celsius: Optional[float] = None,
+    notes: Optional[str] = None,
+) -> Location:
+    """Create a new location."""
+    location = Location(
+        group_id=group_id,
+        name=name,
+        floor_level=floor_level,
+        sunlight_direction=sunlight_direction,
+        humidity_level=humidity_level,
+        temperature_avg_celsius=temperature_avg_celsius,
+        notes=notes,
+    )
+    db.add(location)
+    await db.flush()
+    await db.refresh(location)
+    return location
+
+
+async def update_location(
+    db: AsyncSession,
+    location_id: int,
+    name: Optional[str] = None,
+    floor_level: Optional[int] = None,
+    sunlight_direction: Optional[str] = None,
+    humidity_level: Optional[str] = None,
+    temperature_avg_celsius: Optional[float] = None,
+    notes: Optional[str] = None,
+) -> Location:
+    """Update a location."""
+    location = await get_location_by_id(db, location_id)
+    if not location:
+        raise NotFoundError(code="LOCATION_NOT_FOUND", detail=f"Location {location_id} not found")
+
+    if name is not None:
+        location.name = name
+    if floor_level is not None:
+        location.floor_level = floor_level
+    if sunlight_direction is not None:
+        location.sunlight_direction = sunlight_direction
+    if humidity_level is not None:
+        location.humidity_level = humidity_level
+    if temperature_avg_celsius is not None:
+        location.temperature_avg_celsius = temperature_avg_celsius
+    if notes is not None:
+        location.notes = notes
+
+    await db.flush()
+    await db.refresh(location)
+    return location
+
+
+async def delete_location(db: AsyncSession, location_id: int) -> None:
+    """Delete a location."""
+    location = await get_location_by_id(db, location_id)
+    if not location:
+        raise NotFoundError(code="LOCATION_NOT_FOUND", detail=f"Location {location_id} not found")
+    await db.delete(location)
+    await db.flush()
+
+
+# ---------- Service Contacts ----------
+async def list_service_contacts(db: AsyncSession, group_id: int) -> list[ServiceContact]:
+    """List service contacts for a group."""
+    result = await db.execute(
+        select(ServiceContact).where(ServiceContact.group_id == group_id).order_by(ServiceContact.name)
+    )
+    return list(result.scalars().all())
+
+
+async def get_service_contact_by_id(db: AsyncSession, contact_id: int) -> Optional[ServiceContact]:
+    """Get service contact by ID."""
+    result = await db.execute(select(ServiceContact).where(ServiceContact.id == contact_id))
+    return result.scalar_one_or_none()
+
+
+async def create_service_contact(
+    db: AsyncSession,
+    group_id: int,
+    name: str,
+    job_title: str,
+    company_name: Optional[str] = None,
+    phone: Optional[str] = None,
+    email: Optional[str] = None,
+    address: Optional[str] = None,
+    website_url: Optional[str] = None,
+    emergency_contact: bool = False,
+    notes: Optional[str] = None,
+) -> ServiceContact:
+    """Create a new service contact."""
+    contact = ServiceContact(
+        group_id=group_id,
+        name=name,
+        job_title=job_title,
+        company_name=company_name,
+        phone=phone,
+        email=email,
+        address=address,
+        website_url=website_url,
+        emergency_contact=emergency_contact,
+        notes=notes,
+    )
+    db.add(contact)
+    await db.flush()
+    await db.refresh(contact)
+    return contact
+
+
+async def update_service_contact(
+    db: AsyncSession,
+    contact_id: int,
+    name: Optional[str] = None,
+    job_title: Optional[str] = None,
+    company_name: Optional[str] = None,
+    phone: Optional[str] = None,
+    email: Optional[str] = None,
+    address: Optional[str] = None,
+    website_url: Optional[str] = None,
+    emergency_contact: Optional[bool] = None,
+    notes: Optional[str] = None,
+) -> ServiceContact:
+    """Update a service contact."""
+    contact = await get_service_contact_by_id(db, contact_id)
+    if not contact:
+        raise NotFoundError(code="SERVICE_CONTACT_NOT_FOUND", detail=f"Service contact {contact_id} not found")
+
+    if name is not None:
+        contact.name = name
+    if job_title is not None:
+        contact.job_title = job_title
+    if company_name is not None:
+        contact.company_name = company_name
+    if phone is not None:
+        contact.phone = phone
+    if email is not None:
+        contact.email = email
+    if address is not None:
+        contact.address = address
+    if website_url is not None:
+        contact.website_url = website_url
+    if emergency_contact is not None:
+        contact.emergency_contact = emergency_contact
+    if notes is not None:
+        contact.notes = notes
+
+    await db.flush()
+    await db.refresh(contact)
+    return contact
+
+
+async def delete_service_contact(db: AsyncSession, contact_id: int) -> None:
+    """Delete a service contact."""
+    contact = await get_service_contact_by_id(db, contact_id)
+    if not contact:
+        raise NotFoundError(code="SERVICE_CONTACT_NOT_FOUND", detail=f"Service contact {contact_id} not found")
+    await db.delete(contact)
+    await db.flush()

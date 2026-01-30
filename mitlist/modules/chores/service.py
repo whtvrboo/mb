@@ -3,12 +3,17 @@
 from datetime import date, datetime, time, timedelta
 from typing import Optional
 
-from sqlalchemy import select
+from sqlalchemy import select, case, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from mitlist.core.errors import NotFoundError
-from mitlist.modules.chores.models import Chore, ChoreAssignment
+from mitlist.core.errors import NotFoundError, ValidationError
+from mitlist.modules.chores.models import (
+    Chore,
+    ChoreAssignment,
+    ChoreDependency,
+    ChoreTemplate,
+)
 
 
 async def list_chores(db: AsyncSession, group_id: int, active_only: bool = True) -> list[Chore]:
