@@ -1,6 +1,6 @@
 import pytest
 from httpx import AsyncClient
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 @pytest.mark.asyncio
 async def test_pets_lifecycle(authed_client: AsyncClient, auth_headers: dict):
@@ -26,8 +26,8 @@ async def test_pets_lifecycle(authed_client: AsyncClient, auth_headers: dict):
         "pet_id": pet_id,
         "type": "VACCINE",
         "description": "Rabies",
-        "performed_at": datetime.utcnow().isoformat(),
-        # "expires_at": (datetime.utcnow() + timedelta(days=365)).isoformat(),
+        "performed_at": datetime.now(timezone.utc).isoformat(),
+        # "expires_at": (datetime.now(timezone.utc) + timedelta(days=365)).isoformat(),
         "performed_by": "Dr. Vet"
     }
     response = await authed_client.post(f"/pets/{pet_id}/medical", json=med_data, headers=auth_headers)
@@ -41,7 +41,7 @@ async def test_pets_lifecycle(authed_client: AsyncClient, auth_headers: dict):
     log_data = {
         "pet_id": pet_id,
         "action": "WALK",
-        "occurred_at": datetime.utcnow().isoformat(),
+        "occurred_at": datetime.now(timezone.utc).isoformat(),
         "notes": "Good walk"
     }
     response = await authed_client.post(f"/pets/{pet_id}/logs", json=log_data, headers=auth_headers)

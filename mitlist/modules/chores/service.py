@@ -173,7 +173,7 @@ async def complete_assignment(
     if not a:
         raise NotFoundError(code="ASSIGNMENT_NOT_FOUND", detail=f"Assignment {assignment_id} not found")
     a.status = "COMPLETED"
-    a.completed_at = datetime.utcnow()
+    a.completed_at = datetime.now(timezone.utc)
     a.completed_by_id = completed_by_id
     if actual_duration_minutes is not None:
         a.actual_duration_minutes = actual_duration_minutes
@@ -419,7 +419,7 @@ async def get_group_stats(db: AsyncSession, group_id: int) -> dict:
                     (
                         and_(
                             ChoreAssignment.status == "PENDING",
-                            ChoreAssignment.due_date < datetime.utcnow(),
+                            ChoreAssignment.due_date < datetime.now(timezone.utc),
                         ),
                         1,
                     ),
@@ -554,7 +554,7 @@ async def start_assignment(db: AsyncSession, assignment_id: int, user_id: int) -
         raise NotFoundError(code="ASSIGNMENT_NOT_FOUND", detail=f"Assignment {assignment_id} not found")
     
     a.status = "IN_PROGRESS"
-    a.started_at = datetime.utcnow()
+    a.started_at = datetime.now(timezone.utc)
     await db.flush()
     await db.refresh(a)
     return a

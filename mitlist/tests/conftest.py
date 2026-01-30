@@ -1,6 +1,6 @@
 import pytest
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import AsyncGenerator, Generator
 from httpx import AsyncClient, ASGITransport
 
@@ -132,7 +132,7 @@ async def test_group(db_session: AsyncSession, test_user: User) -> Group:
         user_id=test_user.id,
         group_id=group.id,
         role="ADMIN",
-        joined_at=datetime.utcnow()
+        joined_at=datetime.now(timezone.utc)
     )
     db_session.add(membership)
     await db_session.commit()

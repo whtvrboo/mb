@@ -47,7 +47,7 @@ async def test_assets_lifecycle(authed_client: AsyncClient, auth_headers: dict):
         "coverage_type": "HOMEOWNERS",
         "premium_amount": 500.0,
         "premium_frequency": "YEARLY",
-        "start_date": datetime.utcnow().isoformat()
+        "start_date": datetime.now(timezone.utc).isoformat()
     }
     response = await authed_client.post("/assets/insurance", json=ins_data, headers=auth_headers)
     assert response.status_code == 201

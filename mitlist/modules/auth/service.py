@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import secrets
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from sqlalchemy import and_, select
@@ -15,7 +15,7 @@ from mitlist.modules.auth.models import Group, Invite, Location, ServiceContact,
 
 
 def _now() -> datetime:
-    return datetime.utcnow()
+    return datetime.now(timezone.utc)()
 
 
 # ---------- Users ----------

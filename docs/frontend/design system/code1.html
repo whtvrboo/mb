@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mitlist Design Style Guide - Data &amp; Feedback</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#eecd2b",
+                "background-light": "#f8f8f6",
+                "background-dark": "#221f10",
+                "sage": "#A3B18A",
+                "dusty-blue": "#8E9DB3",
+                "burnt-orange": "#Dda15e"
+              },
+              fontFamily: {
+                "display": ["Space Grotesk", "sans-serif"]
+              },
+              borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+            },
+          },
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-background-dark dark:text-white font-display overflow-x-hidden min-h-screen">
+<header class="sticky top-0 z-50 bg-background-light border-b-[3px] border-background-dark px-5 h-16 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-3">
+<button class="flex items-center justify-center size-10 rounded-lg hover:bg-black/5 transition-colors">
+<span class="material-symbols-outlined text-[28px]">arrow_back</span>
+</button>
+</div>
+<h1 class="text-xl font-bold tracking-tight uppercase">Style Guide</h1>
+<div class="size-10 flex items-center justify-end">
+<span class="material-symbols-outlined text-[24px]">more_horiz</span>
+</div>
+</header>
+<main class="flex flex-col gap-10 p-5 pb-24 max-w-lg mx-auto w-full">
+<div class="flex flex-col gap-2 mt-2">
+<p class="text-3xl font-bold leading-tight">Data Viz &amp; Feedback</p>
+<p class="text-base font-normal opacity-80 leading-relaxed">
+                Visualizing shared living data with chunky, neobrutalist charts and clear feedback mechanisms.
+            </p>
+</div>
+<section class="flex flex-col gap-6">
+<div class="flex items-center gap-3 border-b-[3px] border-background-dark pb-2 w-full">
+<span class="material-symbols-outlined">monitoring</span>
+<h2 class="text-xl font-bold uppercase tracking-wide">Data Viz</h2>
+</div>
+<div class="flex flex-col gap-6">
+<div class="flex flex-col gap-2">
+<h3 class="text-sm font-bold uppercase text-gray-500 ml-1">Expense Categories</h3>
+<div class="bg-white border-[3px] border-background-dark rounded-xl p-5 shadow-[4px_4px_0px_0px_#221f10] flex flex-col items-center">
+<div class="relative size-48 my-2">
+<div class="w-full h-full rounded-full border-[3px] border-background-dark relative overflow-hidden" style="background: conic-gradient(var(--tw-colors-primary) 0% 35%, var(--tw-colors-sage) 35% 60%, var(--tw-colors-dusty-blue) 60% 85%, #Dda15e 85% 100%); box-shadow: 4px 4px 0px 0px #221f10;"></div>
+</div>
+<div class="grid grid-cols-2 gap-x-6 gap-y-2 w-full mt-4">
+<div class="flex items-center gap-2">
+<div class="size-4 bg-primary border-2 border-background-dark rounded-sm"></div>
+<span class="text-sm font-bold">Groceries 35%</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="size-4 bg-sage border-2 border-background-dark rounded-sm"></div>
+<span class="text-sm font-bold">Utilities 25%</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="size-4 bg-dusty-blue border-2 border-background-dark rounded-sm"></div>
+<span class="text-sm font-bold">Internet 25%</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="size-4 bg-burnt-orange border-2 border-background-dark rounded-sm"></div>
+<span class="text-sm font-bold">Misc 15%</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<h3 class="text-sm font-bold uppercase text-gray-500 ml-1">Chore Completion</h3>
+<div class="bg-white border-[3px] border-background-dark rounded-xl p-5 shadow-[4px_4px_0px_0px_#221f10]">
+<div class="flex items-end justify-between h-40 gap-3 pt-4 border-b-[3px] border-background-dark mb-2">
+<div class="flex flex-col items-center gap-2 w-full h-full justify-end group">
+<span class="text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity mb-1">12</span>
+<div class="w-full bg-primary border-[3px] border-background-dark rounded-t-lg shadow-[2px_2px_0px_0px_#221f10] relative hover:-translate-y-1 transition-transform" style="height: 80%;"></div>
+</div>
+<div class="flex flex-col items-center gap-2 w-full h-full justify-end group">
+<span class="text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity mb-1">8</span>
+<div class="w-full bg-sage border-[3px] border-background-dark rounded-t-lg shadow-[2px_2px_0px_0px_#221f10] relative hover:-translate-y-1 transition-transform" style="height: 55%;"></div>
+</div>
+<div class="flex flex-col items-center gap-2 w-full h-full justify-end group">
+<span class="text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity mb-1">15</span>
+<div class="w-full bg-dusty-blue border-[3px] border-background-dark rounded-t-lg shadow-[2px_2px_0px_0px_#221f10] relative hover:-translate-y-1 transition-transform" style="height: 95%;"></div>
+</div>
+<div class="flex flex-col items-center gap-2 w-full h-full justify-end group">
+<span class="text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity mb-1">4</span>
+<div class="w-full bg-burnt-orange border-[3px] border-background-dark rounded-t-lg shadow-[2px_2px_0px_0px_#221f10] relative hover:-translate-y-1 transition-transform" style="height: 30%;"></div>
+</div>
+</div>
+<div class="flex justify-between px-1">
+<span class="text-xs font-bold uppercase w-full text-center">You</span>
+<span class="text-xs font-bold uppercase w-full text-center">Sam</span>
+<span class="text-xs font-bold uppercase w-full text-center">Alex</span>
+<span class="text-xs font-bold uppercase w-full text-center">Jo</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="flex flex-col gap-6">
+<div class="flex items-center gap-3 border-b-[3px] border-background-dark pb-2 w-full">
+<span class="material-symbols-outlined">notifications_active</span>
+<h2 class="text-xl font-bold uppercase tracking-wide">Feedback</h2>
+</div>
+<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-2">
+<h3 class="text-sm font-bold uppercase text-gray-500 ml-1">Success Snackbar</h3>
+<div class="w-full bg-background-dark text-white border-[3px] border-background-dark rounded-lg p-4 shadow-[4px_4px_0px_0px_#A3B18A] flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-sage text-background-dark p-1 rounded border-2 border-white flex items-center justify-center">
+<span class="material-symbols-outlined font-bold text-[20px]">check</span>
+</div>
+<p class="font-bold text-lg">Chore Completed!</p>
+</div>
+<button class="bg-white text-background-dark px-4 py-1.5 rounded border-2 border-transparent hover:border-white font-bold uppercase text-sm tracking-wide active:scale-95 transition-transform">
+                            Undo
+                        </button>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<h3 class="text-sm font-bold uppercase text-gray-500 ml-1">Warning Alert</h3>
+<div class="w-full bg-[#ffedd5] text-background-dark border-[3px] border-background-dark rounded-lg p-4 shadow-[4px_4px_0px_0px_#221f10] flex gap-3">
+<span class="material-symbols-outlined text-orange-600 text-[28px]">warning</span>
+<div class="flex flex-col">
+<p class="font-bold text-lg leading-tight">Rent is due tomorrow</p>
+<p class="text-sm opacity-80 mt-1 font-medium">Please ensure your balance is sufficient.</p>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<h3 class="text-sm font-bold uppercase text-gray-500 ml-1">Error State</h3>
+<div class="w-full bg-[#fee2e2] text-background-dark border-[3px] border-background-dark rounded-lg p-3 shadow-[4px_4px_0px_0px_#ef4444] flex items-center justify-between border-l-[12px] border-l-red-500">
+<div class="flex items-center gap-3 pl-1">
+<span class="material-symbols-outlined text-red-600 font-bold">error</span>
+<p class="font-bold">Connection Failed</p>
+</div>
+<button class="size-8 flex items-center justify-center hover:bg-black/5 rounded-full">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<section class="flex flex-col gap-6">
+<div class="flex items-center gap-3 border-b-[3px] border-background-dark pb-2 w-full">
+<span class="material-symbols-outlined">category</span>
+<h2 class="text-xl font-bold uppercase tracking-wide">House Icons</h2>
+</div>
+<div class="bg-white border-[3px] border-background-dark rounded-xl p-6 shadow-[4px_4px_0px_0px_#221f10]">
+<div class="grid grid-cols-4 gap-4">
+<div class="aspect-square flex flex-col items-center justify-center gap-2 group cursor-pointer">
+<div class="size-12 rounded-lg border-[3px] border-background-dark bg-background-light flex items-center justify-center group-hover:bg-primary group-hover:-translate-y-1 group-hover:shadow-[2px_2px_0px_0px_#221f10] transition-all">
+<span class="material-symbols-outlined text-[28px]">delete</span>
+</div>
+<span class="text-[10px] font-bold uppercase">Trash</span>
+</div>
+<div class="aspect-square flex flex-col items-center justify-center gap-2 group cursor-pointer">
+<div class="size-12 rounded-lg border-[3px] border-background-dark bg-background-light flex items-center justify-center group-hover:bg-dusty-blue group-hover:-translate-y-1 group-hover:shadow-[2px_2px_0px_0px_#221f10] transition-all">
+<span class="material-symbols-outlined text-[28px]">local_cafe</span>
+</div>
+<span class="text-[10px] font-bold uppercase">Dishes</span>
+</div>
+<div class="aspect-square flex flex-col items-center justify-center gap-2 group cursor-pointer">
+<div class="size-12 rounded-lg border-[3px] border-background-dark bg-background-light flex items-center justify-center group-hover:bg-sage group-hover:-translate-y-1 group-hover:shadow-[2px_2px_0px_0px_#221f10] transition-all">
+<span class="material-symbols-outlined text-[28px]">receipt_long</span>
+</div>
+<span class="text-[10px] font-bold uppercase">Bills</span>
+</div>
+<div class="aspect-square flex flex-col items-center justify-center gap-2 group cursor-pointer">
+<div class="size-12 rounded-lg border-[3px] border-background-dark bg-background-light flex items-center justify-center group-hover:bg-burnt-orange group-hover:-translate-y-1 group-hover:shadow-[2px_2px_0px_0px_#221f10] transition-all">
+<span class="material-symbols-outlined text-[28px]">wifi</span>
+</div>
+<span class="text-[10px] font-bold uppercase">Wifi</span>
+</div>
+<div class="aspect-square flex flex-col items-center justify-center gap-2 group cursor-pointer">
+<div class="size-12 rounded-lg border-[3px] border-background-dark bg-background-light flex items-center justify-center group-hover:bg-primary group-hover:-translate-y-1 group-hover:shadow-[2px_2px_0px_0px_#221f10] transition-all">
+<span class="material-symbols-outlined text-[28px]">cleaning_services</span>
+</div>
+<span class="text-[10px] font-bold uppercase">Clean</span>
+</div>
+<div class="aspect-square flex flex-col items-center justify-center gap-2 group cursor-pointer">
+<div class="size-12 rounded-lg border-[3px] border-background-dark bg-background-light flex items-center justify-center group-hover:bg-dusty-blue group-hover:-translate-y-1 group-hover:shadow-[2px_2px_0px_0px_#221f10] transition-all">
+<span class="material-symbols-outlined text-[28px]">shopping_cart</span>
+</div>
+<span class="text-[10px] font-bold uppercase">Shop</span>
+</div>
+<div class="aspect-square flex flex-col items-center justify-center gap-2 group cursor-pointer">
+<div class="size-12 rounded-lg border-[3px] border-background-dark bg-background-light flex items-center justify-center group-hover:bg-sage group-hover:-translate-y-1 group-hover:shadow-[2px_2px_0px_0px_#221f10] transition-all">
+<span class="material-symbols-outlined text-[28px]">bedtime</span>
+</div>
+<span class="text-[10px] font-bold uppercase">Quiet</span>
+</div>
+<div class="aspect-square flex flex-col items-center justify-center gap-2 group cursor-pointer">
+<div class="size-12 rounded-lg border-[3px] border-background-dark bg-background-light flex items-center justify-center group-hover:bg-burnt-orange group-hover:-translate-y-1 group-hover:shadow-[2px_2px_0px_0px_#221f10] transition-all">
+<span class="material-symbols-outlined text-[28px]">build</span>
+</div>
+<span class="text-[10px] font-bold uppercase">Fix</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<nav class="fixed bottom-0 left-0 w-full bg-white border-t-[3px] border-background-dark pb-6 pt-3 px-6 flex justify-between items-center z-50 shadow-[0px_-4px_10px_rgba(0,0,0,0.05)]">
+<div class="flex flex-col items-center gap-1 opacity-50 hover:opacity-100 transition-opacity cursor-pointer">
+<span class="material-symbols-outlined text-[28px]">home</span>
+<span class="text-[10px] font-bold uppercase">Home</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-primary cursor-pointer">
+<div class="bg-primary border-[2px] border-background-dark p-2 rounded-lg -mt-6 shadow-[3px_3px_0px_0px_#221f10] hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_#221f10] transition-all">
+<span class="material-symbols-outlined text-[28px] text-background-dark">style</span>
+</div>
+<span class="text-[10px] font-bold uppercase text-background-dark mt-1">Style</span>
+</div>
+<div class="flex flex-col items-center gap-1 opacity-50 hover:opacity-100 transition-opacity cursor-pointer">
+<span class="material-symbols-outlined text-[28px]">settings</span>
+<span class="text-[10px] font-bold uppercase">Settings</span>
+</div>
+</nav>
+
+</body></html>

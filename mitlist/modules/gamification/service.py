@@ -68,7 +68,7 @@ async def reset_monthly_points(db: AsyncSession, group_id: int) -> int:
     result = await db.execute(
         update(UserPoints)
         .where(UserPoints.group_id == group_id)
-        .values(monthly_points=0, last_reset_at=datetime.utcnow())
+        .values(monthly_points=0, last_reset_at=datetime.now(timezone.utc))
     )
     await db.flush()
     return result.rowcount
@@ -124,7 +124,7 @@ async def award_achievement(
     user_achievement = UserAchievement(
         user_id=user_id,
         achievement_id=achievement_id,
-        earned_at=datetime.utcnow(),
+        earned_at=datetime.now(timezone.utc),
         progress_percentage=100,
     )
     db.add(user_achievement)
@@ -253,7 +253,7 @@ async def record_activity(
 ) -> tuple[Streak, bool, bool]:
     """Record activity for streak tracking. Returns (streak, extended, is_new_record)."""
     streak = await get_streak(db, user_id, group_id, activity_type)
-    today = datetime.utcnow().date()
+    today = datetime.now(timezone.utc).date()
 
     if not streak:
         # Create new streak
@@ -263,7 +263,7 @@ async def record_activity(
             activity_type=activity_type,
             current_streak_days=1,
             longest_streak_days=1,
-            last_activity_date=datetime.utcnow(),
+            last_activity_date=datetime.now(timezone.utc),
         )
         db.add(streak)
         await db.flush()
@@ -291,7 +291,7 @@ async def record_activity(
         streak.current_streak_days = 1
         extended = True  # New streak started
 
-    streak.last_activity_date = datetime.utcnow()
+    streak.last_activity_date = datetime.now(timezone.utc)
     await db.flush()
     await db.refresh(streak)
     return streak, extended, is_new_record

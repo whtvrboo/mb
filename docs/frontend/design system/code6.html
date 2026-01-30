@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Shared Grocery List View</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#eecd2b",
+                        "background-light": "#f8f8f6",
+                        "background-dark": "#221f10",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                    boxShadow: {
+                        'neo': '4px 4px 0px 0px rgba(24, 23, 17, 1)',
+                        'neo-sm': '2px 2px 0px 0px rgba(24, 23, 17, 1)',
+                        'neo-active': '1px 1px 0px 0px rgba(24, 23, 17, 1)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom checkbox style to match the thick border aesthetic */
+        .neo-checkbox {
+            appearance: none;
+            background-color: white;
+            margin: 0;
+            font: inherit;
+            color: currentColor;
+            width: 1.5em;
+            height: 1.5em;
+            border: 2px solid #181711;
+            border-radius: 0.25rem;
+            display: grid;
+            place-content: center;
+            cursor: pointer;
+            transition: all 0.1s ease-in-out;
+        }
+
+        .neo-checkbox::before {
+            content: "";
+            width: 0.8em;
+            height: 0.8em;
+            transform: scale(0);
+            transition: 120ms transform ease-in-out;
+            box-shadow: inset 1em 1em #181711; /* Checkmark color */
+            transform-origin: center;
+            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+        }
+
+        .neo-checkbox:checked {
+            background-color: #eecd2b;
+        }
+
+        .neo-checkbox:checked::before {
+            transform: scale(1);
+        }
+        
+        /* Hide scrollbar for cleaner look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-[#181711] dark:text-white font-display overflow-hidden h-screen w-full flex flex-col items-center">
+<!-- Mobile Container -->
+<div class="relative flex flex-col h-full w-full max-w-md bg-background-light dark:bg-background-dark group/design-root border-x-0 sm:border-x-2 border-[#181711] overflow-hidden">
+<!-- Header -->
+<div class="shrink-0 bg-background-light dark:bg-background-dark pt-6 pb-2 px-5 z-10 border-b-2 border-[#181711]">
+<div class="flex items-center justify-between mb-4">
+<button class="flex items-center justify-center size-10 rounded-full border-2 border-[#181711] hover:bg-[#181711] hover:text-white transition-colors active:translate-y-[2px] active:translate-x-[2px] active:shadow-none shadow-neo-sm bg-white text-[#181711]">
+<span class="material-symbols-outlined font-bold">arrow_back</span>
+</button>
+<div class="flex -space-x-3">
+<div class="w-10 h-10 rounded-full border-2 border-[#181711] overflow-hidden bg-primary shadow-neo-sm z-30" data-alt="User avatar 1">
+<img alt="User avatar 1" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9KtBipz5Pt66-_mdd3krMfG6B67CBwyeynrwvRu-BskHHFUbvwINuBVotNh1EtzYaztQxsXJwJtUDjiTMiE2Bb6wBVwj88DRs_tMR4An3FPSGl0YZhitHcYBkDyTxLLFzQc54ujAYMKhryKoKe8KTJSgJPfhJ6VaWggGNAeU6KXHxr3XNXZTcxCiB1jR6vX4KDfyHfxQ2RxajfsGkYS0sW7eecb72t35wfM7VJFinPBduYqjqpsc3rMRogxPFnzXZkUA-UrVFRnje"/>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-[#181711] overflow-hidden bg-[#e0e0e0] shadow-neo-sm z-20" data-alt="User avatar 2">
+<img alt="User avatar 2" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_mW-8uoYdk5I-m2SdGGjW4Sc6Jg3-yYLZJYVxMs1f0Dg0zNmvU5JvZJhjeIX6QKGm5ydwnzsJAEPVfZTMs1DqgW8cLbrTyoHi1j0VmD9o226eb06NJ0JOcIX0vds-HJnbBiRVEnrDvox5Hp5taSV-LrlB1xzKCQ1bqHm_e-Y-nsVB0tQMaP6YdD3t4zsqI8L1h-ai8-N4ng8v67LpryvxT71qMJPWWt9oLxstUU27SV377kgXuADhdiiyU8Wt3E2B4SY7bx5kXucH"/>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-[#181711] bg-white flex items-center justify-center shadow-neo-sm z-10 font-bold text-xs">
+                        +2
+                    </div>
+</div>
+</div>
+<h1 class="text-4xl font-bold tracking-tighter uppercase text-[#181711] dark:text-white">Groceries</h1>
+</div>
+<!-- Scrollable List Area -->
+<div class="flex-1 overflow-y-auto no-scrollbar p-5 pb-32">
+<!-- Section: Produce -->
+<div class="mb-6">
+<h3 class="text-lg font-bold border-b-2 border-[#181711] inline-block pr-8 mb-4 bg-primary px-2 py-1 shadow-neo-sm transform -rotate-1 rounded-sm">Produce</h3>
+<!-- List Item 1 -->
+<div class="group relative flex flex-col gap-2 bg-white p-4 mb-4 border-2 border-[#181711] shadow-neo rounded-lg transition-all active:shadow-neo-active active:translate-x-[3px] active:translate-y-[3px]">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-start gap-3 flex-1">
+<input class="neo-checkbox mt-1 shrink-0" type="checkbox"/>
+<div class="flex flex-col">
+<span class="text-xl font-bold leading-tight group-hover:text-primary-dark transition-colors">Avocados</span>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-xs font-bold border border-[#181711] px-1.5 rounded bg-gray-100">Qty: 4</span>
+<span class="text-xs text-gray-500 font-medium">Added by You</span>
+</div>
+</div>
+</div>
+<button class="text-[#181711] opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-lg">more_vert</span>
+</button>
+</div>
+</div>
+<!-- List Item 2 -->
+<div class="group relative flex flex-col gap-2 bg-white p-4 mb-4 border-2 border-[#181711] shadow-neo rounded-lg transition-all active:shadow-neo-active active:translate-x-[3px] active:translate-y-[3px]">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-start gap-3 flex-1">
+<input class="neo-checkbox mt-1 shrink-0" type="checkbox"/>
+<div class="flex flex-col">
+<span class="text-xl font-bold leading-tight">Bananas</span>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-xs text-gray-500 font-medium">Added by Sarah</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Section: Pantry -->
+<div class="mb-6">
+<h3 class="text-lg font-bold border-b-2 border-[#181711] inline-block pr-8 mb-4 bg-white px-2 py-1 shadow-neo-sm transform rotate-1 rounded-sm">Pantry</h3>
+<!-- List Item 3 -->
+<div class="group relative flex flex-col gap-2 bg-white p-4 mb-4 border-2 border-[#181711] shadow-neo rounded-lg transition-all active:shadow-neo-active active:translate-x-[3px] active:translate-y-[3px]">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-start gap-3 flex-1">
+<input class="neo-checkbox mt-1 shrink-0" type="checkbox"/>
+<div class="flex flex-col">
+<span class="text-xl font-bold leading-tight">Oat Milk</span>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-xs font-bold border border-[#181711] px-1.5 rounded bg-primary text-[#181711]">Qty: 2</span>
+<span class="text-xs text-gray-500 font-medium">Added by J</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Note/Tag at bottom of card -->
+<div class="mt-2 pt-2 border-t-2 border-dashed border-gray-200">
+<p class="text-sm text-gray-600 italic">"Get the Barista blend specifically!"</p>
+</div>
+</div>
+<!-- List Item 4 -->
+<div class="group relative flex flex-col gap-2 bg-white p-4 mb-4 border-2 border-[#181711] shadow-neo rounded-lg transition-all active:shadow-neo-active active:translate-x-[3px] active:translate-y-[3px]">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-start gap-3 flex-1">
+<input class="neo-checkbox mt-1 shrink-0" type="checkbox"/>
+<div class="flex flex-col">
+<span class="text-xl font-bold leading-tight">Sourdough Bread</span>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-xs text-gray-500 font-medium">Added by J</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Checked Item -->
+<div class="group relative flex flex-col gap-2 bg-gray-50 p-4 mb-4 border-2 border-gray-300 shadow-none rounded-lg opacity-60">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-center gap-3 flex-1">
+<input checked="" class="neo-checkbox mt-0 shrink-0 border-gray-400 bg-gray-200 checked:bg-gray-400 checked:border-gray-400" type="checkbox"/>
+<div class="flex flex-col">
+<span class="text-xl font-bold leading-tight line-through decoration-2 decoration-[#181711] text-gray-500">Eggs</span>
+</div>
+</div>
+<button class="text-gray-400">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Empty space for scroll -->
+<div class="h-10"></div>
+</div>
+<!-- Sticky Bottom Input -->
+<div class="absolute bottom-0 left-0 w-full bg-background-light p-4 z-20 border-t-2 border-[#181711]">
+<div class="flex gap-3">
+<div class="relative flex-1">
+<input class="w-full h-14 bg-white border-2 border-[#181711] rounded-lg px-4 text-lg font-medium placeholder:text-gray-400 shadow-neo-sm focus:outline-none focus:ring-0 focus:shadow-neo focus:-translate-y-1 transition-all" placeholder="Add new item..." type="text"/>
+</div>
+<button class="size-14 bg-primary border-2 border-[#181711] rounded-lg shadow-neo-sm flex items-center justify-center hover:bg-[#ffe14f] active:shadow-none active:translate-y-[2px] active:translate-x-[2px] transition-all">
+<span class="material-symbols-outlined text-[#181711] text-3xl font-bold">add</span>
+</button>
+</div>
+<!-- Bottom safe area spacer -->
+<div class="h-4 w-full"></div>
+</div>
+</div>
+</body></html>

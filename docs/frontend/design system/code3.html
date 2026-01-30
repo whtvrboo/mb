@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Expense Settlement Detail</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#eecd2b", // Mustard
+                "sage": "#A3B18A",
+                "sage-dark": "#7a8a61",
+                "dusty": "#8E9DB3",
+                "background-light": "#f8f8f6",
+                "background-dark": "#221f10",
+              },
+              fontFamily: {
+                "display": ["Space Grotesk", "sans-serif"]
+              },
+              borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px"},
+              boxShadow: {
+                "brutal": "4px 4px 0px 0px #221f10",
+                "brutal-lg": "6px 6px 0px 0px #221f10",
+                "brutal-sm": "2px 2px 0px 0px #221f10",
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        body {
+            min-height: max(844px, 100dvh);
+        }::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f8f8f6;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #221f10;
+            border-radius: 4px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light text-background-dark font-display overflow-x-hidden min-h-screen pb-24">
+<header class="sticky top-0 z-50 bg-background-light border-b-[3px] border-background-dark px-5 h-16 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-3">
+<button class="flex items-center justify-center size-10 rounded-lg hover:bg-black/5 transition-colors border-[2px] border-transparent hover:border-background-dark">
+<span class="material-symbols-outlined text-[28px]">arrow_back</span>
+</button>
+</div>
+<h1 class="text-xl font-bold tracking-tight uppercase">Settlement</h1>
+<div class="size-10 flex items-center justify-end">
+<button class="flex items-center justify-center size-10 rounded-lg hover:bg-black/5 transition-colors">
+<span class="material-symbols-outlined text-[24px]">more_horiz</span>
+</button>
+</div>
+</header>
+<main class="flex flex-col p-5 max-w-lg mx-auto w-full gap-6">
+<section class="flex flex-col gap-0 w-full bg-white border-[3px] border-background-dark rounded-xl shadow-brutal-lg overflow-hidden">
+<div class="p-6 pb-2 flex flex-col items-center text-center gap-4">
+<div class="size-20 rounded-full border-[3px] border-background-dark overflow-hidden bg-gray-200 shadow-brutal-sm mb-2">
+<img alt="Portrait of Alex" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdIeKSvSw4g0UUcuJweKw7YgtsfrLM5Eld5EIqorAUZk7VenHbkKixdWdj8iw-K0dr1dQoD2vI-tRFaqfrk1PZyA8s4mjhvR8QUAjBaKuWFc1jJ_EsRNXftMEyuwuE2_TbZ0pxpnD1wPv7XiAkmrOUy3vE2ruD7E0-r_QpIIqCmuOcKJgZl4MR2NaJRDy-lIVJYkf-hcPeOZtvr1-pZQzrCO3lxO2S_kcYiA64JDQGy-VbecLGkn7TuHbtZGBUIZdyw9UAj8zg5txZ"/>
+</div>
+<div class="flex flex-col gap-1">
+<span class="text-sm font-bold uppercase tracking-wide opacity-60">Balance Due</span>
+<h2 class="text-4xl font-bold leading-none">You owe Alex</h2>
+<div class="flex items-baseline justify-center gap-1 mt-1">
+<span class="text-sm font-bold self-start mt-2">$</span>
+<span class="text-[56px] font-bold leading-none tracking-tight text-background-dark">24.50</span>
+</div>
+</div>
+</div>
+<div class="p-5 pt-4 flex flex-col gap-3">
+<button class="w-full h-16 bg-sage border-[3px] border-background-dark rounded-xl font-bold text-xl text-white shadow-brutal active:translate-x-1 active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2 hover:bg-sage-dark hover:text-white">
+<span class="material-symbols-outlined">payments</span>
+                    Pay Now
+                </button>
+<button class="w-full h-16 bg-primary border-[3px] border-background-dark rounded-xl font-bold text-xl text-background-dark shadow-brutal active:translate-x-1 active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2 hover:brightness-105">
+<span class="material-symbols-outlined">notifications</span>
+                    Remind Me
+                </button>
+</div>
+</section>
+<section class="flex flex-col gap-4 mt-2">
+<div class="flex items-center justify-between border-b-[3px] border-background-dark pb-2 w-full">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined">receipt_long</span>
+<h2 class="text-xl font-bold uppercase tracking-wide">Breakdown</h2>
+</div>
+<span class="text-sm font-bold text-gray-500">3 items</span>
+</div>
+<div class="flex flex-col gap-3">
+<div class="group relative w-full bg-white border-[3px] border-background-dark rounded-lg p-4 shadow-brutal flex justify-between items-center transition-transform hover:-translate-y-0.5">
+<div class="flex items-center gap-4">
+<div class="size-12 bg-primary/20 border-[2px] border-background-dark rounded-lg flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-2xl">local_pizza</span>
+</div>
+<div class="flex flex-col">
+<h3 class="text-lg font-bold leading-tight">Friday Pizza Night</h3>
+<span class="text-xs font-bold text-gray-500 uppercase">Oct 24 • Split evenly</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-lg font-bold text-red-600">-$12.50</span>
+<span class="text-xs font-medium bg-gray-100 border border-background-dark px-1.5 rounded">Unpaid</span>
+</div>
+</div>
+<div class="group relative w-full bg-white border-[3px] border-background-dark rounded-lg p-4 shadow-brutal flex justify-between items-center transition-transform hover:-translate-y-0.5">
+<div class="flex items-center gap-4">
+<div class="size-12 bg-sage/30 border-[2px] border-background-dark rounded-lg flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-2xl">cleaning_services</span>
+</div>
+<div class="flex flex-col">
+<h3 class="text-lg font-bold leading-tight">Cleaning Supplies</h3>
+<span class="text-xs font-bold text-gray-500 uppercase">Oct 22 • You owe 50%</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-lg font-bold text-red-600">-$8.00</span>
+<span class="text-xs font-medium bg-gray-100 border border-background-dark px-1.5 rounded">Unpaid</span>
+</div>
+</div>
+<div class="group relative w-full bg-white border-[3px] border-background-dark rounded-lg p-4 shadow-brutal flex justify-between items-center transition-transform hover:-translate-y-0.5">
+<div class="flex items-center gap-4">
+<div class="size-12 bg-dusty/30 border-[2px] border-background-dark rounded-lg flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-2xl">water_drop</span>
+</div>
+<div class="flex flex-col">
+<h3 class="text-lg font-bold leading-tight">Bottled Water</h3>
+<span class="text-xs font-bold text-gray-500 uppercase">Oct 20 • Alex paid</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-lg font-bold text-red-600">-$4.00</span>
+<span class="text-xs font-medium bg-gray-100 border border-background-dark px-1.5 rounded">Unpaid</span>
+</div>
+</div>
+<div class="group relative w-full bg-gray-100 border-[3px] border-background-dark rounded-lg p-4 shadow-brutal flex justify-between items-center opacity-70">
+<div class="flex items-center gap-4">
+<div class="size-12 bg-gray-200 border-[2px] border-background-dark rounded-lg flex items-center justify-center shrink-0 grayscale">
+<span class="material-symbols-outlined text-2xl">router</span>
+</div>
+<div class="flex flex-col">
+<h3 class="text-lg font-bold leading-tight line-through decoration-2">Internet Bill</h3>
+<span class="text-xs font-bold text-gray-500 uppercase">Oct 15 • Paid</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-lg font-bold text-gray-400 decoration-2 line-through">$30.00</span>
+<span class="text-xs font-bold text-sage-dark bg-sage/20 border border-sage-dark px-1.5 rounded flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[10px] font-black">check</span> Paid
+                         </span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<nav class="fixed bottom-0 left-0 w-full bg-white border-t-[3px] border-background-dark pb-6 pt-3 px-6 flex justify-between items-center z-50">
+<div class="flex flex-col items-center gap-1 opacity-50">
+<span class="material-symbols-outlined text-[28px]">home</span>
+<span class="text-[10px] font-bold uppercase">Home</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-primary">
+<div class="bg-primary border-[2px] border-background-dark p-2 rounded-lg -mt-6 shadow-brutal-sm">
+<span class="material-symbols-outlined text-[28px] text-background-dark">receipt_long</span>
+</div>
+<span class="text-[10px] font-bold uppercase text-background-dark mt-1">Expenses</span>
+</div>
+<div class="flex flex-col items-center gap-1 opacity-50">
+<span class="material-symbols-outlined text-[28px]">settings</span>
+<span class="text-[10px] font-bold uppercase">Settings</span>
+</div>
+</nav>
+
+</body></html>

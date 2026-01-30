@@ -236,9 +236,12 @@ class TestBalances:
         assert data["group_id"] == test_group.id
         assert len(data["balances"]) >= 2
 
-    async def test_get_balance_history(self, client: AsyncClient):
+    async def test_get_balance_history(self, client: AsyncClient, test_group):
         """Test getting balance history."""
-        response = await client.get("/api/v1/balances/history")
+        response = await client.get(
+            "/api/v1/balances/history",
+            headers={"X-Group-ID": str(test_group.id)},
+        )
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
@@ -594,10 +597,11 @@ class TestRecurringExpenses:
 class TestSplitPresets:
     """Test split preset endpoints."""
 
-    async def test_create_split_preset(self, client: AsyncClient, test_user, test_user2):
+    async def test_create_split_preset(self, client: AsyncClient, test_user, test_user2, test_group):
         """Test creating a split preset."""
         response = await client.post(
             "/api/v1/split-presets",
+            headers={"X-Group-ID": str(test_group.id)},
             json={
                 "name": "Equal Split",
                 "method": "EQUAL",

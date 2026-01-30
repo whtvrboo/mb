@@ -1,6 +1,6 @@
 import pytest
 from httpx import AsyncClient
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 @pytest.mark.asyncio
 async def test_plants_lifecycle(authed_client: AsyncClient, auth_headers: dict):
@@ -52,7 +52,7 @@ async def test_create_species_and_plant(authed_client: AsyncClient, auth_headers
     log_data = {
         "plant_id": plant_id,
         "action": "WATER",
-        "occurred_at": datetime.utcnow().isoformat(),
+        "occurred_at": datetime.now(timezone.utc).isoformat(),
         "notes": "Watered nicely"
     }
     response = await authed_client.post(f"/plants/{plant_id}/logs", json=log_data, headers=auth_headers)
@@ -68,7 +68,7 @@ async def test_create_species_and_plant(authed_client: AsyncClient, auth_headers
         "plant_id": plant_id,
         "action_type": "WATER",
         "frequency_days": 7,
-        "next_due_date": (datetime.utcnow() + timedelta(days=7)).isoformat()
+        "next_due_date": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat()
     }
     response = await authed_client.post(f"/plants/{plant_id}/schedules", json=sched_data, headers=auth_headers)
     assert response.status_code == 201

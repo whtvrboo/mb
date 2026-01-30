@@ -1,9 +1,9 @@
 """Pets module Pydantic schemas for request/response models."""
 
 from datetime import datetime, time
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 # ====================
@@ -205,6 +205,16 @@ class PetScheduleResponse(PetScheduleBase):
     is_active: bool
     created_at: datetime
     updated_at: datetime
+
+    @field_validator("time_of_day", mode="before")
+    @classmethod
+    def time_of_day_from_datetime(cls, v: Optional[Union[time, datetime]]) -> Optional[time]:
+        """Accept datetime from DB (SQLite stores time as datetime) and normalize to time."""
+        if v is None:
+            return None
+        if isinstance(v, datetime):
+            return v.time()
+        return v
 
 
 class PetScheduleMarkDoneRequest(BaseModel):

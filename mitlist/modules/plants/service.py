@@ -1,6 +1,6 @@
 """Plants module service layer. PRIVATE - other modules import from interface.py."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from sqlalchemy import select, and_
@@ -110,7 +110,7 @@ async def create_plant(
         species_id=species_id,
         nickname=nickname,
         location_id=location_id,
-        acquired_at=acquired_at or datetime.utcnow(),
+        acquired_at=acquired_at or datetime.now(timezone.utc),
         acquired_from=acquired_from,
         pot_size_cm=pot_size_cm,
         photo_url=photo_url,
@@ -167,7 +167,7 @@ async def mark_plant_dead(
         raise NotFoundError(code="PLANT_NOT_FOUND", detail=f"Plant {plant_id} not found")
         
     plant.is_alive = False
-    plant.died_at = datetime.utcnow()
+    plant.died_at = datetime.now(timezone.utc)
     plant.death_reason = death_reason
     
     await db.flush()
@@ -289,7 +289,7 @@ async def mark_schedule_done(
         raise NotFoundError(code="SCHEDULE_NOT_FOUND", detail=f"Schedule {schedule_id} not found")
 
     # Create log
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     await create_plant_log(
         db,
         plant_id=sched.plant_id,
@@ -307,7 +307,7 @@ async def mark_schedule_done(
 
 async def get_overdue_schedules(db: AsyncSession, group_id: int) -> list[PlantSchedule]:
     """Get overdue schedules for a group."""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     result = await db.execute(
         select(PlantSchedule)
         .join(Plant)

@@ -5,6 +5,7 @@ from typing import Any, Optional
 
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import contains_eager
 
 
 async def get_calendar_feed(
@@ -68,6 +69,7 @@ async def get_calendar_feed(
         result = await db.execute(
             select(ChoreAssignment)
             .join(Chore, ChoreAssignment.chore_id == Chore.id)
+            .options(contains_eager(ChoreAssignment.chore))
             .where(
                 Chore.group_id == group_id,
                 ChoreAssignment.status == "PENDING",
@@ -77,11 +79,7 @@ async def get_calendar_feed(
         )
         assignments = result.scalars().all()
         for assignment in assignments:
-            # Get chore name
-            chore_result = await db.execute(
-                select(Chore).where(Chore.id == assignment.chore_id)
-            )
-            chore = chore_result.scalar_one_or_none()
+            chore = assignment.chore
             events.append({
                 "id": f"chore_{assignment.id}",
                 "type": "CHORE",
@@ -96,9 +94,12 @@ async def get_calendar_feed(
 
     # 3. Meal Plans
     try:
+        from sqlalchemy.orm import selectinload
         from mitlist.modules.recipes.models import MealPlan, Recipe
         result = await db.execute(
-            select(MealPlan).where(
+            select(MealPlan)
+            .options(selectinload(MealPlan.recipe))
+            .where(
                 MealPlan.group_id == group_id,
                 MealPlan.plan_date >= start_date,
                 MealPlan.plan_date <= end_date,
@@ -106,13 +107,7 @@ async def get_calendar_feed(
         )
         meal_plans = result.scalars().all()
         for mp in meal_plans:
-            recipe_title = None
-            if mp.recipe_id:
-                recipe_result = await db.execute(
-                    select(Recipe).where(Recipe.id == mp.recipe_id)
-                )
-                recipe = recipe_result.scalar_one_or_none()
-                recipe_title = recipe.title if recipe else None
+            recipe_title = mp.recipe.title if mp.recipe else None
             events.append({
                 "id": f"meal_{mp.id}",
                 "type": "MEAL_PLAN",

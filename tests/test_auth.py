@@ -1,6 +1,6 @@
 """Tests for auth module."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from httpx import AsyncClient
@@ -73,7 +73,7 @@ class TestInvites:
             json={
                 "email_hint": "newuser@example.com",
                 "role": "MEMBER",
-                "expires_at": (datetime.utcnow() + timedelta(days=7)).isoformat(),
+                "expires_at": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
             },
         )
         assert response.status_code == 201
@@ -93,7 +93,7 @@ class TestInvites:
             created_by_id=test_user.id,
             role="MEMBER",
             email_hint="invite@example.com",
-            expires_at=datetime.utcnow() + timedelta(days=7),
+            expires_at=datetime.now(timezone.utc) + timedelta(days=7),
         )
         await db.flush()
 
@@ -113,7 +113,7 @@ class TestInvites:
             created_by_id=test_user.id,
             role="MEMBER",
             email_hint="revoke@example.com",
-            expires_at=datetime.utcnow() + timedelta(days=7),
+            expires_at=datetime.now(timezone.utc) + timedelta(days=7),
         )
         await db.flush()
         await db.refresh(invite)
@@ -154,7 +154,7 @@ class TestMembers:
             user_id=test_user2.id,
             group_id=test_group.id,
             role="MEMBER",
-            joined_at=datetime.utcnow(),
+            joined_at=datetime.now(timezone.utc),
         )
         db.add(membership)
         await db.flush()
@@ -175,7 +175,7 @@ class TestMembers:
             user_id=test_user2.id,
             group_id=test_group.id,
             role="MEMBER",
-            joined_at=datetime.utcnow(),
+            joined_at=datetime.now(timezone.utc),
         )
         db.add(membership)
         await db.flush()

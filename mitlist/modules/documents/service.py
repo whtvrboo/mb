@@ -73,7 +73,7 @@ async def delete_document(db: AsyncSession, document_id: int) -> None:
     doc = await get_document_by_id(db, document_id)
     if not doc:
         raise NotFoundError(code="DOCUMENT_NOT_FOUND", detail=f"Document {document_id} not found")
-    doc.deleted_at = datetime.utcnow()
+    doc.deleted_at = datetime.now(timezone.utc)
     await db.flush()
 
 
@@ -90,7 +90,7 @@ def generate_presigned_upload_url(
     Returns (upload_url, file_key, expires_in_seconds).
     """
     # Generate a unique file key
-    timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
     random_suffix = secrets.token_hex(8)
     safe_name = file_name.replace(" ", "_").replace("/", "_")
     file_key = f"groups/{group_id}/documents/{timestamp}_{random_suffix}_{safe_name}"
@@ -160,7 +160,7 @@ async def create_credential(
         url=url,
         rotation_reminder_days=rotation_reminder_days,
         notes=notes,
-        last_rotated_at=datetime.utcnow(),
+        last_rotated_at=datetime.now(timezone.utc),
     )
     db.add(cred)
     await db.flush()

@@ -57,7 +57,7 @@ async def test_user(db: AsyncSession) -> User:
         name="Test User",
         is_active=True,
         preferences={},
-        last_login_at=datetime.utcnow(),
+        last_login_at=datetime.now(timezone.utc),
     )
     db.add(user)
     await db.flush()
@@ -74,7 +74,7 @@ async def test_user2(db: AsyncSession) -> User:
         name="Test User 2",
         is_active=True,
         preferences={},
-        last_login_at=datetime.utcnow(),
+        last_login_at=datetime.now(timezone.utc),
     )
     db.add(user)
     await db.flush()
@@ -98,7 +98,7 @@ async def test_group(db: AsyncSession, test_user: User) -> Group:
         user_id=test_user.id,
         group_id=group.id,
         role="ADMIN",
-        joined_at=datetime.utcnow(),
+        joined_at=datetime.now(timezone.utc),
     )
     db.add(membership)
     await db.flush()

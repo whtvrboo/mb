@@ -223,7 +223,7 @@ async def create_maintenance_log(
         db,
         task_id=task_id,
         user_id=user.id,
-        completed_at=data.disposed_at if hasattr(data, 'disposed_at') else datetime.utcnow(), # Wait, request schema doesn't have completed_at?
+        completed_at=data.disposed_at if hasattr(data, 'disposed_at') else datetime.now(timezone.utc), # Wait, request schema doesn't have completed_at?
         # Check schemas.MaintenanceCompleteRequest (Step 173).
         # It has actual_duration_minutes, notes, photo_url, quality_rating, cost_expense_id.
         # It misses "completed_at".
@@ -239,7 +239,7 @@ async def create_maintenance_log(
     return schemas.MaintenanceLogResponse.model_validate(log)
 
 # CORRECTION: datetime import needed inside function if used? I imported it at top level but need to check if user passed it.
-from datetime import datetime
+from datetime import datetime, timezone
 # Re-check MaintenanceCompleteRequest.
 # It does NOT have completed_at. So I use current time.
 

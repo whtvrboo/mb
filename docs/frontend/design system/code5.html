@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Multi-House &amp; Role Management</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#eecd2b",
+                "sage": "#A3B18A",
+                "dusty": "#8E9DB3",
+                "background-light": "#f8f8f6",
+                "background-dark": "#221f10",
+              },
+              fontFamily: {
+                "display": ["Space Grotesk", "sans-serif"]
+              },
+              borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+            },
+          },
+        }
+    </script>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-background-dark dark:text-white font-display overflow-x-hidden min-h-screen">
+<header class="sticky top-0 z-50 bg-background-light border-b-[3px] border-background-dark px-5 h-16 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-3">
+<button class="flex items-center justify-center size-10 rounded-lg hover:bg-black/5 transition-colors">
+<span class="material-symbols-outlined text-[28px]">arrow_back</span>
+</button>
+</div>
+<h1 class="text-xl font-bold tracking-tight uppercase">Manage Houses</h1>
+<div class="size-10 flex items-center justify-end">
+<span class="material-symbols-outlined text-[24px]">add_circle</span>
+</div>
+</header>
+<main class="flex flex-col gap-8 p-5 pb-24 max-w-lg mx-auto w-full">
+<section class="flex flex-col gap-4">
+<div class="flex items-center justify-between border-b-[3px] border-background-dark pb-2 w-full">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined">holiday_village</span>
+<h2 class="text-lg font-bold uppercase tracking-wide">Your Households</h2>
+</div>
+<span class="text-xs font-bold bg-background-dark text-white px-2 py-0.5 rounded">3 TOTAL</span>
+</div>
+<div class="group relative w-full bg-primary border-[3px] border-background-dark rounded-xl p-5 shadow-[6px_6px_0px_0px_#221f10] active:shadow-none active:translate-x-1 active:translate-y-1 transition-all cursor-pointer overflow-hidden">
+<div class="absolute -right-4 -top-4 size-20 bg-white/20 rounded-full blur-xl"></div>
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-2 bg-background-dark text-white px-3 py-1 rounded-lg border border-background-dark shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-primary">check_circle</span>
+<span class="text-xs font-bold uppercase tracking-wider">Active</span>
+</div>
+<span class="material-symbols-outlined text-[28px]">more_vert</span>
+</div>
+<div class="flex items-center gap-4 mt-2">
+<div class="size-12 rounded-full border-[3px] border-background-dark bg-white flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px]">home</span>
+</div>
+<div>
+<h3 class="text-2xl font-bold leading-none">The Main Pad</h3>
+<p class="text-sm font-medium opacity-80 mt-1">4 Members • Austin, TX</p>
+</div>
+</div>
+</div>
+<div class="group w-full bg-white border-[3px] border-background-dark rounded-xl p-4 shadow-[4px_4px_0px_0px_#221f10] active:shadow-none active:translate-x-1 active:translate-y-1 transition-all cursor-pointer flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-full border-[3px] border-background-dark bg-[#e0f2f1] flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px] text-teal-800">cabin</span>
+</div>
+<div>
+<h3 class="text-xl font-bold leading-none">Lake Cabin</h3>
+<p class="text-sm font-medium opacity-60 mt-1">2 Members • Tahoe</p>
+</div>
+</div>
+<button class="size-10 flex items-center justify-center border-[2px] border-background-dark rounded-lg hover:bg-gray-100">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+<div class="group w-full bg-white border-[3px] border-background-dark rounded-xl p-4 shadow-[4px_4px_0px_0px_#221f10] active:shadow-none active:translate-x-1 active:translate-y-1 transition-all cursor-pointer flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-full border-[3px] border-background-dark bg-[#fff9c4] flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px] text-orange-800">apartment</span>
+</div>
+<div>
+<h3 class="text-xl font-bold leading-none">Co-living Space</h3>
+<p class="text-sm font-medium opacity-60 mt-1">8 Members • Brooklyn</p>
+</div>
+</div>
+<button class="size-10 flex items-center justify-center border-[2px] border-background-dark rounded-lg hover:bg-gray-100">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</section>
+<div class="w-full h-1 border-t-[3px] border-dashed border-background-dark/30 my-2"></div>
+<section class="flex flex-col gap-5">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined">badge</span>
+<h2 class="text-lg font-bold uppercase tracking-wide">Role Assignment</h2>
+</div>
+<p class="text-sm opacity-70">Managing permissions for <span class="font-bold underline">The Main Pad</span>.</p>
+</div>
+<div class="flex items-center justify-between bg-white border-[3px] border-background-dark rounded-lg p-3 shadow-[4px_4px_0px_0px_#221f10]">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full border-[2px] border-background-dark overflow-hidden bg-primary shrink-0">
+<img alt="Portrait of a user with glasses" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdIeKSvSw4g0UUcuJweKw7YgtsfrLM5Eld5EIqorAUZk7VenHbkKixdWdj8iw-K0dr1dQoD2vI-tRFaqfrk1PZyA8s4mjhvR8QUAjBaKuWFc1jJ_EsRNXftMEyuwuE2_TbZ0pxpnD1wPv7XiAkmrOUy3vE2ruD7E0-r_QpIIqCmuOcKJgZl4MR2NaJRDy-lIVJYkf-hcPeOZtvr1-pZQzrCO3lxO2S_kcYiA64JDQGy-VbecLGkn7TuHbtZGBUIZdyw9UAj8zg5txZ"/>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-lg leading-none">You</span>
+<span class="text-xs text-gray-500 font-medium">@jess_design</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="bg-background-dark text-white text-[10px] font-black uppercase px-2 py-1 rounded border border-background-dark shadow-sm">Admin</span>
+<span class="material-symbols-outlined text-gray-400">edit</span>
+</div>
+</div>
+<div class="flex items-center justify-between bg-white border-[3px] border-background-dark rounded-lg p-3 shadow-[4px_4px_0px_0px_#221f10]">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full border-[2px] border-background-dark overflow-hidden bg-gray-200 shrink-0">
+<img alt="Portrait of a smiling man" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuANI44Krw9NetR9sD8tlHK50tGn_Dpo_VtoJGodaCLSF4GHdr_aDWQv-QHoxwagrBkR9w6AdQY0IMZnd3mX_e8OTt1gkDJRYSyP1i_0FpNGa35l9SXE9PgBGHB6F9UOFHb79t9R-8RHTDcvt1Fn7GWODAzRsB0oEVT1fRPmhOStG8GU0mRspoKg0H2rRPlaBpkFIqWYW7lB7KlrebmM04JWxVUF1C0K2hphoictwaWNzoUXpCIps2Ecydkk2LFhtDW1khNM7r391PlN"/>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-lg leading-none">Alex M.</span>
+<span class="text-xs text-gray-500 font-medium">@alex_cooks</span>
+</div>
+</div>
+<div class="relative group">
+<button class="flex items-center gap-2 bg-sage/30 hover:bg-sage hover:text-white transition-colors border-[2px] border-background-dark rounded px-3 py-1.5">
+<span class="text-[10px] font-black uppercase">Member</span>
+<span class="material-symbols-outlined text-[14px]">expand_more</span>
+</button>
+</div>
+</div>
+<div class="flex items-center justify-between bg-white border-[3px] border-background-dark rounded-lg p-3 shadow-[4px_4px_0px_0px_#221f10]">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full border-[2px] border-background-dark overflow-hidden bg-dusty shrink-0 flex items-center justify-center text-white font-bold">
+                        SM
+                    </div>
+<div class="flex flex-col">
+<span class="font-bold text-lg leading-none">Sarah</span>
+<span class="text-xs text-gray-500 font-medium">@sarah_m</span>
+</div>
+</div>
+<div class="relative group">
+<button class="flex items-center gap-2 bg-sage/30 hover:bg-sage hover:text-white transition-colors border-[2px] border-background-dark rounded px-3 py-1.5">
+<span class="text-[10px] font-black uppercase">Member</span>
+<span class="material-symbols-outlined text-[14px]">expand_more</span>
+</button>
+</div>
+</div>
+<div class="flex items-center justify-between bg-white border-[3px] border-background-dark rounded-lg p-3 shadow-[4px_4px_0px_0px_#221f10] opacity-80">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full border-[2px] border-background-dark overflow-hidden bg-gray-100 shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-gray-400">person</span>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-lg leading-none">Guest User</span>
+<span class="text-xs text-gray-500 font-medium">Invited via Link</span>
+</div>
+</div>
+<div class="relative group">
+<button class="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 transition-colors border-[2px] border-background-dark rounded px-3 py-1.5">
+<span class="text-[10px] font-black uppercase text-gray-600">Guest</span>
+<span class="material-symbols-outlined text-[14px] text-gray-600">expand_more</span>
+</button>
+</div>
+</div>
+<button class="mt-2 w-full h-12 border-[3px] border-dashed border-background-dark rounded-lg flex items-center justify-center gap-2 hover:bg-primary/10 transition-colors group">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">person_add</span>
+<span class="font-bold uppercase tracking-wide">Invite New Roommate</span>
+</button>
+</section>
+</main>
+<nav class="fixed bottom-0 left-0 w-full bg-white border-t-[3px] border-background-dark pb-6 pt-3 px-6 flex justify-between items-center z-50">
+<div class="flex flex-col items-center gap-1 opacity-50 cursor-pointer hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[28px]">home</span>
+<span class="text-[10px] font-bold uppercase">Home</span>
+</div>
+<div class="flex flex-col items-center gap-1 opacity-50 cursor-pointer hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[28px]">list_alt</span>
+<span class="text-[10px] font-bold uppercase">Lists</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-primary cursor-pointer">
+<div class="bg-primary border-[2px] border-background-dark p-2 rounded-lg -mt-6 shadow-[3px_3px_0px_0px_#221f10]">
+<span class="material-symbols-outlined text-[28px] text-background-dark">settings</span>
+</div>
+<span class="text-[10px] font-bold uppercase text-background-dark mt-1">Manage</span>
+</div>
+</nav>
+
+</body></html>
