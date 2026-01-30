@@ -1,14 +1,47 @@
 <script setup lang="ts">
-import Button from '~/components/ui/Button.vue'
-import Card from '~/components/ui/Card.vue'
+import { ref, onMounted } from 'vue'
+import { useFinance } from '~/composables/useFinance'
+import type { GroupBalanceSummaryResponse, ExpenseResponse } from '~/types/finance'
 
-// Mock Data
-const expenses = [
-    { title: 'Friday Pizza Night', date: 'Oct 24 • Split evenly', amount: '-$12.50', status: 'Unpaid', icon: 'local_pizza', color: 'bg-primary/20' },
-    { title: 'Cleaning Supplies', date: 'Oct 22 • You owe 50%', amount: '-$8.00', status: 'Unpaid', icon: 'cleaning_services', color: 'bg-sage/30' },
-    { title: 'Bottled Water', date: 'Oct 20 • Alex paid', amount: '-$4.00', status: 'Unpaid', icon: 'water_drop', color: 'bg-blue-100' }, // dusty-blue substitute
-    { title: 'Internet Bill', date: 'Oct 15 • Paid', amount: '$30.00', status: 'Paid', icon: 'router', color: 'bg-gray-200', paid: true },
-]
+const { getBalances, listExpenses } = useFinance()
+
+const balances = ref<GroupBalanceSummaryResponse | null>(null)
+const expenses = ref<ExpenseResponse[]>([])
+const isLoading = ref(true)
+
+const fetchData = async () => {
+    isLoading.value = true
+    try {
+        const [balanceData, expenseData] = await Promise.all([
+            getBalances(),
+            listExpenses({ limit: 5 })
+        ])
+        balances.value = balanceData
+        expenses.value = expenseData
+    } catch (e) {
+        console.error('Failed to fetch finance data', e)
+    } finally {
+        isLoading.value = false
+    }
+}
+
+// Helpers for display
+const formatCurrency = (amount: number, currency = 'USD') => { // Mock currency for now if not in response
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount)
+}
+
+const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+// Map category to icon/color (Simple mapping for now as category might be just an ID)
+// Real app would fetch categories and map IDs
+const getCategoryIcon = (id: number) => 'category' // Placeholder
+const getCategoryColor = (id: number) => 'bg-gray-100' // Placeholder
+
+onMounted(() => {
+    fetchData()
+})
 </script>
 
 <template>
@@ -31,80 +64,85 @@ const expenses = [
         </header>
 
         <main class="flex flex-col p-5 max-w-lg mx-auto w-full gap-6">
+
+            <div v-if="isLoading" class="text-center py-10 opacity-50">Loading finances...</div>
+
             <!-- Balance Card -->
-            <section
+            <section v-if="!isLoading"
                 class="flex flex-col gap-0 w-full bg-white border-[3px] border-background-dark rounded-xl shadow-neobrutalism-lg overflow-hidden">
                 <div class="p-6 pb-2 flex flex-col items-center text-center gap-4">
                     <div
                         class="size-20 rounded-full border-[3px] border-background-dark overflow-hidden bg-gray-200 shadow-neobrutalism-sm mb-2">
                         <!-- Avatar Placeholer -->
-                        <div class="w-full h-full bg-gray-300 flex items-center justify-center text-2xl font-bold">AL
+                        <div class="w-full h-full bg-gray-300 flex items-center justify-center text-2xl font-bold">$$
                         </div>
                     </div>
                     <div class="flex flex-col gap-1">
-                        <span class="text-sm font-bold uppercase tracking-wide opacity-60">Balance Due</span>
-                        <h2 class="text-4xl font-bold leading-none">You owe Alex</h2>
+                        <span class="text-sm font-bold uppercase tracking-wide opacity-60">Total Balance</span>
+                        <h2 class="text-4xl font-bold leading-none">
+                            <!-- Just showing strict you owe vs you are owed for simplicity. Real app needs breakdown -->
+                            {{ 0 }} <!-- Placeholder for computed balance -->
+                        </h2>
                         <div class="flex items-baseline justify-center gap-1 mt-1">
-                            <span class="text-sm font-bold self-start mt-2">$</span>
-                            <span
-                                class="text-[56px] font-bold leading-none tracking-tight text-background-dark">24.50</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-5 pt-4 flex flex-col gap-3">
-                    <button
-                        class="w-full h-16 bg-[#A3B18A] border-[3px] border-background-dark rounded-xl font-bold text-xl text-white shadow-neobrutalism active:translate-x-1 active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2 hover:brightness-105">
-                        <span class="material-symbols-outlined">payments</span>
-                        Pay Now
-                    </button>
-                    <button
-                        class="w-full h-16 bg-primary border-[3px] border-background-dark rounded-xl font-bold text-xl text-background-dark shadow-neobrutalism active:translate-x-1 active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2 hover:brightness-105">
-                        <span class="material-symbols-outlined">notifications</span>
-                        Remind Me
-                    </button>
-                </div>
-            </section>
-
-            <!-- Breakdown -->
-            <section class="flex flex-col gap-4 mt-2">
-                <div class="flex items-center justify-between border-b-[3px] border-background-dark pb-2 w-full">
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined">receipt_long</span>
-                        <h2 class="text-xl font-bold uppercase tracking-wide">Breakdown</h2>
-                    </div>
-                    <span class="text-sm font-bold text-gray-500">3 items</span>
-                </div>
-
-                <div class="flex flex-col gap-3">
-                    <div v-for="(item, idx) in expenses" :key="idx"
-                        class="group relative w-full bg-white border-[3px] border-background-dark rounded-lg p-4 shadow-neobrutalism flex justify-between items-center transition-transform hover:-translate-y-0.5"
-                        :class="{ 'bg-gray-100 opacity-70': item.paid }">
-                        <div class="flex items-center gap-4">
-                            <div class="size-12 border-[2px] border-background-dark rounded-lg flex items-center justify-center shrink-0"
-                                :class="[item.color, item.paid ? 'grayscale' : '']">
-                                <span class="material-symbols-outlined text-2xl">{{ item.icon }}</span>
-                            </div>
-                            <div class="flex flex-col">
-                                <h3 class="text-lg font-bold leading-tight"
-                                    :class="{ 'line-through decoration-2': item.paid }">{{ item.title }}</h3>
-                                <span class="text-xs font-bold text-gray-500 uppercase">{{ item.date }}</span>
-                            </div>
-                        </div>
-                        <div class="flex flex-col items-end">
-                            <span class="text-lg font-bold"
-                                :class="item.paid ? 'text-gray-400 decoration-2 line-through' : 'text-red-600'">{{
-                                item.amount }}</span>
-
-                            <span v-if="!item.paid"
-                                class="text-xs font-medium bg-gray-100 border border-background-dark px-1.5 rounded">Unpaid</span>
-                            <span v-else
-                                class="text-xs font-bold text-[#7a8a61] bg-[#A3B18A]/20 border border-[#7a8a61] px-1.5 rounded flex items-center gap-0.5">
-                                <span class="material-symbols-outlined text-[10px] font-black">check</span> Paid
+                            <span class="text-sm font-bold opacity-70">
+                                (Summary placeholder)
                             </span>
                         </div>
                     </div>
                 </div>
+
+                <div
+                    class="grid grid-cols-2 border-t-[3px] border-background-dark divide-x-[3px] divide-background-dark mt-4 bg-gray-50">
+                    <button
+                        class="py-4 hover:bg-primary hover:text-background-dark transition-colors flex flex-col items-center gap-1 group">
+                        <span
+                            class="material-symbols-outlined text-3xl group-hover:scale-110 transition-transform">payments</span>
+                        <span class="font-black text-xs uppercase tracking-widest">Pay Now</span>
+                    </button>
+                    <button
+                        class="py-4 hover:bg-[#8E9DB3] hover:text-white transition-colors flex flex-col items-center gap-1 group">
+                        <span
+                            class="material-symbols-outlined text-3xl group-hover:scale-110 transition-transform">notifications_active</span>
+                        <span class="font-black text-xs uppercase tracking-widest">Remind</span>
+                    </button>
+                </div>
             </section>
+
+            <!-- History / Expenses Section -->
+            <section v-if="!isLoading" class="flex flex-col gap-4">
+                <div class="flex items-center justify-between px-1">
+                    <h3 class="font-bold text-lg uppercase tracking-wide">Recent Expenses</h3>
+                    <button
+                        class="text-xs font-bold underline decoration-2 underline-offset-2 hover:text-primary transition-colors">See
+                        All</button>
+                </div>
+
+                <div v-if="expenses.length === 0" class="text-center py-4 opacity-50 font-bold">No expenses yet.</div>
+
+                <div v-for="expense in expenses" :key="expense.id"
+                    class="flex items-center justify-between bg-white border-[3px] border-background-dark rounded-xl p-4 shadow-neobrutalism hover:-translate-y-1 transition-transform cursor-pointer">
+                    <div class="flex items-center gap-4">
+                        <div class="size-12 rounded-lg border-[2px] border-background-dark flex items-center justify-center text-background-dark"
+                            :class="getCategoryColor(expense.category_id)">
+                            <span class="material-symbols-outlined">{{ getCategoryIcon(expense.category_id) }}</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <h4 class="font-bold text-lg leading-none">{{ expense.title }}</h4>
+                            <span class="text-xs font-bold text-gray-500 mt-1">{{ formatDate(expense.date) }} • {{
+                                'Split' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-end gap-1">
+                        <span class="font-bold text-lg">{{ formatCurrency(expense.amount) }}</span>
+                        <span
+                            class="text-[10px] font-black uppercase px-1.5 py-0.5 rounded border border-gray-300 bg-gray-100 text-gray-500">
+                            Paid
+                        </span>
+                    </div>
+                </div>
+            </section>
+
         </main>
     </div>
 </template>

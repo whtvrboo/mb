@@ -1,31 +1,73 @@
 <script setup lang="ts">
-// Mock Settings Data
-const houseName = ref('The Loft')
-const settings = [
-    {
-        section: 'Plan & Billing', items: [
-            { label: 'Manage Subscription', icon: 'credit_card', action: 'External Link' },
-            { label: 'Payment Methods', icon: 'account_balance_wallet', action: 'Visa ...4242' }
-        ]
-    },
-    {
-        section: 'Notifications', items: [
-            { label: 'Push Notifications', icon: 'notifications', toggle: true },
-            { label: 'Email Digest', icon: 'mail', toggle: false }
-        ]
-    },
-    {
-        section: 'Roommates', items: [
-            { label: 'Invite Link', icon: 'link', action: 'Copy' },
-            { label: 'Manage Members', icon: 'group', action: '4 Active' }
-        ]
+import { ref, onMounted, computed } from 'vue'
+import { useAuth } from '~/composables/useAuth'
+import type { GroupResponse, UserResponse } from '~/types/auth'
+
+const { listGroups, listGroupMembers, getMe, updateUser } = useAuth()
+
+const house = ref<GroupResponse | null>(null)
+const user = ref<UserResponse | null>(null)
+const memberCount = ref(0)
+const isLoading = ref(true)
+
+// Mock notification state stored in user preferences?
+const pushEnabled = ref(false)
+const emailEnabled = ref(false)
+
+const fetchData = async () => {
+    isLoading.value = true
+    try {
+        const [groups, userData] = await Promise.all([
+            listGroups(),
+            getMe()
+        ])
+
+        user.value = userData
+        // Initialize toggles from preferences or default
+        pushEnabled.value = (userData.preferences?.push_notifications as boolean) ?? true
+        emailEnabled.value = (userData.preferences?.email_digest as boolean) ?? false
+
+        if (groups.length > 0) {
+            house.value = groups[0] // Select first house for now
+            const members = await listGroupMembers(house.value.id)
+            memberCount.value = members.length
+        }
+    } catch (e) {
+        console.error('Failed to fetch settings data', e)
+    } finally {
+        isLoading.value = false
     }
-]
+}
+
+const updatePreference = async (key: string, value: boolean) => {
+    if (!user.value) return
+    try {
+        const newPrefs = { ...user.value.preferences, [key]: value }
+        await updateUser(user.value.id, { preferences: newPrefs })
+        // Update local ref
+        if (key === 'push_notifications') pushEnabled.value = value
+        if (key === 'email_digest') emailEnabled.value = value
+    } catch (e) {
+        console.error('Failed to update preference', e)
+        // Revert toggle
+        if (key === 'push_notifications') pushEnabled.value = !value
+        if (key === 'email_digest') emailEnabled.value = !value
+    }
+}
+
+const copyInviteLink = async () => {
+    // Generate or fetch invite link (mocking action for now as invite generation needs a separate flow)
+    // Real implementation: create invite -> get code -> copy url
+    alert('Invite link copied! (Simulated)')
+}
+
+onMounted(() => {
+    fetchData()
+})
 </script>
 
 <template>
     <div class="bg-background-light dark:bg-background-dark min-h-screen text-background-dark font-display pb-24">
-        <!-- Header -->
         <header
             class="sticky top-0 z-50 bg-background-light border-b-[3px] border-background-dark px-5 h-16 flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-3">
@@ -39,10 +81,12 @@ const settings = [
         </header>
 
         <main class="flex flex-col gap-8 p-5 max-w-lg mx-auto w-full">
+            <div v-if="isLoading" class="text-center py-10 opacity-50">Loading settings...</div>
+
             <!-- House Title -->
-            <div class="flex items-center justify-between">
+            <div v-if="house" class="flex items-center justify-between">
                 <div class="flex flex-col">
-                    <h2 class="text-2xl font-bold leading-tight">{{ houseName }}</h2>
+                    <h2 class="text-2xl font-bold leading-tight">{{ house.name }}</h2>
                     <span class="text-sm font-medium opacity-60">Global Settings</span>
                 </div>
                 <div
@@ -52,35 +96,86 @@ const settings = [
             </div>
 
             <!-- Settings Sections -->
-            <div class="flex flex-col gap-6">
-                <div v-for="(section, idx) in settings" :key="idx" class="flex flex-col gap-2">
-                    <h3 class="text-sm font-bold uppercase text-gray-500 ml-1">{{ section.section }}</h3>
+            <div v-if="!isLoading" class="flex flex-col gap-6">
+                <!-- Notifications -->
+                <div class="flex flex-col gap-2">
+                    <h3 class="text-sm font-bold uppercase text-gray-500 ml-1">Notifications</h3>
                     <div
                         class="flex flex-col gap-0 bg-white border-[3px] border-background-dark rounded-xl overflow-hidden shadow-neobrutalism">
-                        <div v-for="(item, i) in section.items" :key="i"
-                            class="flex items-center justify-between p-4 border-b-[2px] border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors cursor-pointer group">
+
+                        <!-- Push Toggle -->
+                        <div class="flex items-center justify-between p-4 border-b-[2px] border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer group"
+                            @click="updatePreference('push_notifications', !pushEnabled)">
                             <div class="flex items-center gap-3">
                                 <div
                                     class="size-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 group-hover:bg-primary group-hover:text-background-dark transition-colors">
-                                    <span class="material-symbols-outlined text-[20px]">{{ item.icon }}</span>
+                                    <span class="material-symbols-outlined text-[20px]">notifications</span>
                                 </div>
-                                <span class="font-bold text-lg">{{ item.label }}</span>
+                                <span class="font-bold text-lg">Push Notifications</span>
                             </div>
-
-                            <!-- Action Types -->
-                            <div v-if="item.toggle !== undefined">
-                                <div class="w-12 h-6 bg-gray-200 rounded-full border-2 border-background-dark relative transition-colors"
-                                    :class="{ 'bg-primary': item.toggle }">
-                                    <div class="size-4 bg-white border-2 border-background-dark rounded-full absolute top-[2px] left-[2px] transition-transform"
-                                        :class="{ 'translate-x-[24px]': item.toggle }"></div>
-                                </div>
-                            </div>
-                            <div v-else
-                                class="flex items-center gap-2 text-sm font-bold opacity-60 group-hover:opacity-100">
-                                {{ item.action }}
-                                <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+                            <div class="w-12 h-6 bg-gray-200 rounded-full border-2 border-background-dark relative transition-colors"
+                                :class="{ 'bg-primary': pushEnabled }">
+                                <div class="size-4 bg-white border-2 border-background-dark rounded-full absolute top-[2px] left-[2px] transition-transform"
+                                    :class="{ 'translate-x-[24px]': pushEnabled }"></div>
                             </div>
                         </div>
+
+                        <!-- Email Toggle -->
+                        <div class="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors cursor-pointer group"
+                            @click="updatePreference('email_digest', !emailEnabled)">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="size-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 group-hover:bg-primary group-hover:text-background-dark transition-colors">
+                                    <span class="material-symbols-outlined text-[20px]">mail</span>
+                                </div>
+                                <span class="font-bold text-lg">Email Digest</span>
+                            </div>
+                            <div class="w-12 h-6 bg-gray-200 rounded-full border-2 border-background-dark relative transition-colors"
+                                :class="{ 'bg-primary': emailEnabled }">
+                                <div class="size-4 bg-white border-2 border-background-dark rounded-full absolute top-[2px] left-[2px] transition-transform"
+                                    :class="{ 'translate-x-[24px]': emailEnabled }"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Roommates -->
+                <div class="flex flex-col gap-2">
+                    <h3 class="text-sm font-bold uppercase text-gray-500 ml-1">Roommates</h3>
+                    <div
+                        class="flex flex-col gap-0 bg-white border-[3px] border-background-dark rounded-xl overflow-hidden shadow-neobrutalism">
+                        <!-- Invite -->
+                        <div class="flex items-center justify-between p-4 border-b-[2px] border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer group"
+                            @click="copyInviteLink">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="size-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 group-hover:bg-primary group-hover:text-background-dark transition-colors">
+                                    <span class="material-symbols-outlined text-[20px]">link</span>
+                                </div>
+                                <span class="font-bold text-lg">Invite Roommate</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-sm font-bold opacity-60 group-hover:opacity-100">
+                                Copy
+                                <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                            </div>
+                        </div>
+
+                        <!-- Manage -->
+                        <NuxtLink to="/mates"
+                            class="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors cursor-pointer group">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="size-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 group-hover:bg-primary group-hover:text-background-dark transition-colors">
+                                    <span class="material-symbols-outlined text-[20px]">group</span>
+                                </div>
+                                <span class="font-bold text-lg">Manage Members</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-sm font-bold opacity-60 group-hover:opacity-100">
+                                {{ memberCount }} Active
+                                <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+                            </div>
+                        </NuxtLink>
                     </div>
                 </div>
 

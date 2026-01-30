@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Stride Client (Mitlist frontend) uses **Zitadel OIDC** for authentication and provides a complete TypeScript API layer for all backend modules.
+The mitlist Client (Mitlist frontend) uses **Zitadel OIDC** for authentication and provides a complete TypeScript API layer for all backend modules.
 
 ## Authentication Flow
 

@@ -1,16 +1,37 @@
 <script setup lang="ts">
 import confetti from 'canvas-confetti'
 
-// Mock Data for Dashboard
-const feedItems = [
-  { type: 'bill', title: 'Internet Bill', amount: '$89.99', subtitle: '/ Spectrum', urgent: true, dueLabel: 'Due Today at 5 PM' },
-  { type: 'chore', title: 'Take Out Trash', subtitle: 'Bins to the curb, recycling sorted.', points: 20, assignedTo: 'You', completed: false },
-]
+import { ref, onMounted } from 'vue'
+import { useAuth } from '~/composables/useAuth'
+import { useChores } from '~/composables/useChores'
+import type { UserResponse } from '~/types/auth'
+import type { ChoreAssignmentWithChoreResponse } from '~/types/chores'
 
-const routineItems = [
-  { title: 'Feed the Cat', subtitle: 'AM Kibble', type: 'Pet', icon: 'pets', completed: false },
-  { title: 'Water Monstera', subtitle: 'Living Room', type: 'Plant', icon: 'potted_plant', completed: false },
-]
+const { getMe } = useAuth()
+// const { listItems } = useLists() // Could add bills here later
+const { listAssignments } = useChores()
+
+const user = ref<UserResponse | null>(null)
+const feedChores = ref<ChoreAssignmentWithChoreResponse[]>([])
+
+const fetchData = async () => {
+  try {
+    const [userData, choresData] = await Promise.all([
+      getMe(),
+      listAssignments({ status_filter: 'pending' }) // Fetch pending chores
+    ])
+    user.value = userData
+    feedChores.value = choresData.slice(0, 3) // Only show top 3
+  } catch (e) {
+    console.error('Failed to fetch dashboard data', e)
+  }
+}
+
+onMounted(() => {
+  fetchData()
+})
+
+const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
 
 const isTrashChoreCompleted = ref(false)
 
@@ -33,11 +54,13 @@ const handleChoreChange = () => {
       class="sticky top-0 z-50 bg-background-light border-b-[3px] border-background-dark px-5 h-20 flex items-center justify-between shadow-sm">
       <div class="flex flex-col">
         <h1 class="text-xl font-bold tracking-tight uppercase leading-none">My House</h1>
-        <span class="text-sm font-medium opacity-60">Tuesday, Oct 24</span>
+        <span class="text-sm font-medium opacity-60">{{ currentDate }}</span>
       </div>
       <div class="flex items-center gap-3">
         <div class="size-10 rounded-full border-[3px] border-background-dark overflow-hidden bg-gray-200">
-          <div class="w-full h-full bg-gray-300 flex items-center justify-center font-bold">You</div>
+          <img v-if="user?.avatar_url" :src="user.avatar_url" class="w-full h-full object-cover" />
+          <div v-else class="w-full h-full bg-gray-300 flex items-center justify-center font-bold">{{ user?.name?.[0] ||
+            '?' }}</div>
         </div>
         <button
           class="flex items-center justify-center size-10 rounded-lg hover:bg-black/5 transition-colors border-[3px] border-transparent hover:border-background-dark"
@@ -59,7 +82,8 @@ const handleChoreChange = () => {
         <div class="flex flex-col w-full">
           <div class="flex justify-between items-center mb-1">
             <h2 class="font-bold text-lg uppercase">House is Busy</h2>
-            <span class="text-xs font-bold bg-background-dark text-white px-2 py-0.5 rounded">4 Pending</span>
+            <span class="text-xs font-bold bg-background-dark text-white px-2 py-0.5 rounded">{{ feedChores.length }}
+              Pending</span>
           </div>
           <div class="w-full h-3 bg-gray-200 rounded-full border-2 border-background-dark overflow-hidden">
             <div class="h-full w-1/3 bg-[#e76f51]"></div>
@@ -68,43 +92,11 @@ const handleChoreChange = () => {
       </section>
 
       <!-- Feed Items -->
-      <!-- Bill Item -->
-      <div
-        class="relative w-full bg-[#e76f51] border-[3px] border-background-dark rounded-xl shadow-neobrutalism-lg flex flex-col overflow-hidden group hover:-translate-y-1 transition-transform cursor-pointer">
-        <div class="p-5 flex flex-col gap-4">
-          <div class="flex justify-between items-start">
-            <div
-              class="bg-white/90 backdrop-blur border-[2px] border-background-dark px-3 py-1 rounded-full text-xs font-bold uppercase flex items-center gap-1 shadow-sm">
-              <span class="material-symbols-outlined text-base">receipt_long</span>
-              Bill Due
-            </div>
-            <div
-              class="bg-background-dark text-white px-3 py-1 rounded-lg text-xs font-bold uppercase border border-white/20">
-              Urgent
-            </div>
-          </div>
-          <div class="flex flex-col gap-1 mt-1">
-            <h3 class="text-3xl font-bold leading-none">Internet Bill</h3>
-            <div class="flex items-baseline gap-2">
-              <span class="text-4xl font-bold tracking-tight">$89.99</span>
-              <span class="text-sm font-bold opacity-70">/ Spectrum</span>
-            </div>
-          </div>
-        </div>
-        <div class="bg-background-dark p-4 flex justify-between items-center text-white mt-auto">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-[#e76f51]">warning</span>
-            <span class="text-sm font-bold">Due Today at 5 PM</span>
-          </div>
-          <button
-            class="bg-white text-background-dark px-4 py-1.5 rounded-lg font-bold text-sm border-2 border-transparent hover:border-primary hover:bg-primary transition-all shadow-sm active:translate-y-0.5">
-            Pay Now
-          </button>
-        </div>
+      <div v-if="feedChores.length === 0" class="text-center opacity-50 font-bold py-10">
+        All caught up! Nothing to do.
       </div>
 
-      <!-- Chore Item -->
-      <div
+      <div v-for="chore in feedChores" :key="chore.id"
         class="relative w-full bg-primary border-[3px] border-background-dark rounded-xl p-5 shadow-neobrutalism-lg flex flex-col gap-3 group hover:-translate-y-0.5 transition-transform">
         <div class="flex justify-between items-start">
           <div class="flex flex-col gap-2">
@@ -113,8 +105,8 @@ const handleChoreChange = () => {
               <span class="material-symbols-outlined text-base">delete</span>
               Chore
             </div>
-            <h3 class="text-2xl font-bold leading-tight mt-1">Take Out Trash</h3>
-            <p class="text-sm font-medium opacity-80">Bins to the curb, recycling sorted.</p>
+            <h3 class="text-2xl font-bold leading-tight mt-1">{{ chore.chore.name }}</h3>
+            <!-- <p class="text-sm font-medium opacity-80">{{ chore.chore.description }}</p> -->
           </div>
           <label class="relative cursor-pointer">
             <input
@@ -133,60 +125,15 @@ const handleChoreChange = () => {
         <div class="h-0.5 w-full bg-black/10 my-1"></div>
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <div class="size-8 rounded-full border-[2px] border-background-dark overflow-hidden bg-gray-200">
-              <div class="w-full h-full bg-gray-300 flex items-center justify-center font-bold text-xs">You</div>
-            </div>
+            <!-- <div class="size-8 rounded-full border-[2px] border-background-dark overflow-hidden bg-gray-200">
+               <div class="w-full h-full bg-gray-300 flex items-center justify-center font-bold text-xs">You</div>
+            </div> -->
             <span class="text-sm font-bold">Your Turn</span>
           </div>
-          <span class="text-xs font-bold uppercase tracking-wide opacity-60">Daily • 20pts</span>
+          <span class="text-xs font-bold uppercase tracking-wide opacity-60">{{ chore.chore.points_value }} pts</span>
         </div>
       </div>
 
-      <!-- Routine Grid -->
-      <div class="grid grid-cols-2 gap-4">
-        <div
-          class="bg-[#8E9DB3] border-[3px] border-background-dark rounded-xl p-4 shadow-neobrutalism flex flex-col gap-3 h-full justify-between hover:-translate-y-0.5 transition-transform">
-          <div class="flex flex-col gap-2">
-            <div
-              class="bg-white/60 border-[2px] border-background-dark px-2 py-0.5 w-fit rounded-md text-[10px] font-bold uppercase flex items-center gap-1">
-              <span class="material-symbols-outlined text-sm">pets</span> Pet
-            </div>
-            <h3 class="text-xl font-bold leading-tight">Feed the Cat</h3>
-          </div>
-          <div class="flex items-center justify-between mt-2">
-            <span class="text-xs font-bold opacity-70">AM Kibble</span>
-            <button
-              class="size-10 bg-white border-[2px] border-background-dark rounded-lg flex items-center justify-center shadow-[2px_2px_0px_0px_#221f10] active:translate-y-0.5 active:shadow-none"
-              aria-label="Mark Feed the Cat as done">
-              <span class="material-symbols-outlined text-lg">check</span>
-            </button>
-          </div>
-        </div>
-
-        <div
-          class="bg-[#A3B18A] border-[3px] border-background-dark rounded-xl p-4 shadow-neobrutalism flex flex-col gap-3 h-full justify-between hover:-translate-y-0.5 transition-transform">
-          <div class="flex flex-col gap-2">
-            <div
-              class="bg-white/60 border-[2px] border-background-dark px-2 py-0.5 w-fit rounded-md text-[10px] font-bold uppercase flex items-center gap-1">
-              <span class="material-symbols-outlined text-sm">potted_plant</span> Plant
-            </div>
-            <h3 class="text-xl font-bold leading-tight">Water Monstera</h3>
-          </div>
-          <div class="flex items-center justify-between mt-2">
-            <span class="text-xs font-bold opacity-70">Living Room</span>
-            <button
-              class="size-10 bg-white border-[2px] border-background-dark rounded-lg flex items-center justify-center shadow-[2px_2px_0px_0px_#221f10] active:translate-y-0.5 active:shadow-none"
-              aria-label="Mark Water Monstera as done">
-              <span class="material-symbols-outlined text-lg">water_drop</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="flex items-center justify-center opacity-40 mt-4 gap-2">
-        <span class="material-symbols-outlined">check_circle</span>
-        <span class="font-bold text-sm">That's all for today!</span>
-      </div>
     </main>
 
     <!-- Bottom Nav -->

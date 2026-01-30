@@ -1,4 +1,4 @@
-# Stride Client (Mitlist Frontend)
+# mitlist Client (Mitlist Frontend)
 
 Nuxt 4 frontend for the Mitlist household management application.
 
@@ -65,7 +65,7 @@ The frontend has a complete TypeScript API layer:
 ## Project Structure
 
 ```
-stride-client/
+mitlist-client/
 ├── app/
 │   ├── components/      # Vue components
 │   ├── composables/     # API composables

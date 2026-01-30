@@ -1,17 +1,70 @@
 <script setup lang="ts">
-// Mock Data
-const houses = [
-    { id: 1, name: 'The Main Pad', members: 4, location: 'Austin, TX', active: true, color: 'bg-primary', icon: 'home' },
-    { id: 2, name: 'Lake Cabin', members: 2, location: 'Tahoe', active: false, color: 'bg-[#e0f2f1]', icon: 'cabin', iconColor: 'text-teal-800' },
-    { id: 3, name: 'Co-living Space', members: 8, location: 'Brooklyn', active: false, color: 'bg-[#fff9c4]', icon: 'apartment', iconColor: 'text-orange-800' },
-]
+import { ref, onMounted, computed } from 'vue'
+import { useAuth } from '~/composables/useAuth'
+import type { GroupResponse, GroupMemberResponse } from '~/types/auth'
 
-const members = [
-    { name: 'You', handle: '@jess_design', role: 'Admin', avatarColor: 'bg-primary', isCurrentUser: true },
-    { name: 'Alex M.', handle: '@alex_cooks', role: 'Member', avatarColor: 'bg-gray-200' },
-    { name: 'Sarah', handle: '@sarah_m', role: 'Member', avatarColor: 'bg-[#8E9DB3]', initials: 'SM' },
-    { name: 'Guest User', handle: 'Invited via Link', role: 'Guest', avatarColor: 'bg-gray-100', isGuest: true },
-]
+const { listGroups, listGroupMembers, groupId } = useAuth()
+
+// State
+const houses = ref<GroupResponse[]>([])
+const members = ref<GroupMemberResponse[]>([])
+const isLoading = ref(true)
+
+// Computed
+const currentHouseId = computed(() => groupId.value)
+
+// Fetch Data
+const fetchData = async () => {
+    isLoading.value = true
+    try {
+        // 1. Fetch User's Groups
+        houses.value = await listGroups()
+
+        // 2. Fetch Members for current group
+        if (currentHouseId.value) {
+            members.value = await listGroupMembers(currentHouseId.value)
+        } else if (houses.value.length > 0) {
+            // Fallback if no current group selected (though useAuth usually handles this)
+            // For now just fetch first
+            members.value = await listGroupMembers(houses.value[0].id)
+        }
+    } catch (error) {
+        console.error('Failed to fetch mates data', error)
+    } finally {
+        isLoading.value = false
+    }
+}
+
+// Helpers
+const getHouseIcon = (house: GroupResponse) => {
+    // Deterministic icon based on id or name
+    const icons = ['home', 'apartment', 'cabin', 'cottage', 'house']
+    return icons[house.id % icons.length]
+}
+
+const getHouseColor = (house: GroupResponse) => {
+    // Deterministic color
+    const colors = ['bg-[#e0f2f1]', 'bg-[#fff9c4]', 'bg-[#ffe0b2]', 'bg-[#d1c4e9]']
+    if (house.id === currentHouseId.value) return 'bg-primary'
+    return colors[house.id % colors.length]
+}
+
+const getAvatarColor = (member: GroupMemberResponse) => {
+    if (member.user.id === members.value[0]?.user.id) return 'bg-primary' // Just a guess for "me"
+    const colors = ['bg-gray-200', 'bg-[#8E9DB3]', 'bg-gray-100', 'bg-[#A3B18A]']
+    // Use user ID for consistent color
+    return colors[member.user.id % colors.length]
+}
+const isCurrentUser = (member: GroupMemberResponse) => {
+    // Ideally compare with my user ID, but we need to fetch 'me' first.
+    // We can fetch 'me' in fetchData or assume strict equality if we had the ID.
+    // For now, let's just leave it false or implement if we fetch user.
+    return false // TODO: compare with logged in user
+}
+
+onMounted(() => {
+    fetchData()
+})
 </script>
 
 <template>
@@ -40,16 +93,22 @@ const members = [
                         <span class="material-symbols-outlined">holiday_village</span>
                         <h2 class="text-lg font-bold uppercase tracking-wide">Your Households</h2>
                     </div>
-                    <span class="text-xs font-bold bg-background-dark text-white px-2 py-0.5 rounded">3 TOTAL</span>
+                    <span class="text-xs font-bold bg-background-dark text-white px-2 py-0.5 rounded">{{ houses.length
+                        }} TOTAL</span>
+                </div>
+
+                <div v-if="isLoading && houses.length === 0" class="py-10 text-center opacity-50">
+                    Loading houses...
                 </div>
 
                 <div v-for="house in houses" :key="house.id"
                     class="group relative w-full border-[3px] border-background-dark rounded-xl p-5 shadow-neobrutalism transition-all cursor-pointer overflow-hidden"
-                    :class="house.active ? 'bg-primary shadow-neobrutalism-lg' : 'bg-white hover:-translate-y-1'">
-                    <div v-if="house.active" class="absolute -right-4 -top-4 size-20 bg-white/20 rounded-full blur-xl">
+                    :class="house.id === currentHouseId ? 'bg-primary shadow-neobrutalism-lg' : 'bg-white hover:-translate-y-1'">
+                    <div v-if="house.id === currentHouseId"
+                        class="absolute -right-4 -top-4 size-20 bg-white/20 rounded-full blur-xl">
                     </div>
 
-                    <div v-if="house.active" class="flex justify-between items-start mb-2">
+                    <div v-if="house.id === currentHouseId" class="flex justify-between items-start mb-2">
                         <div
                             class="flex items-center gap-2 bg-background-dark text-white px-3 py-1 rounded-lg border border-background-dark shadow-sm">
                             <span class="material-symbols-outlined text-[16px] text-primary">check_circle</span>
@@ -59,20 +118,21 @@ const members = [
                     </div>
 
                     <div class="flex items-center gap-4"
-                        :class="{ 'mt-2': house.active, 'justify-between w-full': !house.active }">
+                        :class="{ 'mt-2': house.id === currentHouseId, 'justify-between w-full': house.id !== currentHouseId }">
                         <div class="flex items-center gap-4">
                             <div class="size-12 rounded-full border-[3px] border-background-dark flex items-center justify-center shrink-0"
-                                :class="house.active ? 'bg-white' : house.color">
-                                <span class="material-symbols-outlined text-[24px]"
-                                    :class="house.iconColor || 'text-black'">{{ house.icon }}</span>
+                                :class="house.id === currentHouseId ? 'bg-white' : getHouseColor(house)">
+                                <span class="material-symbols-outlined text-[24px] text-black">{{ getHouseIcon(house)
+                                    }}</span>
                             </div>
                             <div>
                                 <h3 class="text-xl font-bold leading-none">{{ house.name }}</h3>
-                                <p class="text-sm font-medium mt-1" :class="house.active ? 'opacity-80' : 'opacity-60'">
-                                    {{ house.members }} Members • {{ house.location }}</p>
+                                <p class="text-sm font-medium mt-1"
+                                    :class="house.id === currentHouseId ? 'opacity-80' : 'opacity-60'">
+                                    {{ house.address || 'No address' }}</p>
                             </div>
                         </div>
-                        <button v-if="!house.active"
+                        <button v-if="house.id !== currentHouseId"
                             class="size-10 flex items-center justify-center border-[2px] border-background-dark rounded-lg hover:bg-gray-100">
                             <span class="material-symbols-outlined">arrow_forward</span>
                         </button>
@@ -89,38 +149,39 @@ const members = [
                         <span class="material-symbols-outlined">badge</span>
                         <h2 class="text-lg font-bold uppercase tracking-wide">Role Assignment</h2>
                     </div>
-                    <p class="text-sm opacity-70">Managing permissions for <span class="font-bold underline">The Main
-                            Pad</span>.</p>
+                    <p class="text-sm opacity-70">Managing members.</p>
                 </div>
 
-                <div v-for="(member, idx) in members" :key="idx"
-                    class="flex items-center justify-between bg-white border-[3px] border-background-dark rounded-lg p-3 shadow-neobrutalism"
-                    :class="{ 'opacity-80': member.isGuest }">
+                <div v-if="isLoading && members.length === 0" class="py-10 text-center opacity-50">
+                    Loading members...
+                </div>
+
+                <div v-for="member in members" :key="member.id"
+                    class="flex items-center justify-between bg-white border-[3px] border-background-dark rounded-lg p-3 shadow-neobrutalism">
                     <div class="flex items-center gap-3">
                         <div class="size-10 rounded-full border-[2px] border-background-dark overflow-hidden shrink-0 flex items-center justify-center font-bold text-white text-sm"
-                            :class="member.avatarColor">
-                            <span v-if="member.initials">{{ member.initials }}</span>
-                            <span v-else-if="member.isGuest"
-                                class="material-symbols-outlined text-gray-400">person</span>
-                            <img v-else alt="User Avatar" class="w-full h-full object-cover"
-                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdIeKSvSw4g0UUcuJweKw7YgtsfrLM5Eld5EIqorAUZk7VenHbkKixdWdj8iw-K0dr1dQoD2vI-tRFaqfrk1PZyA8s4mjhvR8QUAjBaKuWFc1jJ_EsRNXftMEyuwuE2_TbZ0pxpnD1wPv7XiAkmrOUy3vE2ruD7E0-r_QpIIqCmuOcKJgZl4MR2NaJRDy-lIVJYkf-hcPeOZtvr1-pZQzrCO3lxO2S_kcYiA64JDQGy-VbecLGkn7TuHbtZGBUIZdyw9UAj8zg5txZ" />
+                            :class="getAvatarColor(member)">
+                            <img v-if="member.user.avatar_url" :src="member.user.avatar_url" alt="User Avatar"
+                                class="w-full h-full object-cover" />
+                            <span v-else>{{ member.user.name?.[0] || '?' }}</span>
                         </div>
                         <div class="flex flex-col">
-                            <span class="font-bold text-lg leading-none">{{ member.name }}</span>
-                            <span class="text-xs text-gray-500 font-medium">{{ member.handle }}</span>
+                            <span class="font-bold text-lg leading-none">{{ member.user.name }}</span>
+                            <span class="text-xs text-gray-500 font-medium">{{ member.nickname || '@' +
+                                member.user.email.split('@')[0] }}</span>
                         </div>
                     </div>
 
                     <!-- Role Badge/Dropdown -->
-                    <div v-if="member.isCurrentUser" class="flex items-center gap-2">
+                    <div v-if="isCurrentUser(member)" class="flex items-center gap-2">
                         <span
-                            class="bg-background-dark text-white text-[10px] font-black uppercase px-2 py-1 rounded border border-background-dark shadow-sm">Admin</span>
+                            class="bg-background-dark text-white text-[10px] font-black uppercase px-2 py-1 rounded border border-background-dark shadow-sm">{{
+                            member.role }}</span>
                         <span class="material-symbols-outlined text-gray-400">edit</span>
                     </div>
                     <div v-else class="relative group">
                         <button
-                            class="flex items-center gap-2 bg-[#A3B18A]/30 hover:bg-[#A3B18A] hover:text-white transition-colors border-[2px] border-background-dark rounded px-3 py-1.5"
-                            :class="{ 'bg-gray-100 hover:bg-gray-200 text-gray-600': member.isGuest }">
+                            class="flex items-center gap-2 bg-[#A3B18A]/30 hover:bg-[#A3B18A] hover:text-white transition-colors border-[2px] border-background-dark rounded px-3 py-1.5">
                             <span class="text-[10px] font-black uppercase">{{ member.role }}</span>
                             <span class="material-symbols-outlined text-[14px]">expand_more</span>
                         </button>
