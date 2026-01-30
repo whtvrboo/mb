@@ -221,10 +221,20 @@ async def bulk_add_items(db: AsyncSession, list_id: int, items_data: list[dict])
             priority=d.get("priority"),
             notes=d.get("notes"),
         )
-        db.add(item)
-        await db.flush()
-        await db.refresh(item)
         created.append(item)
+
+    if not created:
+        return []
+
+    db.add_all(created)
+    await db.flush()
+
+    # Efficiently refresh all items to get server-generated fields (id, timestamps)
+    # This replaces N refresh() calls with 1 SELECT
+    stmt = select(Item).where(Item.id.in_([item.id for item in created]))
+    result = await db.execute(stmt)
+    result.scalars().all()
+
     return created
 
 
