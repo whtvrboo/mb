@@ -1,6 +1,6 @@
 """Finance module service layer - business logic. PRIVATE - other modules import from interface.py."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Optional
 

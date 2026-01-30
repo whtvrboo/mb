@@ -15,7 +15,7 @@ from mitlist.modules.auth.models import Group, Invite, Location, ServiceContact,
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)()
+    return datetime.now(timezone.utc)
 
 
 # ---------- Users ----------

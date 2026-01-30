@@ -3,7 +3,7 @@
 from datetime import datetime, time
 from typing import Optional
 
-from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy import ForeignKey, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from mitlist.db.base import Base, BaseModel, TimestampMixin
@@ -63,8 +63,11 @@ class Notification(BaseModel, TimestampMixin):
     """Notification - in-app notification."""
 
     __tablename__ = "notifications"
+    __table_args__ = (
+        Index("ix_notifications_user_lookup", "user_id", "created_at"),
+    )
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     group_id: Mapped[Optional[int]] = mapped_column(ForeignKey("groups.id"), nullable=True)
     type: Mapped[str] = mapped_column(String(100), nullable=False)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -80,10 +83,13 @@ class Comment(BaseModel, TimestampMixin):
     """Comment - comment on any entity."""
 
     __tablename__ = "comments"
+    __table_args__ = (
+        Index("ix_comments_parent_lookup", "parent_type", "parent_id", "created_at"),
+    )
 
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     parent_type: Mapped[str] = mapped_column(String(50), nullable=False)
-    parent_id: Mapped[int] = mapped_column(nullable=False, index=True)
+    parent_id: Mapped[int] = mapped_column(nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     is_edited: Mapped[bool] = mapped_column(default=False, nullable=False)
     edited_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
