@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mitlist.api.deps import get_current_group_id, get_current_user, get_db, require_group_admin, require_introspection_user
+from mitlist.core.errors import NotFoundError, ValidationError
 from mitlist.modules.auth.models import User
 from mitlist.modules.audit import schemas
 from mitlist.modules.audit.interface import (
@@ -16,6 +17,7 @@ from mitlist.modules.audit.interface import (
     generate_report,
     get_entity_history,
     get_entity_tags,
+    get_tag_by_id,
     get_system_stats,
     list_audit_logs,
     list_reports,
@@ -82,10 +84,11 @@ async def get_admin_audit_trail(
 async def get_entity_audit_history(
     entity_type: str,
     entity_id: int,
+    group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
 ):
-    """Get audit history for a specific entity."""
-    history = await get_entity_history(db, entity_type, entity_id)
+    """Get audit history for a specific entity (scoped to current group)."""
+    history = await get_entity_history(db, entity_type, entity_id, group_id=group_id)
 
     # Find created_by and last_modified_by
     created_by = None
@@ -149,10 +152,13 @@ async def get_reports(
 @router.post("/reports/generate", response_model=schemas.ReportSnapshotResponse, status_code=status.HTTP_201_CREATED)
 async def post_generate_report(
     data: schemas.GenerateReportRequest,
+    group_id: int = Depends(get_current_group_id),
     _admin: int = Depends(require_group_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """Generate a new report."""
+    if data.group_id != group_id:
+        raise ValidationError(code="GROUP_MISMATCH", detail="group_id in body must match current group")
     report = await generate_report(
         db,
         group_id=data.group_id,
@@ -177,10 +183,13 @@ async def get_tags(
 @router.post("/tags", response_model=schemas.TagResponse, status_code=status.HTTP_201_CREATED)
 async def post_tag(
     data: schemas.TagCreate,
+    group_id: int = Depends(get_current_group_id),
     _admin: int = Depends(require_group_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """Create a new tag."""
+    if data.group_id != group_id:
+        raise ValidationError(code="GROUP_MISMATCH", detail="group_id in body must match current group")
     tag = await create_tag(db, data.group_id, data.name, data.color_hex)
     return tag
 
@@ -189,10 +198,14 @@ async def post_tag(
 async def patch_tag(
     tag_id: int,
     data: schemas.TagUpdate,
+    group_id: int = Depends(get_current_group_id),
     _admin: int = Depends(require_group_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """Update a tag."""
+    tag = await get_tag_by_id(db, tag_id)
+    if not tag or tag.group_id != group_id:
+        raise NotFoundError(code="TAG_NOT_FOUND", detail=f"Tag {tag_id} not found")
     tag = await update_tag(db, tag_id, name=data.name, color_hex=data.color_hex)
     return tag
 
@@ -200,19 +213,28 @@ async def patch_tag(
 @router.delete("/tags/{tag_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_tag_endpoint(
     tag_id: int,
+    group_id: int = Depends(get_current_group_id),
     _admin: int = Depends(require_group_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """Delete a tag."""
+    tag = await get_tag_by_id(db, tag_id)
+    if not tag or tag.group_id != group_id:
+        raise NotFoundError(code="TAG_NOT_FOUND", detail=f"Tag {tag_id} not found")
     await delete_tag(db, tag_id)
 
 
 @router.post("/tags/assign", response_model=schemas.TagAssignmentResponse, status_code=status.HTTP_201_CREATED)
 async def post_assign_tag(
     data: schemas.TagAssignmentCreate,
+    group_id: int = Depends(get_current_group_id),
+    _admin: int = Depends(require_group_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """Assign a tag to an entity."""
+    tag = await get_tag_by_id(db, data.tag_id)
+    if not tag or tag.group_id != group_id:
+        raise NotFoundError(code="TAG_NOT_FOUND", detail=f"Tag {data.tag_id} not found")
     assignment = await assign_tag(db, data.tag_id, data.entity_type, data.entity_id)
     return assignment
 
@@ -221,10 +243,12 @@ async def post_assign_tag(
 async def get_entity_tags_endpoint(
     entity_type: str,
     entity_id: int,
+    group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
 ):
-    """Get tags for an entity."""
+    """Get tags for an entity (only tags belonging to current group)."""
     tags = await get_entity_tags(db, entity_type, entity_id)
+    tags = [t for t in tags if t.group_id == group_id]
     return schemas.EntityTagsResponse(
         entity_type=entity_type,
         entity_id=entity_id,

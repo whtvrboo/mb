@@ -135,6 +135,47 @@ async def get_chore_history(
     return [schemas.ChoreAssignmentWithChoreResponse.model_validate(a) for a in assignments]
 
 
+
+# ---------- Stats ----------
+@router.get("/stats", response_model=schemas.ChoreStatisticsResponse)
+async def get_chore_stats(
+    group_id: int = Depends(get_current_group_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get group chore statistics."""
+    stats = await interface.get_group_stats(db, group_id)
+    return schemas.ChoreStatisticsResponse(**stats)
+
+
+@router.get("/stats/me", response_model=schemas.UserChoreStatsResponse)
+async def get_my_chore_stats(
+    group_id: int = Depends(get_current_group_id),
+    user = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get statistics for current user."""
+    stats = await interface.get_user_stats(db, group_id, user.id)
+    return schemas.UserChoreStatsResponse(**stats)
+
+
+@router.get("/leaderboard", response_model=schemas.ChoreLeaderboardResponse)
+async def get_chore_leaderboard(
+    group_id: int = Depends(get_current_group_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get leaderboard for the group."""
+    rankings = await interface.get_leaderboard(db, group_id)
+    from datetime import datetime
+    now = datetime.utcnow()
+    start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)  # period: current month 
+    
+    return schemas.ChoreLeaderboardResponse(
+        group_id=group_id,
+        period_start=start,
+        period_end=now,
+        rankings=[schemas.UserChoreStatsResponse(**r) for r in rankings]
+    )
+
 @router.get("/{chore_id}", response_model=schemas.ChoreResponse)
 async def get_chore(
     chore_id: int,
@@ -302,45 +343,6 @@ async def create_chore_from_template(
     return schemas.ChoreResponse.model_validate(chore)
 
 
-# ---------- Stats ----------
-@router.get("/stats", response_model=schemas.ChoreStatisticsResponse)
-async def get_chore_stats(
-    group_id: int = Depends(get_current_group_id),
-    db: AsyncSession = Depends(get_db),
-):
-    """Get group chore statistics."""
-    stats = await interface.get_group_stats(db, group_id)
-    return schemas.ChoreStatisticsResponse(**stats)
-
-
-@router.get("/stats/me", response_model=schemas.UserChoreStatsResponse)
-async def get_my_chore_stats(
-    group_id: int = Depends(get_current_group_id),
-    user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """Get statistics for current user."""
-    stats = await interface.get_user_stats(db, group_id, user.id)
-    return schemas.UserChoreStatsResponse(**stats)
-
-
-@router.get("/leaderboard", response_model=schemas.ChoreLeaderboardResponse)
-async def get_chore_leaderboard(
-    group_id: int = Depends(get_current_group_id),
-    db: AsyncSession = Depends(get_db),
-):
-    """Get leaderboard for the group."""
-    rankings = await interface.get_leaderboard(db, group_id)
-    from datetime import datetime
-    now = datetime.utcnow()
-    start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)  # period: current month 
-    
-    return schemas.ChoreLeaderboardResponse(
-        group_id=group_id,
-        period_start=start,
-        period_end=now,
-        rankings=[schemas.UserChoreStatsResponse(**r) for r in rankings]
-    )
 
 
 # ---------- Assignment Actions ----------

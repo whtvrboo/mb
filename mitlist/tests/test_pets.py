@@ -34,7 +34,7 @@ async def test_pets_lifecycle(authed_client: AsyncClient, auth_headers: dict):
     assert response.status_code == 201
     
     # 4. Check Expiring Vaccines (should be none or one if we manipulate dates, but just calling endpoint is good)
-    response = await authed_client.get("/pets/vaccines/expiring?days_ahead=400", headers=auth_headers)
+    response = await authed_client.get("/pets/vaccines/expiring?days_ahead=300", headers=auth_headers)
     assert response.status_code == 200
     
     # 5. Create Log

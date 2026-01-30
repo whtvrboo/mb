@@ -6,6 +6,8 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mitlist.api.deps import get_current_group_id, get_current_user, get_db
+from mitlist.core.errors import NotFoundError
+from mitlist.modules.auth.interface import require_member
 from mitlist.modules.auth.models import User
 from mitlist.modules.governance import schemas
 from mitlist.modules.governance.interface import (
@@ -71,14 +73,14 @@ async def post_proposals(
 @router.get("/{proposal_id}", response_model=schemas.ProposalResponse)
 async def get_proposal(
     proposal_id: int,
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Get a proposal by ID with ballot options and vote counts."""
     proposal = await get_proposal_by_id(db, proposal_id)
     if not proposal:
-        from mitlist.core.errors import NotFoundError
-
         raise NotFoundError(code="PROPOSAL_NOT_FOUND", detail=f"Proposal {proposal_id} not found")
+    await require_member(db, proposal.group_id, user.id)
     return proposal
 
 
@@ -127,14 +129,14 @@ async def post_proposal_open(
 @router.get("/{proposal_id}/options", response_model=ListType[schemas.BallotOptionResponse])
 async def get_proposal_options(
     proposal_id: int,
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Get ballot options for a proposal."""
     proposal = await get_proposal_by_id(db, proposal_id)
     if not proposal:
-        from mitlist.core.errors import NotFoundError
-
         raise NotFoundError(code="PROPOSAL_NOT_FOUND", detail=f"Proposal {proposal_id} not found")
+    await require_member(db, proposal.group_id, user.id)
     return proposal.ballot_options
 
 
@@ -186,6 +188,10 @@ async def get_proposal_vote_me(
     db: AsyncSession = Depends(get_db),
 ):
     """Get the current user's vote for a proposal."""
+    proposal = await get_proposal_by_id(db, proposal_id)
+    if not proposal:
+        raise NotFoundError(code="PROPOSAL_NOT_FOUND", detail=f"Proposal {proposal_id} not found")
+    await require_member(db, proposal.group_id, user.id)
     vote = await get_user_vote(db, proposal_id, user.id)
     return vote
 
@@ -215,14 +221,14 @@ async def post_proposal_execute(
 @router.get("/{proposal_id}/results", response_model=schemas.ProposalResultResponse)
 async def get_proposal_results(
     proposal_id: int,
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Get voting results summary for a proposal."""
     proposal = await get_proposal_by_id(db, proposal_id)
     if not proposal:
-        from mitlist.core.errors import NotFoundError
-
         raise NotFoundError(code="PROPOSAL_NOT_FOUND", detail=f"Proposal {proposal_id} not found")
+    await require_member(db, proposal.group_id, user.id)
 
     # Get vote counts per option
     from sqlalchemy import func, select

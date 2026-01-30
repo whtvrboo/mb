@@ -81,15 +81,19 @@ async def get_entity_history(
     db: AsyncSession,
     entity_type: str,
     entity_id: int,
+    group_id: Optional[int] = None,
     limit: int = 100,
 ) -> list[AuditLog]:
-    """Get audit history for a specific entity."""
-    result = await db.execute(
+    """Get audit history for a specific entity, optionally scoped to a group."""
+    q = (
         select(AuditLog)
         .where(AuditLog.entity_type == entity_type, AuditLog.entity_id == entity_id)
         .order_by(AuditLog.occurred_at.desc())
         .limit(limit)
     )
+    if group_id is not None:
+        q = q.where(AuditLog.group_id == group_id)
+    result = await db.execute(q)
     return list(result.scalars().all())
 
 

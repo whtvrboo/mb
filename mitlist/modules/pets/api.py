@@ -12,6 +12,30 @@ from mitlist.modules.pets import interface, schemas
 router = APIRouter(prefix="/pets", tags=["pets"])
 
 
+
+# ---------- Schedules (Top Level) ----------
+@router.patch("/schedules/{schedule_id}/done", response_model=schemas.PetScheduleResponse)
+async def mark_schedule_completed(
+    schedule_id: int,
+    data: schemas.PetScheduleMarkDoneRequest,
+    group_id: int = Depends(get_current_group_id),
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Mark schedule as done."""
+    sched = await interface.get_schedule_by_id(db, schedule_id)
+    if not sched or sched.pet.group_id != group_id:
+        raise NotFoundError(code="SCHEDULE_NOT_FOUND", detail=f"Schedule {schedule_id} not found")
+    updated = await interface.mark_schedule_done(
+        db,
+        schedule_id=schedule_id,
+        user_id=user.id,
+        notes=data.notes,
+        value_amount=data.value_amount,
+        value_unit=data.value_unit,
+    )
+    return schemas.PetScheduleResponse.model_validate(updated)
+
 # ---------- Pets ----------
 @router.get("", response_model=ListType[schemas.PetResponse])
 async def get_pets(
@@ -55,6 +79,17 @@ async def create_pet(
     )
     return schemas.PetResponse.model_validate(pet)
 
+
+
+@router.get("/vaccines/expiring", response_model=ListType[schemas.PetMedicalRecordResponse])
+async def get_expiring_vaccines(
+    days_ahead: int = Query(30, ge=1, le=365),
+    group_id: int = Depends(get_current_group_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get expiring vaccines for the group."""
+    records = await interface.get_expiring_vaccines(db, group_id, days_ahead)
+    return [schemas.PetMedicalRecordResponse.model_validate(r) for r in records]
 
 @router.get("/{pet_id}", response_model=schemas.PetResponse)
 async def get_pet(
@@ -172,15 +207,6 @@ async def create_pet_medical_record(
     return schemas.PetMedicalRecordResponse.model_validate(record)
 
 
-@router.get("/vaccines/expiring", response_model=ListType[schemas.PetMedicalRecordResponse])
-async def get_expiring_vaccines(
-    days_ahead: int = Query(30, ge=1, le=365),
-    group_id: int = Depends(get_current_group_id),
-    db: AsyncSession = Depends(get_db),
-):
-    """Get expiring vaccines for the group."""
-    records = await interface.get_expiring_vaccines(db, group_id, days_ahead)
-    return [schemas.PetMedicalRecordResponse.model_validate(r) for r in records]
 
 
 # ---------- Logs ----------
@@ -266,25 +292,4 @@ async def create_pet_schedule(
     return schemas.PetScheduleResponse.model_validate(sched)
 
 
-@router.patch("/schedules/{schedule_id}/done", response_model=schemas.PetScheduleResponse)
-async def mark_schedule_completed(
-    schedule_id: int,
-    data: schemas.PetScheduleMarkDoneRequest,
-    group_id: int = Depends(get_current_group_id),
-    user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """Mark schedule as done."""
-    sched = await interface.get_schedule_by_id(db, schedule_id)
-    if not sched or sched.pet.group_id != group_id:
-        raise NotFoundError(code="SCHEDULE_NOT_FOUND", detail=f"Schedule {schedule_id} not found")
-    updated = await interface.mark_schedule_done(
-        db,
-        schedule_id=schedule_id,
-        user_id=user.id,
-        notes=data.notes,
-        value_amount=data.value_amount,
-        value_unit=data.value_unit,
-    )
-    return schemas.PetScheduleResponse.model_validate(updated)
 

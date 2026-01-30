@@ -12,6 +12,30 @@ from mitlist.modules.plants import interface, schemas
 router = APIRouter(prefix="/plants", tags=["plants"])
 
 
+
+# ---------- Schedules (Top Level) ----------
+@router.patch("/schedules/{schedule_id}/done", response_model=schemas.PlantScheduleResponse)
+async def mark_schedule_completed(
+    schedule_id: int,
+    data: schemas.PlantScheduleMarkDoneRequest,
+    group_id: int = Depends(get_current_group_id),
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Mark schedule as done."""
+    sched = await interface.get_schedule_by_id(db, schedule_id)
+    if not sched or sched.plant.group_id != group_id:
+        raise NotFoundError(code="SCHEDULE_NOT_FOUND", detail=f"Schedule {schedule_id} not found")
+    updated = await interface.mark_schedule_done(
+        db,
+        schedule_id=schedule_id,
+        user_id=user.id,
+        notes=data.notes,
+        quantity_value=data.quantity_value,
+        quantity_unit=data.quantity_unit,
+    )
+    return schemas.PlantScheduleResponse.model_validate(updated)
+
 # ---------- Species ----------
 @router.get("/species", response_model=ListType[schemas.PlantSpeciesResponse])
 async def get_plant_species(db: AsyncSession = Depends(get_db)):
@@ -192,24 +216,3 @@ async def create_plant_schedule(
     return schemas.PlantScheduleResponse.model_validate(sched)
 
 
-@router.patch("/schedules/{schedule_id}/done", response_model=schemas.PlantScheduleResponse)
-async def mark_schedule_completed(
-    schedule_id: int,
-    data: schemas.PlantScheduleMarkDoneRequest,
-    group_id: int = Depends(get_current_group_id),
-    user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """Mark schedule as done."""
-    sched = await interface.get_schedule_by_id(db, schedule_id)
-    if not sched or sched.plant.group_id != group_id:
-        raise NotFoundError(code="SCHEDULE_NOT_FOUND", detail=f"Schedule {schedule_id} not found")
-    updated = await interface.mark_schedule_done(
-        db,
-        schedule_id=schedule_id,
-        user_id=user.id,
-        notes=data.notes,
-        quantity_value=data.quantity_value,
-        quantity_unit=data.quantity_unit,
-    )
-    return schemas.PlantScheduleResponse.model_validate(updated)
