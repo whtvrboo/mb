@@ -1,13 +1,16 @@
 """Documents module service layer. PRIVATE - other modules import from interface.py."""
 
+import base64
 import hashlib
 import secrets
 from datetime import datetime, timedelta
 from typing import Optional
 
+from cryptography.fernet import Fernet
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from mitlist.core.config import settings
 from mitlist.core.errors import ForbiddenError, NotFoundError
 from mitlist.modules.documents.models import Document, DocumentShare, SharedCredential
 
@@ -201,14 +204,31 @@ async def delete_credential(db: AsyncSession, credential_id: int) -> None:
     await db.flush()
 
 
-# ---------- Encryption helpers (replace with Fernet/vault in production) ----------
+# ---------- Encryption helpers ----------
+def _get_fernet() -> Fernet:
+    """Derive a valid Fernet key from SECRET_KEY."""
+    # Fernet requires a 32-byte url-safe base64-encoded key
+    # We hash the SECRET_KEY to 32 bytes (SHA256) and then url-safe base64 encode it
+    key = hashlib.sha256(settings.SECRET_KEY.encode()).digest()
+    key_b64 = base64.urlsafe_b64encode(key)
+    return Fernet(key_b64)
+
+
 def _encrypt_password(password: str) -> str:
-    """Encode password for storage. In production use cryptography.fernet or vault."""
-    import base64
-    return base64.b64encode(password.encode()).decode()
+    """Encrypt password using Fernet (AES-128-CBC + HMAC)."""
+    f = _get_fernet()
+    return f.encrypt(password.encode()).decode()
 
 
 def _decrypt_password(encrypted: str) -> str:
-    """Decode stored password. In production use cryptography.fernet or vault."""
-    import base64
-    return base64.b64decode(encrypted.encode()).decode()
+    """Decrypt password using Fernet, falling back to Base64 for legacy data."""
+    try:
+        f = _get_fernet()
+        return f.decrypt(encrypted.encode()).decode()
+    except Exception:
+        # Fallback to base64 (legacy) if Fernet decryption fails
+        # This allows reading existing data that hasn't been re-encrypted yet
+        try:
+            return base64.b64decode(encrypted.encode()).decode()
+        except Exception:
+            raise ValueError("Failed to decrypt password")
