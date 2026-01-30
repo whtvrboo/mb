@@ -133,6 +133,41 @@ async def award_achievement(
     return user_achievement
 
 
+async def _get_activity_count_for_category(
+    db: AsyncSession,
+    user_id: int,
+    group_id: int,
+    category: str,
+) -> int:
+    """Return count of user activities in the given category (for COUNT achievements)."""
+    if category == "CHORES":
+        from mitlist.modules.chores.models import Chore, ChoreAssignment
+
+        result = await db.execute(
+            select(func.count(ChoreAssignment.id))
+            .select_from(ChoreAssignment)
+            .join(Chore, ChoreAssignment.chore_id == Chore.id)
+            .where(
+                Chore.group_id == group_id,
+                ChoreAssignment.assigned_to_id == user_id,
+                ChoreAssignment.status == "COMPLETED",
+            )
+        )
+        return result.scalar() or 0
+    if category == "FINANCE":
+        from mitlist.modules.finance.models import Expense
+
+        result = await db.execute(
+            select(func.count(Expense.id)).where(
+                Expense.group_id == group_id,
+                Expense.paid_by_user_id == user_id,
+            )
+        )
+        return result.scalar() or 0
+    # PLANTS / PETS: no user-scoped activity count in this codebase yet
+    return 0
+
+
 async def check_and_award_achievements(
     db: AsyncSession,
     user_id: int,
@@ -169,9 +204,10 @@ async def check_and_award_achievements(
         elif achievement.requirement_type == "STREAK":
             qualifies = max_streak >= achievement.requirement_value
         elif achievement.requirement_type == "COUNT":
-            # This would require checking specific counts (e.g., chores completed)
-            # For now, skip COUNT type
-            pass
+            count = await _get_activity_count_for_category(
+                db, user_id, group_id, achievement.category
+            )
+            qualifies = count >= achievement.requirement_value
 
         if qualifies:
             await award_achievement(db, user_id, achievement.id)

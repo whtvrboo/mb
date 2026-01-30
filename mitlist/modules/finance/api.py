@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mitlist.api.deps import get_current_group_id, get_current_user, get_db
-from mitlist.core.errors import NotFoundError, NotImplementedAppError, ValidationError
+from mitlist.core.errors import NotFoundError, ValidationError
 from mitlist.modules.finance import interface, schemas
 
 router = APIRouter(tags=["finance"])
@@ -143,11 +143,6 @@ async def delete_expense(
     if not expense or expense.group_id != group_id:
         raise NotFoundError(code="EXPENSE_NOT_FOUND", detail=f"Expense {expense_id} not found")
     await interface.delete_expense(db, expense_id)
-
-
-# ---------- Stubs: balances, categories, settlements, budgets, recurring ----------
-def _stub(msg: str):
-    raise NotImplementedAppError(detail=msg)
 
 
 @router.get("/balances", response_model=schemas.GroupBalanceSummaryResponse)

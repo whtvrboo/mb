@@ -171,14 +171,11 @@ async def delete_expense(db: AsyncSession, expense_id: int) -> None:
     await db.flush()
 
 
-# ====================
-# Categories
-# ====================
 async def list_categories(
     db: AsyncSession,
     group_id: Optional[int] = None,
 ) -> list[Category]:
-    """List categories - returns global (group_id=None) + group-specific."""
+    """List categories."""
     q = select(Category)
     if group_id is not None:
         q = q.where((Category.group_id.is_(None)) | (Category.group_id == group_id))
@@ -205,7 +202,7 @@ async def create_category(
     parent_category_id: Optional[int] = None,
     is_income: bool = False,
 ) -> Category:
-    """Create category (global or group-specific)."""
+    """Create category."""
     category = Category(
         group_id=group_id,
         name=name,
@@ -262,26 +259,11 @@ async def delete_category(db: AsyncSession, category_id: int) -> None:
     await db.flush()
 
 
-# ====================
-# Balances
-# ====================
 async def calculate_group_balances(
     db: AsyncSession,
     group_id: int,
 ) -> tuple[int, list[dict], Decimal, str]:
-    """Calculate real-time balances for all group members.
-
-    Returns: (group_id, balances_list, total_owed, currency_code)
-
-    Balance formula per user:
-    - paid_total = SUM(expenses.amount) where paid_by_user_id = user
-    - owed_total = SUM(expense_splits.owed_amount) where user_id = user AND is_paid = false
-    - settled_in = SUM(settlements.amount) where payee_id = user
-    - settled_out = SUM(settlements.amount) where payer_id = user
-    - balance = paid_total - owed_total + settled_in - settled_out
-
-    Positive balance = owed by others, Negative balance = owes others
-    """
+    """Calculate real-time balances for all group members."""
     from decimal import Decimal as D
 
     from sqlalchemy import func
@@ -389,9 +371,6 @@ async def create_balance_snapshot(
     return snapshot
 
 
-# ====================
-# Settlements
-# ====================
 async def list_settlements(
     db: AsyncSession,
     group_id: int,
@@ -428,25 +407,7 @@ async def create_settlement(
     confirmation_code: Optional[str] = None,
     notes: Optional[str] = None,
 ) -> Settlement:
-    """Create settlement record.
-
-    TODO: Optionally mark related expense_splits as paid.
-    """
-    from mitlist.modules.auth.models import UserGroup
-
-    for uid in [payer_id, payee_id]:
-        result = await db.execute(
-            select(UserGroup).where(
-                UserGroup.group_id == group_id,
-                UserGroup.user_id == uid,
-                UserGroup.left_at.is_(None),
-            )
-        )
-        if not result.scalar_one_or_none():
-            raise ValidationError(
-                code="INVALID_USER", detail=f"User {uid} is not a member of group {group_id}"
-            )
-
+    """Create settlement record."""
     settlement = Settlement(
         group_id=group_id,
         payer_id=payer_id,
@@ -465,7 +426,7 @@ async def create_settlement(
 
 
 async def delete_settlement(db: AsyncSession, settlement_id: int) -> None:
-    """Hard delete settlement (reverses the settlement)."""
+    """Hard delete settlement."""
     result = await db.execute(select(Settlement).where(Settlement.id == settlement_id))
     settlement = result.scalar_one_or_none()
     if not settlement:
@@ -477,9 +438,6 @@ async def delete_settlement(db: AsyncSession, settlement_id: int) -> None:
     await db.flush()
 
 
-# ====================
-# Budgets
-# ====================
 async def list_budgets(
     db: AsyncSession,
     group_id: int,

@@ -12,7 +12,10 @@ async def test_chores_lifecycle(authed_client: AsyncClient, auth_headers: dict):
         "group_id": int(auth_headers["X-Group-ID"])
     }
     response = await authed_client.post("/chores", json=chore1_data, headers=auth_headers)
-    assert response.status_code == 201, f"Response: {response.text}"
+    if response.status_code != 201:
+        with open("debug_error.txt", "w") as f:
+            f.write(response.text)
+    assert response.status_code == 201
     c1_id = response.json()["id"]
     
     # 2. Create Chore 2
@@ -52,11 +55,12 @@ async def test_chores_lifecycle(authed_client: AsyncClient, auth_headers: dict):
     
     # 5. Instantiate Template
     inst_data = {
-        "title_override": "Deep Clean Living Room",
-        "assignee_ids": []
+        "template_id": tpl_id,
+        "group_id": int(auth_headers["X-Group-ID"]),
+        "name": "Deep Clean Living Room"
     }
     response = await authed_client.post(f"/chores/templates/{tpl_id}/instantiate", json=inst_data, headers=auth_headers)
-    assert response.status_code == 201
+    assert response.status_code == 201, f"Response: {response.text}"
     
     # 6. Stats
     response = await authed_client.get("/chores/stats", headers=auth_headers)

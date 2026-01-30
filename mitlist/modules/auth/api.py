@@ -6,14 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from mitlist.api.deps import get_db
 from mitlist.api.deps import get_current_user
 from mitlist.api.deps import require_introspection_user
-from mitlist.core.errors import GoneError, NotFoundError, NotImplementedAppError
+from mitlist.core.errors import GoneError, NotFoundError
 from mitlist.modules.auth import interface, schemas
 
 router = APIRouter(tags=["auth", "users", "groups", "invites"])
 
-
-def _stub(msg: str):
-    raise NotImplementedAppError(detail=msg)
 
 def _gone(msg: str):
     raise GoneError(code="USE_ZITADEL_OIDC", detail=msg)
