@@ -52,7 +52,7 @@ const checkedItems = computed(() => items.value.filter(i => i.checked))
       <!-- Header -->
       <header class="shrink-0 bg-background-light dark:bg-background-dark pt-6 pb-2 px-5 z-10 border-b-[3px] border-background-dark">
         <div class="flex items-center justify-between mb-4">
-          <NuxtLink to="/" class="flex items-center justify-center size-10 rounded-full border-[2px] border-background-dark hover:bg-background-dark hover:text-white transition-colors active:translate-y-[2px] active:translate-x-[2px] active:shadow-none shadow-neobrutalism-sm bg-white text-background-dark">
+          <NuxtLink to="/" aria-label="Go back" class="flex items-center justify-center size-10 rounded-full border-[2px] border-background-dark hover:bg-background-dark hover:text-white transition-colors active:translate-y-[2px] active:translate-x-[2px] active:shadow-none shadow-neobrutalism-sm bg-white text-background-dark">
             <span class="material-symbols-outlined font-bold">arrow_back</span>
           </NuxtLink>
           
@@ -115,12 +115,14 @@ const checkedItems = computed(() => items.value.filter(i => i.checked))
                 @keyup.enter="addItem"
                 class="w-full h-14 bg-white border-[3px] border-background-dark rounded-lg px-4 text-lg font-medium placeholder:text-gray-400 shadow-neobrutalism-sm focus:outline-none focus:ring-0 focus:shadow-neobrutalism focus:-translate-y-1 transition-all" 
                 placeholder="Add new item..." 
+                aria-label="New item name"
                 type="text"
             />
           </div>
           <button 
             @click="addItem"
             class="size-14 bg-primary border-[3px] border-background-dark rounded-lg shadow-neobrutalism-sm flex items-center justify-center hover:bg-[#ffe14f] active:shadow-none active:translate-y-[2px] active:translate-x-[2px] transition-all"
+            aria-label="Add item"
           >
             <span class="material-symbols-outlined text-background-dark text-3xl font-bold">add</span>
           </button>

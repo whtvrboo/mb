@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useId } from 'vue'
 
 interface Props {
   modelValue?: boolean
@@ -25,6 +25,8 @@ const isChecked = computed({
   get: () => props.modelValue,
   set: (val) => emit('update:modelValue', val)
 })
+
+const labelId = useId()
 </script>
 
 <template>
@@ -44,6 +46,7 @@ const isChecked = computed({
             type="checkbox" 
             v-model="isChecked"
             class="peer sr-only"
+            :aria-labelledby="labelId"
           />
           <div 
             class="size-6 border-2 border-background-dark rounded bg-white peer-checked:bg-primary transition-colors flex items-center justify-center"
@@ -55,6 +58,7 @@ const isChecked = computed({
 
         <div class="flex flex-col">
           <span 
+            :id="labelId"
             class="text-xl font-bold leading-tight transition-colors"
             :class="[isChecked ? 'line-through decoration-2 decoration-background-dark text-gray-500' : 'group-hover:text-primary-dark']"
           >
@@ -75,6 +79,7 @@ const isChecked = computed({
         @click="$emit('delete')"
         class="opacity-0 group-hover:opacity-100 transition-opacity"
         :class="isChecked ? 'text-gray-400' : 'text-background-dark'"
+        :aria-label="'Delete ' + label"
       >
         <span class="material-symbols-outlined text-lg">delete</span>
       </button>
