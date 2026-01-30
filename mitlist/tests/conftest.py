@@ -12,9 +12,31 @@ from mitlist.modules.chores.api import router as chores_router
 from mitlist.modules.plants.api import router as plants_router
 from mitlist.modules.pets.api import router as pets_router
 from mitlist.modules.assets.api import router as assets_router
+from mitlist.modules.governance.api import router as governance_router
+from mitlist.modules.audit.api import router as audit_router
+from mitlist.modules.documents.api import router as documents_router
+from mitlist.modules.lists.api import router as lists_router
+from mitlist.modules.lists.api import inventory_router as lists_inventory_router
+from mitlist.modules.notifications.api import router as notifications_router
+from mitlist.modules.notifications.api import comments_router as notifications_comments_router
+from mitlist.modules.notifications.api import reactions_router as notifications_reactions_router
+from mitlist.modules.gamification.api import router as gamification_router
+from mitlist.modules.recipes.api import router as recipes_router
+from mitlist.modules.calendar.api import router as calendar_router
 from mitlist.db.base import Base
+
+# Import models so Base.metadata has all tables (governance, audit, documents, etc.)
+from mitlist.modules.governance.models import Proposal, BallotOption, VoteRecord  # noqa: F401
+from mitlist.modules.audit.models import AuditLog, Tag, TagAssignment, ReportSnapshot  # noqa: F401
+from mitlist.modules.documents.models import Document, DocumentShare, SharedCredential  # noqa: F401
+from mitlist.modules.lists.models import List, Item, InventoryItem, ListShare  # noqa: F401
+from mitlist.modules.notifications.models import Comment, Mention, Notification, NotificationPreference, Reaction  # noqa: F401
+from mitlist.modules.auth.models import CommonItemConcept  # noqa: F401
+from mitlist.modules.gamification.models import UserPoints, Achievement, UserAchievement, Streak, Leaderboard  # noqa: F401 UserPoints, Achievement, UserAchievement, Streak, Leaderboard  # noqa: F401
+from mitlist.modules.recipes.models import Recipe, RecipeIngredient, RecipeStep, MealPlan, MealPlanShoppingSync  # noqa: F401
+from mitlist.modules.calendar.models import CalendarEvent, EventAttendee, Reminder  # noqa: F401
 from mitlist.api import deps
-from mitlist.modules.auth.models import User, UserGroup, Group
+from mitlist.modules.auth.models import User, UserGroup, Group, CommonItemConcept  # noqa: F401
 
 # Use in-memory SQLite for tests
 SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -44,11 +66,25 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
 @pytest.fixture(scope="function")
 def app_instance() -> FastAPI:
     """Create a fresh FastAPI app instance for testing."""
+    from mitlist.core.errors import AppError, app_error_handler
+
     app = FastAPI()
+    app.add_exception_handler(AppError, app_error_handler)
     app.include_router(chores_router)
     app.include_router(plants_router)
     app.include_router(pets_router)
     app.include_router(assets_router)
+    app.include_router(governance_router)
+    app.include_router(audit_router)
+    app.include_router(documents_router)
+    app.include_router(notifications_router)
+    app.include_router(notifications_comments_router)
+    app.include_router(notifications_reactions_router)
+    app.include_router(gamification_router)
+    app.include_router(recipes_router)
+    app.include_router(calendar_router)
+    app.include_router(lists_router)
+    app.include_router(lists_inventory_router)
     return app
 
 @pytest.fixture(scope="function")

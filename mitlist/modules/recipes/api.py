@@ -61,6 +61,8 @@ async def post_recipes(
         ingredients=[ing.model_dump() for ing in data.ingredients],
         steps=[step.model_dump() for step in data.steps],
     )
+    # Re-fetch with relationships loaded so response serializes without lazy-load
+    recipe = await service.get_recipe_by_id(db, recipe.id)
     return schemas.RecipeResponse.model_validate(recipe)
 
 

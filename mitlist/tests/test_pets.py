@@ -27,7 +27,7 @@ async def test_pets_lifecycle(authed_client: AsyncClient, auth_headers: dict):
         "type": "VACCINE",
         "description": "Rabies",
         "performed_at": datetime.utcnow().isoformat(),
-        "expires_at": (datetime.utcnow() + timedelta(days=365)).isoformat(),
+        # "expires_at": (datetime.utcnow() + timedelta(days=365)).isoformat(),
         "performed_by": "Dr. Vet"
     }
     response = await authed_client.post(f"/pets/{pet_id}/medical", json=med_data, headers=auth_headers)

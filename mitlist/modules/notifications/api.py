@@ -11,6 +11,7 @@ from mitlist.modules.notifications import schemas
 from mitlist.modules.notifications.interface import (
     create_comment,
     delete_comment,
+    get_comment_by_id,
     get_unread_count,
     list_comments,
     list_notifications,
@@ -185,7 +186,8 @@ async def post_comment(
         content=data.content,
         mentioned_user_ids=data.mentioned_user_ids,
     )
-    return comment
+    comment = await get_comment_by_id(db, comment.id)
+    return schemas.CommentResponse.model_validate(comment)
 
 
 @comments_router.patch("/{comment_id}", response_model=schemas.CommentResponse)
@@ -196,8 +198,9 @@ async def patch_comment(
     db: AsyncSession = Depends(get_db),
 ):
     """Update a comment."""
-    comment = await update_comment(db, comment_id, user.id, data.content)
-    return comment
+    await update_comment(db, comment_id, user.id, data.content)
+    comment = await get_comment_by_id(db, comment_id)
+    return schemas.CommentResponse.model_validate(comment)
 
 
 @comments_router.delete("/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)

@@ -170,6 +170,10 @@ async def create_medical_record(
     if not pet:
         raise NotFoundError(code="PET_NOT_FOUND", detail=f"Pet {pet_id} not found")
 
+    # Force conversion if needed (SQLite fix)
+    if isinstance(performed_at, str):
+        performed_at = datetime.fromisoformat(performed_at)
+        
     record = PetMedicalRecord(
         pet_id=pet_id,
         type=type,

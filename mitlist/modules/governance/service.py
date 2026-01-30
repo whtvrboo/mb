@@ -105,8 +105,13 @@ async def create_proposal(
         db.add(ballot_option)
 
     await db.flush()
-    await db.refresh(proposal)
-    return proposal
+    # Re-load with ballot_options for async-safe serialization (no lazy load)
+    result = await db.execute(
+        select(Proposal)
+        .where(Proposal.id == proposal.id)
+        .options(selectinload(Proposal.ballot_options))
+    )
+    return result.scalar_one()
 
 
 async def update_proposal(
