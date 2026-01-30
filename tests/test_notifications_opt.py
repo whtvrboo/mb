@@ -1,6 +1,6 @@
 from sqlalchemy import inspect
 
-from mitlist.modules.notifications.models import Comment, Notification
+from mitlist.modules.notifications.models import Comment, Notification, Reaction
 
 
 def test_notification_indexes():
@@ -43,3 +43,20 @@ def test_comment_indexes():
 
     # Verify parent_id is NOT indexed individually
     assert "ix_comments_parent_id" not in indexes
+
+
+def test_reaction_indexes():
+    """Verify indexes on Reaction model."""
+    mapper = inspect(Reaction)
+    table = mapper.local_table
+
+    indexes = {idx.name: idx for idx in table.indexes}
+
+    assert "ix_reactions_target_lookup" in indexes
+    idx = indexes["ix_reactions_target_lookup"]
+
+    column_names = [c.name for c in idx.columns]
+    assert column_names == ["target_type", "target_id"]
+
+    # Verify target_id is NOT indexed individually
+    assert "ix_reactions_target_id" not in indexes
