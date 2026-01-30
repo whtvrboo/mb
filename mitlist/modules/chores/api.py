@@ -165,8 +165,8 @@ async def get_chore_leaderboard(
 ):
     """Get leaderboard for the group."""
     rankings = await interface.get_leaderboard(db, group_id)
-    from datetime import datetime
-    now = datetime.utcnow()
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc)
     start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)  # period: current month 
     
     return schemas.ChoreLeaderboardResponse(

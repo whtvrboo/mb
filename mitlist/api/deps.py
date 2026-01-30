@@ -1,6 +1,6 @@
 """FastAPI dependencies for database and authentication."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from fastapi import Depends, Request
@@ -86,14 +86,14 @@ async def get_current_user(
             avatar_url=claims.get("picture"),
             is_active=True,
             preferences={"zitadel_sub": sub},
-            last_login_at=datetime.utcnow(),
+            last_login_at=datetime.now(timezone.utc),
         )
         db.add(user)
         await db.flush()
         await db.refresh(user)
     else:
         # update last_login and ensure we remember sub
-        user.last_login_at = datetime.utcnow()
+        user.last_login_at = datetime.now(timezone.utc)
         prefs = user.preferences or {}
         if prefs.get("zitadel_sub") != sub:
             prefs["zitadel_sub"] = sub

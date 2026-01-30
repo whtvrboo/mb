@@ -34,7 +34,7 @@ async def log_action(
         new_values=new_values,
         ip_address=ip_address,
         user_agent=user_agent,
-        occurred_at=datetime.utcnow(),
+        occurred_at=datetime.now(timezone.utc),
     )
     db.add(log)
     await db.flush()
@@ -185,7 +185,7 @@ async def generate_report(
         period_start_date=period_start_date,
         period_end_date=period_end_date,
         data_json=data_json,
-        generated_at=datetime.utcnow(),
+        generated_at=datetime.now(timezone.utc),
     )
     db.add(report)
     await db.flush()
@@ -366,7 +366,7 @@ def set_maintenance_mode(
     _maintenance_state = {
         "enabled": enabled,
         "message": message,
-        "enabled_at": datetime.utcnow().isoformat() if enabled else None,
+        "enabled_at": datetime.now(timezone.utc).isoformat() if enabled else None,
         "enabled_by": enabled_by,
     }
     return _maintenance_state.copy()
@@ -383,7 +383,7 @@ async def get_system_stats(db: AsyncSession) -> dict[str, Any]:
     return {
         "total_users": users_result.scalar_one() or 0,
         "total_groups": groups_result.scalar_one() or 0,
-        "server_time": datetime.utcnow().isoformat(),
+        "server_time": datetime.now(timezone.utc).isoformat(),
     }
 
 

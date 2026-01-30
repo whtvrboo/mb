@@ -181,7 +181,7 @@ async def delete_expense(db: AsyncSession, expense_id: int) -> None:
     expense = result.scalar_one_or_none()
     if not expense:
         raise NotFoundError(code="EXPENSE_NOT_FOUND", detail=f"Expense {expense_id} not found")
-    expense.deleted_at = datetime.utcnow()
+    expense.deleted_at = datetime.now(timezone.utc)
     await db.flush()
 
 
@@ -742,7 +742,7 @@ async def generate_expense_from_recurring(
         description=recurring.description,
         amount=recurring.amount,
         category_id=recurring.category_id,
-        expense_date=datetime.utcnow(),
+        expense_date=datetime.now(timezone.utc),
         currency_code=recurring.currency_code,
     )
 
@@ -876,7 +876,13 @@ async def update_split_preset(
             db.add(member)
         await db.flush()
 
-    await db.refresh(preset)
+    # Reload preset with members for response
+    result = await db.execute(
+        select(SplitPreset)
+        .where(SplitPreset.id == preset_id)
+        .options(selectinload(SplitPreset.members))
+    )
+    preset = result.scalar_one()
     return preset
 
 

@@ -230,7 +230,7 @@ async def cast_vote(
         )
 
     # Check deadline
-    if proposal.deadline_at and proposal.deadline_at < datetime.utcnow():
+    if proposal.deadline_at and proposal.deadline_at < datetime.now(timezone.utc):
         raise ConflictError(code="PROPOSAL_EXPIRED", detail="Proposal deadline has passed")
 
     # Ensure user is a group member
@@ -256,7 +256,7 @@ async def cast_vote(
         existing_vote.ballot_option_id = ballot_option_id
         existing_vote.weight = weight
         existing_vote.is_anonymous = is_anonymous
-        existing_vote.voted_at = datetime.utcnow()
+        existing_vote.voted_at = datetime.now(timezone.utc)
 
         # Update vote counts
         old_option_result = await db.execute(
@@ -282,7 +282,7 @@ async def cast_vote(
         ballot_option_id=ballot_option_id,
         weight=weight,
         is_anonymous=is_anonymous,
-        voted_at=datetime.utcnow(),
+        voted_at=datetime.now(timezone.utc),
     )
     db.add(vote)
 
@@ -317,7 +317,7 @@ async def cast_ranked_votes(
             code="PROPOSAL_NOT_OPEN", detail=f"Cannot vote on proposal with status {proposal.status}"
         )
 
-    if proposal.deadline_at and proposal.deadline_at < datetime.utcnow():
+    if proposal.deadline_at and proposal.deadline_at < datetime.now(timezone.utc):
         raise ConflictError(code="PROPOSAL_EXPIRED", detail="Proposal deadline has passed")
 
     await require_member(db, proposal.group_id, user_id)
@@ -361,7 +361,7 @@ async def cast_ranked_votes(
             rank_order=choice.get("rank"),
             weight=1,  # Ranked choice uses weight=1
             is_anonymous=is_anonymous,
-            voted_at=datetime.utcnow(),
+            voted_at=datetime.now(timezone.utc),
         )
         db.add(vote)
         votes.append(vote)
@@ -674,7 +674,7 @@ async def execute_proposal(db: AsyncSession, proposal_id: int, executed_by_id: i
 
     # Update the execution result with any new data
     proposal.execution_result = execution_result
-    proposal.executed_at = datetime.utcnow()
+    proposal.executed_at = datetime.now(timezone.utc)
     proposal.status = ProposalStatus.EXECUTED
 
     await db.flush()

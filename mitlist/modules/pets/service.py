@@ -1,6 +1,6 @@
 """Pets module service layer. PRIVATE - other modules import from interface.py."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Any
 
 from sqlalchemy import select, and_
@@ -194,7 +194,7 @@ async def create_medical_record(
 
 async def get_expiring_vaccines(db: AsyncSession, group_id: int, days_ahead: int = 30) -> list[PetMedicalRecord]:
     """Get vaccines expiring soon."""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     target_date = now + timedelta(days=days_ahead)
     
     result = await db.execute(
@@ -344,7 +344,7 @@ async def mark_schedule_done(
         pet_id=sched.pet_id,
         user_id=user_id,
         action=sched.action_type,
-        occurred_at=datetime.utcnow(),
+        occurred_at=datetime.now(timezone.utc),
         notes=notes,
         value_amount=value_amount,
         value_unit=value_unit,

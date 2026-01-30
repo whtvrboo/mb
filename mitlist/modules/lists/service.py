@@ -79,7 +79,7 @@ async def update_list(
     if is_archived is not None:
         list_obj.is_archived = is_archived
         if is_archived:
-            list_obj.archived_at = datetime.utcnow()
+            list_obj.archived_at = datetime.now(timezone.utc)
         else:
             list_obj.archived_at = None
 
@@ -185,7 +185,7 @@ async def update_item(
         item.quantity_unit = quantity_unit
     if is_checked is not None:
         item.is_checked = is_checked
-        item.checked_at = datetime.utcnow() if is_checked else None
+        item.checked_at = datetime.now(timezone.utc) if is_checked else None
     if price_estimate is not None:
         item.price_estimate = price_estimate
     if priority is not None:

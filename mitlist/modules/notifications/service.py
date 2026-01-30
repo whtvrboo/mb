@@ -1,6 +1,6 @@
 """Notifications module service layer. PRIVATE - other modules import from interface.py."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from sqlalchemy import delete, func, select, update
@@ -54,7 +54,7 @@ async def create_notification(
         link_url=link_url,
         priority=priority,
         is_read=False,
-        delivered_at=datetime.utcnow(),
+        delivered_at=datetime.now(timezone.utc),
     )
     db.add(notification)
     await db.flush()
@@ -79,7 +79,7 @@ async def mark_read(db: AsyncSession, notification_id: int, user_id: int) -> Not
         raise ForbiddenError(code="NOT_OWNER", detail="Cannot mark another user's notification as read")
     
     notification.is_read = True
-    notification.read_at = datetime.utcnow()
+    notification.read_at = datetime.now(timezone.utc)
     await db.flush()
     await db.refresh(notification)
     return notification
@@ -90,7 +90,7 @@ async def mark_all_read(db: AsyncSession, user_id: int, group_id: Optional[int] 
     q = (
         update(Notification)
         .where(Notification.user_id == user_id, Notification.is_read == False)  # noqa: E712
-        .values(is_read=True, read_at=datetime.utcnow())
+        .values(is_read=True, read_at=datetime.now(timezone.utc))
     )
     if group_id is not None:
         q = q.where(Notification.group_id == group_id)
@@ -243,7 +243,7 @@ async def update_comment(db: AsyncSession, comment_id: int, user_id: int, conten
     
     comment.content = content
     comment.is_edited = True
-    comment.edited_at = datetime.utcnow()
+    comment.edited_at = datetime.now(timezone.utc)
     await db.flush()
     await db.refresh(comment)
     return comment
@@ -257,7 +257,7 @@ async def delete_comment(db: AsyncSession, comment_id: int, user_id: int) -> Non
     if comment.author_id != user_id:
         raise ForbiddenError(code="NOT_AUTHOR", detail="Only the author can delete this comment")
     
-    comment.deleted_at = datetime.utcnow()
+    comment.deleted_at = datetime.now(timezone.utc)
     await db.flush()
 
 

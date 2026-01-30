@@ -1,7 +1,7 @@
 """Tests for governance module: proposals and votes."""
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from httpx import AsyncClient
 
 
@@ -17,7 +17,7 @@ async def test_proposals_list_empty(authed_client: AsyncClient, auth_headers: di
 async def test_proposal_create_get_and_vote(authed_client: AsyncClient, auth_headers: dict):
     """Create a proposal, get it, open for voting, cast vote, get results."""
     group_id = int(auth_headers["X-Group-ID"])
-    deadline = (datetime.utcnow() + timedelta(days=7)).isoformat() + "Z"
+    deadline = (datetime.now(timezone.utc) + timedelta(days=7)).isoformat() + "Z"
 
     # Create proposal with ballot options
     create_data = {

@@ -137,10 +137,10 @@ async def get_leaderboard_endpoint(
         group_id=group_id,
         period_type=period_type,
         metric=metric,
-        period_start_date=datetime.utcnow(),
+        period_start_date=datetime.now(timezone.utc),
         period_end_date=None,
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
         entries=[
             schemas.LeaderboardEntryResponse(
                 rank=e["rank"],
