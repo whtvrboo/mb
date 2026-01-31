@@ -234,7 +234,7 @@ class InviteResponse(InviteBase):
 class InviteAcceptRequest(BaseModel):
     """Schema for accepting an invite."""
 
-    code: str
+    code: str = Field(..., max_length=100)
 
 
 # ====================
@@ -248,7 +248,7 @@ class LocationBase(BaseModel):
     sunlight_direction: Optional[str] = Field(None, pattern="^(NORTH|SOUTH|EAST|WEST)$")
     humidity_level: Optional[str] = Field(None, pattern="^(LOW|MEDIUM|HIGH)$")
     temperature_avg_celsius: Optional[float] = None
-    notes: Optional[str] = None
+    notes: Optional[str] = Field(None, max_length=1000)
 
 
 class LocationCreate(LocationBase):
@@ -265,7 +265,7 @@ class LocationUpdate(BaseModel):
     sunlight_direction: Optional[str] = Field(None, pattern="^(NORTH|SOUTH|EAST|WEST)$")
     humidity_level: Optional[str] = Field(None, pattern="^(LOW|MEDIUM|HIGH)$")
     temperature_avg_celsius: Optional[float] = None
-    notes: Optional[str] = None
+    notes: Optional[str] = Field(None, max_length=1000)
 
 
 class LocationResponse(LocationBase):
@@ -293,10 +293,10 @@ class ServiceContactBase(BaseModel):
     company_name: Optional[str] = Field(None, max_length=255)
     phone: Optional[str] = Field(None, max_length=50)
     email: Optional[EmailStr] = None
-    address: Optional[str] = None
+    address: Optional[str] = Field(None, max_length=500)
     website_url: Optional[str] = Field(None, max_length=500)
     emergency_contact: bool = False
-    notes: Optional[str] = None
+    notes: Optional[str] = Field(None, max_length=1000)
 
 
 class ServiceContactCreate(ServiceContactBase):
@@ -316,10 +316,10 @@ class ServiceContactUpdate(BaseModel):
     company_name: Optional[str] = Field(None, max_length=255)
     phone: Optional[str] = Field(None, max_length=50)
     email: Optional[EmailStr] = None
-    address: Optional[str] = None
+    address: Optional[str] = Field(None, max_length=500)
     website_url: Optional[str] = Field(None, max_length=500)
     emergency_contact: Optional[bool] = None
-    notes: Optional[str] = None
+    notes: Optional[str] = Field(None, max_length=1000)
 
 
 class ServiceContactResponse(ServiceContactBase):

@@ -56,7 +56,7 @@ class ItemBase(BaseModel):
     is_checked: bool = False
     price_estimate: Optional[float] = Field(None, ge=0)
     priority: Optional[str] = Field(None, pattern="^(HIGH|MEDIUM|LOW)$")
-    notes: Optional[str] = None
+    notes: Optional[str] = Field(None, max_length=1000)
 
 
 class ItemCreate(ItemBase):
@@ -75,7 +75,7 @@ class ItemUpdate(BaseModel):
     checked_at: Optional[datetime] = None
     price_estimate: Optional[float] = Field(None, ge=0)
     priority: Optional[str] = Field(None, pattern="^(HIGH|MEDIUM|LOW)$")
-    notes: Optional[str] = None
+    notes: Optional[str] = Field(None, max_length=1000)
 
 
 class ItemResponse(ItemBase):
