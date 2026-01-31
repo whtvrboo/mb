@@ -9,6 +9,7 @@ from sqlalchemy import (
     JSON,
     CheckConstraint,
     ForeignKey,
+    Index,
     Numeric,
     String,
     Text,
@@ -81,7 +82,7 @@ class Expense(BaseModel, TimestampMixin, VersionMixin):
 
     __tablename__ = "expenses"
 
-    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False, index=True)
+    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False)
     paid_by_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     description: Mapped[str] = mapped_column(String(500), nullable=False)
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
@@ -110,6 +111,7 @@ class Expense(BaseModel, TimestampMixin, VersionMixin):
 
     __table_args__ = (
         CheckConstraint("amount > 0", name="ck_expense_amount_positive"),
+        Index("ix_expenses_group_date", "group_id", "expense_date"),
     )
 
 
