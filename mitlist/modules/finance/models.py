@@ -6,6 +6,7 @@ from enum import Enum
 from typing import Optional
 
 from sqlalchemy import (
+    Index,
     JSON,
     CheckConstraint,
     ForeignKey,
@@ -81,7 +82,7 @@ class Expense(BaseModel, TimestampMixin, VersionMixin):
 
     __tablename__ = "expenses"
 
-    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False, index=True)
+    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False)
     paid_by_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     description: Mapped[str] = mapped_column(String(500), nullable=False)
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
@@ -110,6 +111,8 @@ class Expense(BaseModel, TimestampMixin, VersionMixin):
 
     __table_args__ = (
         CheckConstraint("amount > 0", name="ck_expense_amount_positive"),
+        # Optimization: Composite index for efficient querying by group_id and sorting by expense_date
+        Index("ix_expenses_group_date", "group_id", "expense_date"),
     )
 
 
@@ -137,8 +140,12 @@ class RecurringExpense(BaseModel, TimestampMixin):
     """Recurring expense template (subscriptions, rent, etc.)."""
 
     __tablename__ = "recurring_expenses"
+    __table_args__ = (
+        # Optimization: Composite index for efficient querying by group_id and sorting by next_due_date
+        Index("ix_recurring_expenses_group_next_due", "group_id", "next_due_date"),
+    )
 
-    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False, index=True)
+    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False)
     paid_by_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     description: Mapped[str] = mapped_column(String(500), nullable=False)
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
@@ -159,7 +166,7 @@ class Settlement(BaseModel, TimestampMixin):
 
     __tablename__ = "settlements"
 
-    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False, index=True)
+    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False)
     payer_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     payee_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
@@ -171,6 +178,8 @@ class Settlement(BaseModel, TimestampMixin):
 
     __table_args__ = (
         CheckConstraint("amount > 0", name="ck_settlement_amount_positive"),
+        # Optimization: Composite index for efficient querying by group_id and sorting by settled_at
+        Index("ix_settlements_group_date", "group_id", "settled_at"),
     )
 
 

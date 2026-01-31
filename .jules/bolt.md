@@ -5,3 +5,7 @@
 ## 2024-05-23 - Notification Sorting Optimization
 **Learning:** `list_notifications` queries by `user_id` and sorts by `created_at DESC`. The single index on `user_id` forces the database to sort results in memory after fetching.
 **Action:** Add composite indexes `(filter_col, sort_col)` for frequently accessed sorted lists like feeds and activity logs.
+
+## 2024-05-24 - Redundant Indexing with Composite Indexes
+**Learning:** When adding a composite index `(col_a, col_b)` to optimize `WHERE col_a = ? ORDER BY col_b`, the existing index on `col_a` becomes redundant as the composite index can serve queries on `col_a` alone.
+**Action:** Remove `index=True` from the leading column of a new composite index to save storage and write overhead.
