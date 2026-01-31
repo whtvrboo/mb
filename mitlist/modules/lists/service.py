@@ -1,6 +1,6 @@
 """Lists module service layer - business logic."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from sqlalchemy import select
