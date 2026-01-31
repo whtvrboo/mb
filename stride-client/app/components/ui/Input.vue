@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed, useId } from 'vue'
+
 interface Props {
   modelValue?: string
   type?: string
@@ -21,7 +23,8 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const inputId = props.id || `input-${Math.random().toString(36).substr(2, 9)}`
+const autoId = useId()
+const inputId = computed(() => props.id || autoId)
 
 const classes = computed(() => [
   'w-full h-14 px-4 py-2 bg-white',
@@ -45,6 +48,8 @@ const classes = computed(() => [
     :disabled="disabled"
     :required="required"
     :autocomplete="autocomplete"
+    :aria-invalid="error"
+    :aria-required="required"
     :class="classes"
     @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)"
   />
