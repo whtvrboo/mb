@@ -136,8 +136,7 @@ onMounted(() => {
                                 <span
                                     class="text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded flex items-center gap-1">
                                     <span class="material-symbols-outlined text-[14px]">calendar_today</span>
-                                    {{ assignment.due_date ? new Date(assignment.due_date).toLocaleDateString() : 'No
-                                    due date' }}
+                                    {{ assignment.due_date ? new Date(assignment.due_date).toLocaleDateString() : 'No due date' }}
                                 </span>
                                 <span class="text-xs font-bold text-gray-500">• {{ assignment.chore.frequency_type ||
                                     'One-time' }}</span>

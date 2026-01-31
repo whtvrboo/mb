@@ -1,4 +1,4 @@
-export default oauthZitadelEventHandler({
+export default defineOAuthZitadelEventHandler({
   async onSuccess(event, { user, tokens }) {
     await setUserSession(event, {
       user: {
