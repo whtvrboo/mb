@@ -38,7 +38,7 @@ services:
 
   frontend:
     build:
-      context: ./stride-client
+      context: ./mitlist-client
     container_name: mitlist_frontend
     ports:
       - "3000:3000"

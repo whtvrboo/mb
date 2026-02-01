@@ -42,17 +42,17 @@ const labelId = useId()
       <div class="flex items-start gap-3 flex-1">
         <!-- Neo Checkbox -->
         <label class="relative cursor-pointer mt-1 shrink-0">
-          <input 
+          <input
             v-model="isChecked"
             type="checkbox"
             class="peer sr-only"
             :aria-labelledby="labelId"
           >
-          <div 
+          <div
             class="size-6 border-2 border-background-dark rounded bg-white peer-checked:bg-primary transition-colors flex items-center justify-center peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-background-dark"
             :class="{ 'border-gray-400 bg-gray-200 peer-checked:bg-gray-400': isChecked }"
           >
-             <span class="material-symbols-outlined text-sm opacity-0 peer-checked:opacity-100 font-bold transition-opacity">check</span>
+            <span class="material-symbols-outlined text-sm opacity-0 peer-checked:opacity-100 font-bold transition-opacity">check</span>
           </div>
         </label>
 

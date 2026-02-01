@@ -2,7 +2,7 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Enable Corepack for pnpm/yarn if needed (though we use npm here based on package-lock.json presence)
+# Enable Corepack for pnpm/yarn if needed
 # If using npm, standard install is fine.
 COPY package.json package-lock.json* ./
 
