@@ -295,41 +295,56 @@ async def calculate_group_balances(
     total_owed = D("0.00")
     currency_code = "USD"
 
+    # Optimization: Fetch all totals in bulk grouped by user_id to avoid N+1 queries
+    # 1. Total Paid by User
+    paid_q = (
+        select(Expense.paid_by_user_id, func.sum(Expense.amount))
+        .where(
+            Expense.group_id == group_id,
+            Expense.deleted_at.is_(None),
+        )
+        .group_by(Expense.paid_by_user_id)
+    )
+    paid_result = await db.execute(paid_q)
+    paid_map = {row[0]: row[1] for row in paid_result.all()}
+
+    # 2. Total Owed by User (Unpaid Splits)
+    owed_q = (
+        select(ExpenseSplit.user_id, func.sum(ExpenseSplit.owed_amount))
+        .join(Expense, ExpenseSplit.expense_id == Expense.id)
+        .where(
+            Expense.group_id == group_id,
+            ExpenseSplit.is_paid == False,
+            Expense.deleted_at.is_(None),
+        )
+        .group_by(ExpenseSplit.user_id)
+    )
+    owed_result = await db.execute(owed_q)
+    owed_map = {row[0]: row[1] for row in owed_result.all()}
+
+    # 3. Settlements Received (User is Payee)
+    settled_in_q = (
+        select(Settlement.payee_id, func.sum(Settlement.amount))
+        .where(Settlement.group_id == group_id)
+        .group_by(Settlement.payee_id)
+    )
+    settled_in_result = await db.execute(settled_in_q)
+    settled_in_map = {row[0]: row[1] for row in settled_in_result.all()}
+
+    # 4. Settlements Paid (User is Payer)
+    settled_out_q = (
+        select(Settlement.payer_id, func.sum(Settlement.amount))
+        .where(Settlement.group_id == group_id)
+        .group_by(Settlement.payer_id)
+    )
+    settled_out_result = await db.execute(settled_out_q)
+    settled_out_map = {row[0]: row[1] for row in settled_out_result.all()}
+
     for user_id in member_ids:
-        paid_result = await db.execute(
-            select(func.coalesce(func.sum(Expense.amount), D("0.00"))).where(
-                Expense.group_id == group_id,
-                Expense.paid_by_user_id == user_id,
-                Expense.deleted_at.is_(None),
-            )
-        )
-        paid_total = paid_result.scalar() or D("0.00")
-
-        owed_result = await db.execute(
-            select(func.coalesce(func.sum(ExpenseSplit.owed_amount), D("0.00")))
-            .join(Expense, ExpenseSplit.expense_id == Expense.id)
-            .where(
-                Expense.group_id == group_id,
-                ExpenseSplit.user_id == user_id,
-                ExpenseSplit.is_paid == False,
-                Expense.deleted_at.is_(None),
-            )
-        )
-        owed_total = owed_result.scalar() or D("0.00")
-
-        settled_in_result = await db.execute(
-            select(func.coalesce(func.sum(Settlement.amount), D("0.00"))).where(
-                Settlement.group_id == group_id, Settlement.payee_id == user_id
-            )
-        )
-        settled_in = settled_in_result.scalar() or D("0.00")
-
-        settled_out_result = await db.execute(
-            select(func.coalesce(func.sum(Settlement.amount), D("0.00"))).where(
-                Settlement.group_id == group_id, Settlement.payer_id == user_id
-            )
-        )
-        settled_out = settled_out_result.scalar() or D("0.00")
+        paid_total = paid_map.get(user_id, D("0.00")) or D("0.00")
+        owed_total = owed_map.get(user_id, D("0.00")) or D("0.00")
+        settled_in = settled_in_map.get(user_id, D("0.00")) or D("0.00")
+        settled_out = settled_out_map.get(user_id, D("0.00")) or D("0.00")
 
         balance = paid_total - owed_total + settled_in - settled_out
 
