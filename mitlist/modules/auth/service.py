@@ -300,24 +300,33 @@ def _invite_is_valid(invite: Invite) -> bool:
     return True
 
 
-async def get_invite_by_code(db: AsyncSession, code: str) -> Optional[Invite]:
-    result = await db.execute(select(Invite).where(Invite.code == code))
+async def get_invite_by_code(
+    db: AsyncSession, code: str, for_update: bool = False
+) -> Optional[Invite]:
+    stmt = select(Invite).where(Invite.code == code)
+    if for_update:
+        stmt = stmt.with_for_update()
+    result = await db.execute(stmt)
     return result.scalar_one_or_none()
+
 
 async def get_invite_by_id(db: AsyncSession, invite_id: int) -> Optional[Invite]:
     result = await db.execute(select(Invite).where(Invite.id == invite_id))
     return result.scalar_one_or_none()
 
 
-async def require_valid_invite(db: AsyncSession, code: str) -> Invite:
-    invite = await get_invite_by_code(db, code)
+async def require_valid_invite(
+    db: AsyncSession, code: str, for_update: bool = False
+) -> Invite:
+    invite = await get_invite_by_code(db, code, for_update=for_update)
     if not invite or not _invite_is_valid(invite):
         raise NotFoundError(code="INVITE_INVALID", detail="Invite code is invalid or expired")
     return invite
 
 
 async def accept_invite(db: AsyncSession, code: str, user_id: int) -> UserGroup:
-    invite = await require_valid_invite(db, code)
+    # Lock the invite row to prevent race conditions (TOCTOU)
+    invite = await require_valid_invite(db, code, for_update=True)
 
     # Ensure not already a member
     existing = await get_membership(db, invite.group_id, user_id)

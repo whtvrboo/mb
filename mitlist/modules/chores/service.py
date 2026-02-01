@@ -1,9 +1,9 @@
 """Chores module service layer - business logic. PRIVATE - other modules import from interface.py."""
 
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time, timedelta, timezone
 from typing import Optional
 
-from sqlalchemy import select, case, and_
+from sqlalchemy import and_, case, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -26,7 +26,7 @@ async def list_chores(db: AsyncSession, group_id: int, active_only: bool = True)
     return list(result.scalars().all())
 
 
-async def get_chore_by_id(db: AsyncSession, chore_id: int) -> Optional[Chore]:
+async def get_chore_by_id(db: AsyncSession, chore_id: int) -> Chore | None:
     """Get a chore by ID."""
     result = await db.execute(
         select(Chore).options(selectinload(Chore.assignments)).where(Chore.id == chore_id)
@@ -40,13 +40,13 @@ async def create_chore(
     name: str,
     frequency_type: str,
     effort_value: int,
-    description: Optional[str] = None,
+    description: str | None = None,
     interval_value: int = 1,
-    estimated_duration_minutes: Optional[int] = None,
-    category: Optional[str] = None,
+    estimated_duration_minutes: int | None = None,
+    category: str | None = None,
     is_rotating: bool = False,
-    rotation_strategy: Optional[str] = None,
-    required_item_concept_id: Optional[int] = None,
+    rotation_strategy: str | None = None,
+    required_item_concept_id: int | None = None,
 ) -> Chore:
     """Create a new chore."""
     chore = Chore(
@@ -71,17 +71,17 @@ async def create_chore(
 async def update_chore(
     db: AsyncSession,
     chore_id: int,
-    name: Optional[str] = None,
-    description: Optional[str] = None,
-    frequency_type: Optional[str] = None,
-    interval_value: Optional[int] = None,
-    effort_value: Optional[int] = None,
-    estimated_duration_minutes: Optional[int] = None,
-    category: Optional[str] = None,
-    is_rotating: Optional[bool] = None,
-    rotation_strategy: Optional[str] = None,
-    required_item_concept_id: Optional[int] = None,
-    is_active: Optional[bool] = None,
+    name: str | None = None,
+    description: str | None = None,
+    frequency_type: str | None = None,
+    interval_value: int | None = None,
+    effort_value: int | None = None,
+    estimated_duration_minutes: int | None = None,
+    category: str | None = None,
+    is_rotating: bool | None = None,
+    rotation_strategy: str | None = None,
+    required_item_concept_id: int | None = None,
+    is_active: bool | None = None,
 ) -> Chore:
     """Update a chore."""
     result = await db.execute(select(Chore).where(Chore.id == chore_id))
@@ -129,8 +129,8 @@ async def delete_chore(db: AsyncSession, chore_id: int) -> None:
 async def list_assignments(
     db: AsyncSession,
     group_id: int,
-    due_date: Optional[datetime] = None,
-    status_filter: Optional[str] = None,
+    due_date: datetime | None = None,
+    status_filter: str | None = None,
 ) -> list[ChoreAssignment]:
     """List chore assignments (e.g. what is due today). Filter by group via chore.group_id."""
     q = (
@@ -150,7 +150,7 @@ async def list_assignments(
     return list(result.unique().scalars().all())
 
 
-async def get_assignment_by_id(db: AsyncSession, assignment_id: int) -> Optional[ChoreAssignment]:
+async def get_assignment_by_id(db: AsyncSession, assignment_id: int) -> ChoreAssignment | None:
     """Get a chore assignment by ID."""
     result = await db.execute(
         select(ChoreAssignment)
@@ -164,8 +164,8 @@ async def complete_assignment(
     db: AsyncSession,
     assignment_id: int,
     completed_by_id: int,
-    actual_duration_minutes: Optional[int] = None,
-    notes: Optional[str] = None,
+    actual_duration_minutes: int | None = None,
+    notes: str | None = None,
 ) -> ChoreAssignment:
     """Mark chore assignment as done (awards points)."""
     result = await db.execute(select(ChoreAssignment).where(ChoreAssignment.id == assignment_id))
@@ -262,7 +262,7 @@ async def add_dependency(
     return dep
 
 
-async def get_dependency_by_id(db: AsyncSession, dependency_id: int) -> Optional[ChoreDependency]:
+async def get_dependency_by_id(db: AsyncSession, dependency_id: int) -> ChoreDependency | None:
     """Get dependency by ID (for group ownership check via chore_id)."""
     result = await db.execute(
         select(ChoreDependency).where(ChoreDependency.id == dependency_id)
@@ -315,7 +315,7 @@ async def check_dependencies_met(db: AsyncSession, assignment_id: int) -> bool:
         )
         res = await db.execute(latest_sub_q)
         latest_assignment = res.scalar_one_or_none()
-        
+
         # If never assigned, or last assignment not completed, then blocked.
         if not latest_assignment or latest_assignment.status != "COMPLETED":
             return False
@@ -338,9 +338,9 @@ async def create_template(
     name: str,
     frequency_type: str,
     effort_value: int,
-    description: Optional[str] = None,
+    description: str | None = None,
     interval_value: int = 1,
-    category: Optional[str] = None,
+    category: str | None = None,
     is_public: bool = False,
 ) -> ChoreTemplate:
     """Create a new chore template."""
@@ -373,7 +373,7 @@ async def create_chore_from_template(
 
     # Increment use count
     tmpl.use_count += 1
-    
+
     # Create chore
     chore = Chore(
         group_id=group_id,
@@ -486,7 +486,7 @@ async def get_user_stats(db: AsyncSession, group_id: int, user_id: int) -> dict:
         .where(and_(Chore.group_id == group_id, ChoreAssignment.assigned_to_id == user_id))
     )
     total, completed, pending, skipped, avg_rating = result.one()
-    
+
     total = total or 0
     completed = completed or 0
     pending = pending or 0
@@ -524,25 +524,45 @@ async def get_user_stats(db: AsyncSession, group_id: int, user_id: int) -> dict:
 
 async def get_leaderboard(db: AsyncSession, group_id: int, period="monthly") -> list[dict]:
     """Get leaderboard rankings."""
-    # Simplified: Get all members of the group and their stats
-    # ideally we select users from the group service, but here we can aggreg from assignments
-    
-    # 1. Get distinct users assigned chores in this group
-    result_users = await db.execute(
-        select(ChoreAssignment.assigned_to_id)
-        .join(Chore)
+    from sqlalchemy import func
+
+    # Optimized: Single query aggregation
+    stmt = (
+        select(
+            ChoreAssignment.assigned_to_id,
+            func.count(ChoreAssignment.id).label("total_assigned"),
+            func.sum(case((ChoreAssignment.status == "COMPLETED", 1), else_=0)).label("completed"),
+            func.sum(case((ChoreAssignment.status == "PENDING", 1), else_=0)).label("pending"),
+            func.sum(case((ChoreAssignment.status == "SKIPPED", 1), else_=0)).label("skipped"),
+            func.avg(ChoreAssignment.quality_rating).label("average_quality_rating"),
+            func.sum(case((ChoreAssignment.status == "COMPLETED", Chore.effort_value), else_=0)).label("total_effort_points"),
+        )
+        .join(Chore, ChoreAssignment.chore_id == Chore.id)
         .where(Chore.group_id == group_id)
-        .distinct()
+        .group_by(ChoreAssignment.assigned_to_id)
+        .order_by(text("total_effort_points DESC"))
     )
-    user_ids = result_users.scalars().all()
-    
+
+    result = await db.execute(stmt)
+    rows = result.all()
+
     rankings = []
-    for uid in user_ids:
-        stats = await get_user_stats(db, group_id, uid)
-        rankings.append(stats)
-    
-    # Sort by effort points desc
-    rankings.sort(key=lambda x: x["total_effort_points"], reverse=True)
+    for row in rows:
+        total = row.total_assigned or 0
+        completed = row.completed or 0
+        completion_rate = (completed / total) if total > 0 else 0.0
+
+        rankings.append({
+            "user_id": row.assigned_to_id,
+            "total_assigned": total,
+            "completed": completed,
+            "pending": row.pending or 0,
+            "skipped": row.skipped or 0,
+            "total_effort_points": row.total_effort_points or 0,
+            "average_quality_rating": float(row.average_quality_rating or 0.0),
+            "completion_rate": completion_rate,
+        })
+
     return rankings
 
 
@@ -552,7 +572,7 @@ async def start_assignment(db: AsyncSession, assignment_id: int, user_id: int) -
     a = result.scalar_one_or_none()
     if not a:
         raise NotFoundError(code="ASSIGNMENT_NOT_FOUND", detail=f"Assignment {assignment_id} not found")
-    
+
     a.status = "IN_PROGRESS"
     a.started_at = datetime.now(timezone.utc)
     await db.flush()
@@ -571,7 +591,7 @@ async def rate_assignment(
     a = result.scalar_one_or_none()
     if not a:
         raise NotFoundError(code="ASSIGNMENT_NOT_FOUND", detail=f"Assignment {assignment_id} not found")
-        
+
     if a.status != "COMPLETED":
         raise ValidationError(code="INVALID_STATUS", detail="Cannot rate an uncompleted assignment")
 

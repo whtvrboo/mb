@@ -8,6 +8,7 @@ interface Props {
   quantityUnit?: string | null
   addedBy?: string
   note?: string | null
+  checked?: boolean // Deprecated, use modelValue
 }
 
 const props = withDefaults(defineProps<Props>(), {
