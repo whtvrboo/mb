@@ -18,10 +18,7 @@ const fetchData = async () => {
             getMealPlans()
         ])
         recipes.value = recipesData
-        mealPlan = mealPlanData // Assign to ref (oops, logic error in assigning to ref value, see below)
-        // Fix:
-        // mealPlan.value = mealPlanData -> wait, type is WeeklyMealPlanResponse, so...
-        // Actually getMealPlans returns WeeklyMealPlanResponse.
+        mealPlan.value = mealPlanData
     } catch (e) {
         console.error('Failed to fetch recipes', e)
     } finally {

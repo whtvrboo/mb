@@ -3,19 +3,16 @@ import { computed, useId } from 'vue'
 
 interface Props {
   modelValue?: boolean
-  modelValue?: boolean // Maps to is_checked
   name: string
   quantityValue?: number
   quantityUnit?: string | null
   addedBy?: string
-  note?: string | null // Maps to notes
-  checked?: boolean // Deprecated, use modelValue
+  note?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: false,
   quantityValue: 1,
-  checked: false,
 })
 
 const emit = defineEmits<{
@@ -28,7 +25,7 @@ const isChecked = computed({
   set: (val) => emit('update:modelValue', val)
 })
 
-const labelId = useId()
+const checkboxId = useId()
 </script>
 
 <template>
@@ -42,36 +39,33 @@ const labelId = useId()
     <div class="flex items-start justify-between gap-3">
       <div class="flex items-start gap-3 flex-1">
         <!-- Neo Checkbox -->
-        <label class="relative cursor-pointer mt-1 shrink-0">
-          <input type="checkbox" v-model="isChecked" class="peer sr-only" :aria-labelledby="labelId" />
-          <div
-            class="size-6 border-2 border-background-dark rounded bg-white peer-checked:bg-primary transition-colors flex items-center justify-center"
-            :class="{ 'border-gray-400 bg-gray-200 peer-checked:bg-gray-400': isChecked }">
-            <span
-              class="material-symbols-outlined text-sm opacity-0 peer-checked:opacity-100 font-bold transition-opacity">check</span>
+        <div class="relative mt-1 shrink-0">
           <input 
+            :id="checkboxId"
             v-model="isChecked"
             type="checkbox"
             class="peer sr-only"
-            :aria-labelledby="labelId"
           >
-          <div 
-            class="size-6 border-2 border-background-dark rounded bg-white peer-checked:bg-primary transition-colors flex items-center justify-center peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-background-dark"
+          <label
+            :for="checkboxId"
+            class="cursor-pointer size-6 border-2 border-background-dark rounded bg-white peer-checked:bg-primary transition-colors flex items-center justify-center peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-background-dark"
             :class="{ 'border-gray-400 bg-gray-200 peer-checked:bg-gray-400': isChecked }"
           >
              <span class="material-symbols-outlined text-sm opacity-0 peer-checked:opacity-100 font-bold transition-opacity">check</span>
-          </div>
-        </label>
+          </label>
+        </div>
 
         <div class="flex flex-col">
-          <span :id="labelId" class="text-xl font-bold leading-tight transition-colors"
+          <label
+            :for="checkboxId"
+            class="text-xl font-bold leading-tight transition-colors cursor-pointer"
             :class="[isChecked ? 'line-through decoration-2 decoration-background-dark text-gray-500' : 'group-hover:text-primary-dark']">
-            {{ label }}
-          </span>
+            {{ name }}
+          </label>
           <div v-if="!isChecked" class="flex items-center gap-2 mt-1">
-            <span v-if="quantity > 1"
+            <span v-if="quantityValue > 1"
               class="text-xs font-bold border border-background-dark px-1.5 rounded bg-gray-100">
-              Qty: {{ quantity }}
+              Qty: {{ quantityValue }}
             </span>
             <span v-if="addedBy" class="text-xs text-gray-500 font-medium">
               Added by {{ addedBy }}
@@ -80,12 +74,10 @@ const labelId = useId()
         </div>
       </div>
 
-      <button @click="$emit('delete')" class="opacity-0 group-hover:opacity-100 transition-opacity"
-        :class="isChecked ? 'text-gray-400' : 'text-background-dark'" :aria-label="'Delete ' + label">
       <button 
         class="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background-dark focus-visible:ring-offset-2 transition-opacity rounded"
         :class="isChecked ? 'text-gray-400' : 'text-background-dark'"
-        :aria-label="'Delete ' + label"
+        :aria-label="'Delete ' + name"
         @click="$emit('delete')"
       >
         <span class="material-symbols-outlined text-lg">delete</span>
