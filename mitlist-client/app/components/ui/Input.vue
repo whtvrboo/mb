@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useId } from 'vue'
+
 interface Props {
   modelValue?: string
   type?: string
@@ -21,7 +23,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const inputId = props.id || `input-${Math.random().toString(36).substr(2, 9)}`
+const inputId = props.id || useId()
 
 const classes = computed(() => [
   'w-full h-14 px-4 py-2 bg-white',
@@ -39,6 +41,7 @@ const classes = computed(() => [
 <template>
   <input
     :id="inputId"
+    :aria-invalid="error"
     :type="type"
     :value="modelValue"
     :placeholder="placeholder"
