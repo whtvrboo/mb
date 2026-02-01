@@ -1,6 +1,6 @@
 """Gamification module service layer. PRIVATE - other modules import from interface.py."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from sqlalchemy import func, select
