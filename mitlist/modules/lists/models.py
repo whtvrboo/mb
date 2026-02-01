@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy import ForeignKey, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from mitlist.db.base import Base, BaseModel, TimestampMixin, VersionMixin
@@ -80,7 +80,7 @@ class Item(BaseModel, TimestampMixin, VersionMixin):
 
     __tablename__ = "items"
 
-    list_id: Mapped[int] = mapped_column(ForeignKey("lists.id"), nullable=False, index=True)
+    list_id: Mapped[int] = mapped_column(ForeignKey("lists.id"), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     quantity_value: Mapped[Optional[float]] = mapped_column(nullable=True)
     quantity_unit: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
@@ -97,6 +97,7 @@ class Item(BaseModel, TimestampMixin, VersionMixin):
     version_id: Mapped[int] = mapped_column(nullable=False, default=1)
 
     __mapper_args__ = {"version_id_col": version_id}
+    __table_args__ = (Index("ix_items_list_id_id", "list_id", "id"),)
 
     # Relationships
     list: Mapped["List"] = relationship("List", back_populates="items")
