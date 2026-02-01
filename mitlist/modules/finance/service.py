@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Optional
 
-from sqlalchemy import select
+from sqlalchemy import select, func, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -475,6 +475,76 @@ async def list_budgets(
     q = select(Budget).where(Budget.group_id == group_id).order_by(Budget.start_date.desc())
     result = await db.execute(q)
     return list(result.scalars().all())
+
+
+async def list_budgets_with_status(
+    db: AsyncSession,
+    group_id: int,
+) -> list[dict]:
+    """List group budgets with calculated status (single query)."""
+    from decimal import Decimal as D
+
+    q = (
+        select(
+            Budget,
+            func.coalesce(func.sum(Expense.amount), D("0.00")).label("current_spent"),
+        )
+        .outerjoin(
+            Expense,
+            and_(
+                Expense.group_id == Budget.group_id,
+                Expense.category_id == Budget.category_id,
+                Expense.expense_date >= Budget.start_date,
+                Expense.deleted_at.is_(None),
+                or_(
+                    Budget.end_date.is_(None),
+                    Expense.expense_date <= Budget.end_date,
+                ),
+            ),
+        )
+        .where(Budget.group_id == group_id)
+        .group_by(Budget.id)
+        .order_by(Budget.start_date.desc())
+    )
+
+    result = await db.execute(q)
+    rows = result.all()
+
+    responses = []
+    for row in rows:
+        budget: Budget = row[0]
+        current_spent: D = row[1]
+
+        remaining = budget.amount_limit - current_spent
+        percentage_used = (
+            float((current_spent / budget.amount_limit) * 100)
+            if budget.amount_limit > 0
+            else 0.0
+        )
+        is_over_budget = current_spent > budget.amount_limit
+        is_alert_threshold_reached = percentage_used >= budget.alert_threshold_percentage
+
+        budget_dict = {
+            "id": budget.id,
+            "group_id": budget.group_id,
+            "category_id": budget.category_id,
+            "amount_limit": budget.amount_limit,
+            "currency_code": budget.currency_code,
+            "period_type": budget.period_type,
+            "start_date": budget.start_date,
+            "end_date": budget.end_date,
+            "alert_threshold_percentage": budget.alert_threshold_percentage,
+            "created_at": budget.created_at,
+            "updated_at": budget.updated_at,
+            "current_spent": current_spent,
+            "remaining": remaining,
+            "percentage_used": percentage_used,
+            "is_over_budget": is_over_budget,
+            "is_alert_threshold_reached": is_alert_threshold_reached,
+        }
+        responses.append(budget_dict)
+
+    return responses
 
 
 async def get_budget_by_id(db: AsyncSession, budget_id: int) -> Optional[Budget]:

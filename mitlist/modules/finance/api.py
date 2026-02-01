@@ -322,27 +322,11 @@ async def get_budgets(
     db: AsyncSession = Depends(get_db),
 ) -> ListType[schemas.BudgetStatusResponse]:
     """List budgets with current spending status."""
-    budgets = await interface.list_budgets(db, group_id=group_id)
+    budgets_data = await interface.list_budgets_with_status(db, group_id=group_id)
 
-    responses = []
-    for budget in budgets:
-        status_data = await interface.calculate_budget_status(db, budget)
-
-        response = schemas.BudgetStatusResponse(
-            id=budget.id,
-            group_id=budget.group_id,
-            category_id=budget.category_id,
-            amount_limit=budget.amount_limit,
-            currency_code=budget.currency_code,
-            period_type=budget.period_type,
-            start_date=budget.start_date,
-            end_date=budget.end_date,
-            alert_threshold_percentage=budget.alert_threshold_percentage,
-            created_at=budget.created_at,
-            updated_at=budget.updated_at,
-            **status_data,
-        )
-        responses.append(response)
+    responses = [
+        schemas.BudgetStatusResponse.model_validate(b) for b in budgets_data
+    ]
 
     return responses
 

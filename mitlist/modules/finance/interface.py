@@ -31,6 +31,7 @@ __all__ = [
     "delete_settlement",
     # Budgets
     "list_budgets",
+    "list_budgets_with_status",
     "get_budget_by_id",
     "create_budget",
     "update_budget",
@@ -78,6 +79,7 @@ delete_settlement = service.delete_settlement
 
 # Budgets
 list_budgets = service.list_budgets
+list_budgets_with_status = service.list_budgets_with_status
 get_budget_by_id = service.get_budget_by_id
 create_budget = service.create_budget
 update_budget = service.update_budget
