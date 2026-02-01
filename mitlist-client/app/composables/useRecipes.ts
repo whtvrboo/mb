@@ -15,14 +15,14 @@ export function useRecipes() {
       cuisine_type?: string
       difficulty?: string
       is_favorite?: boolean
-    }) => useApi<RecipeResponse[]>('/recipes', { query: params }),
+    }) => $api<RecipeResponse[]>('/recipes', { query: params }),
     getRecipe: (recipeId: number) =>
       useApi<RecipeResponse>(`/recipes/${recipeId}`),
     createRecipe: (data: RecipeCreate) =>
       $api<RecipeResponse>('/recipes', { method: 'POST', body: data }),
 
     getMealPlans: (params?: { week_start?: string }) =>
-      useApi<WeeklyMealPlanResponse>('/meal-plans', { query: params }),
+      $api<WeeklyMealPlanResponse>('/meal-plans', { query: params }),
     createMealPlan: (data: MealPlanCreate) =>
       $api<MealPlanResponse>('/meal-plans', { method: 'POST', body: data }),
 

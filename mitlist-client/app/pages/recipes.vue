@@ -19,9 +19,6 @@ const fetchData = async () => {
         ])
         recipes.value = recipesData
         mealPlan.value = mealPlanData
-        // Fix:
-        // mealPlan.value = mealPlanData -> wait, type is WeeklyMealPlanResponse, so...
-        // Actually getMealPlans returns WeeklyMealPlanResponse.
     } catch (e) {
         console.error('Failed to fetch recipes', e)
     } finally {
