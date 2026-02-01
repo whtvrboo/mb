@@ -126,7 +126,7 @@ class SharedCredentialBase(BaseModel):
     )
     url: Optional[str] = Field(None, max_length=500)
     rotation_reminder_days: Optional[int] = Field(None, ge=1)
-    notes: Optional[str] = None
+    notes: Optional[str] = Field(None, max_length=1000)
 
 
 class SharedCredentialCreate(SharedCredentialBase):
@@ -149,7 +149,7 @@ class SharedCredentialUpdate(BaseModel):
     )
     url: Optional[str] = Field(None, max_length=500)
     rotation_reminder_days: Optional[int] = Field(None, ge=1)
-    notes: Optional[str] = None
+    notes: Optional[str] = Field(None, max_length=1000)
 
 
 class SharedCredentialPasswordUpdate(BaseModel):
@@ -192,9 +192,9 @@ class DocumentSearchRequest(BaseModel):
     """Schema for document search."""
 
     group_id: int
-    query: Optional[str] = None
-    folder_path: Optional[str] = None
-    mime_types: Optional[list[str]] = None
+    query: Optional[str] = Field(None, max_length=255)
+    folder_path: Optional[str] = Field(None, max_length=500)
+    mime_types: Optional[list[str]] = Field(None, max_length=20)
     tags: Optional[dict[str, Any]] = None
     uploaded_by_id: Optional[int] = None
     created_after: Optional[datetime] = None
