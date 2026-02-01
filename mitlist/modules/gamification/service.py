@@ -192,6 +192,18 @@ async def check_and_award_achievements(
     # Get all achievements
     all_achievements = await list_achievements(db)
 
+    # Optimization: Prefetch counts for required categories
+    needed_categories = {
+        ach.category
+        for ach in all_achievements
+        if ach.id not in earned_ids and ach.requirement_type == "COUNT"
+    }
+    category_counts = {}
+    for category in needed_categories:
+        category_counts[category] = await _get_activity_count_for_category(
+            db, user_id, group_id, category
+        )
+
     newly_awarded = []
     for achievement in all_achievements:
         if achievement.id in earned_ids:
@@ -204,9 +216,7 @@ async def check_and_award_achievements(
         elif achievement.requirement_type == "STREAK":
             qualifies = max_streak >= achievement.requirement_value
         elif achievement.requirement_type == "COUNT":
-            count = await _get_activity_count_for_category(
-                db, user_id, group_id, achievement.category
-            )
+            count = category_counts.get(achievement.category, 0)
             qualifies = count >= achievement.requirement_value
 
         if qualifies:
