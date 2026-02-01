@@ -1,6 +1,7 @@
 """Chores module service layer - business logic. PRIVATE - other modules import from interface.py."""
 
-from datetime import datetime, time, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
+from typing import Optional
 
 from sqlalchemy import and_, case, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
