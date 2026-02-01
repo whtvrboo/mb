@@ -113,6 +113,8 @@ class Expense(BaseModel, TimestampMixin, VersionMixin):
         CheckConstraint("amount > 0", name="ck_expense_amount_positive"),
         # Optimization: Composite index for efficient querying by group_id and sorting by expense_date
         Index("ix_expenses_group_date", "group_id", "expense_date"),
+        # Optimization: Composite index for efficient budget calc (filter by category, sort by date)
+        Index("ix_expenses_group_category_date", "group_id", "category_id", "expense_date"),
     )
 
 
