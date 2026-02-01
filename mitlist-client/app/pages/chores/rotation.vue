@@ -3,14 +3,15 @@ import { ref, onMounted, computed } from 'vue'
 import { useChores } from '~/composables/useChores'
 import { useAuth } from '~/composables/useAuth'
 import type { ChoreResponse } from '~/types/chores'
-import type { GroupMemberResponse } from '~/types/auth'
+import type { GroupMemberResponse, UserResponse } from '~/types/auth'
 
 const { listChores, updateChore } = useChores()
-const { listGroupMembers, listGroups } = useAuth()
+const { listGroupMembers, listGroups, getMe } = useAuth()
 
 // State
 const chores = ref<ChoreResponse[]>([])
 const members = ref<GroupMemberResponse[]>([])
+const currentUser = ref<UserResponse | null>(null)
 const isLoading = ref(true)
 
 // Settings
@@ -25,19 +26,22 @@ const workloadBalance = ref(65)
 const fetchData = async () => {
     isLoading.value = true
     try {
-        const groups = await listGroups() // Assuming cached or fast
+        const { data: groupsData } = await listGroups() // Assuming cached or fast
+        const groups = groupsData.value || []
         const groupId = groups[0]?.id
 
         if (groupId) {
-            const [choresData, membersData] = await Promise.all([
+            const [choresResult, membersResult, meResult] = await Promise.all([
                 listChores({ active_only: true }),
-                listGroupMembers(groupId)
+                listGroupMembers(groupId),
+                getMe()
             ])
-            chores.value = choresData
-            members.value = membersData
+            chores.value = choresResult.data.value || []
+            members.value = membersResult.data.value || []
+            currentUser.value = meResult.data.value
 
             // Determine current logic from chores (majority wins)
-            const strategies = choresData.map(c => c.rotation_strategy).filter(Boolean)
+            const strategies = chores.value.map(c => c.rotation_strategy).filter(Boolean)
             if (strategies.length > 0) {
                 // Pick most common
                 const counts = strategies.reduce((acc, val) => {
@@ -94,7 +98,7 @@ const rotationPreview = computed(() => {
             dates: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
             type: i === 0 ? 'Current' : (i === 1 ? 'Next' : 'Later'),
             isNext: i === 1,
-            isUser: false // TODO: check if member.user.id === currentUserId
+            isUser: currentUser.value ? member.user.id === currentUser.value.id : false
         })
     }
     return previewItems
