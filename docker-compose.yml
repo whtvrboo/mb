@@ -32,6 +32,8 @@ services:
       - POSTGRES_DB=mitlist
       - ENVIRONMENT=local
       - SECRET_KEY=dev_secret_key_change_in_prod
+      - DEV_TEST_USER_ENABLED=true
+      - ZITADEL_USER_AUTOCREATE=true
     depends_on:
       db:
         condition: service_healthy
@@ -46,6 +48,9 @@ services:
       - NUXT_PUBLIC_API_BASE=http://localhost:8000/api/v1
       - HOST=0.0.0.0
       - PORT=3000
+      - NUXT_PUBLIC_DEV_AUTH=true
+      # Required by nuxt-auth-utils to seal session cookies (min 32 chars)
+      - NUXT_SESSION_PASSWORD=dev-session-secret-min-32-chars-change-in-prod
     depends_on:
       - backend
 

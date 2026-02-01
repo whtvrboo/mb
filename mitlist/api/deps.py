@@ -49,8 +49,22 @@ async def get_bearer_token(
     return credentials.credentials
 
 
+def _parse_dev_token(token: str) -> dict[str, Any] | None:
+    """If DEV_TEST_USER_ENABLED and token is dev:<email> or dev:<email>:<name>, return fake claims."""
+    if not settings.DEV_TEST_USER_ENABLED or not token.startswith("dev:"):
+        return None
+    parts = token[4:].split(":", 1)  # after "dev:"
+    email = (parts[0] or "test@test.local").strip()
+    name = (parts[1] or email).strip() if len(parts) > 1 else email
+    sub = f"dev-{email.replace('@', '-at-')}"
+    return {"sub": sub, "email": email, "name": name, "preferred_username": email}
+
+
 async def get_current_principal(token: str = Depends(get_bearer_token)) -> dict[str, Any]:
-    """Validate the token (JWKS) and return its claims."""
+    """Validate the token (JWKS or dev token) and return its claims."""
+    dev_claims = _parse_dev_token(token)
+    if dev_claims is not None:
+        return dev_claims
     try:
         verified = await verify_access_token(token)
         return verified.claims
@@ -109,7 +123,9 @@ async def require_introspection_user(
     token: str = Depends(get_bearer_token),
     user: User = Depends(get_current_user),
 ) -> User:
-    """Critical-path dependency: require token to be active via introspection."""
+    """Critical-path dependency: require token to be active via introspection (or dev token when enabled)."""
+    if settings.DEV_TEST_USER_ENABLED and token.startswith("dev:"):
+        return user
     try:
         await require_active_token(token)
         return user

@@ -7,12 +7,19 @@ const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
 
+const config = useRuntimeConfig()
+const devAuthEnabled = computed(() => config.public.devAuth === true)
+
 const handleZitadelLogin = () => {
   window.location.href = '/auth/zitadel'
 }
 
 const handleZitadelRegister = () => {
   window.location.href = '/auth/zitadel/register'
+}
+
+const handleDevLogin = () => {
+  window.location.href = '/auth/dev'
 }
 </script>
 
@@ -104,6 +111,20 @@ const handleZitadelRegister = () => {
           </span>
         </button>
       </form>
+
+      <div v-if="devAuthEnabled" class="relative py-6 flex items-center justify-center">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t-[3px] border-dashed border-background-dark/20"></div>
+        </div>
+        <div
+          class="relative bg-background-light px-4 font-bold text-xs text-background-dark/50 uppercase tracking-widest">
+          dev only</div>
+      </div>
+      <button v-if="devAuthEnabled" type="button" @click="handleDevLogin"
+        class="group w-full bg-amber-50 border-[3px] border-amber-400 rounded-xl p-4 shadow-neobrutalism flex items-center justify-between active:translate-x-[2px] active:translate-y-[2px] active:shadow-neobrutalism-sm transition-all text-left relative">
+        <span class="font-bold text-lg text-amber-800">Sign in as test user</span>
+        <span class="material-symbols-outlined text-2xl text-amber-600">bug_report</span>
+      </button>
 
       <div class="relative py-8 flex items-center justify-center">
         <div class="absolute inset-0 flex items-center">

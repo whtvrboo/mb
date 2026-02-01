@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     # User mapping behavior
     ZITADEL_USER_AUTOCREATE: bool = True
 
+    # Dev: allow test user without Zitadel (Bearer dev:<email> or dev:<email>:<name>)
+    # Only use when Zitadel is not configured. Never enable in production.
+    DEV_TEST_USER_ENABLED: bool = False
+
     # Observability (optional)
     OTEL_EXPORTER_OTLP_ENDPOINT: str = ""
     OTEL_SERVICE_NAME: str = "mitlist"

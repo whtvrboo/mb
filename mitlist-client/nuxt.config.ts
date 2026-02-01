@@ -6,6 +6,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000/api/v1',
+      /** Enable "Sign in as test user" when Zitadel is not set (dev only). */
+      devAuth: process.env.NUXT_PUBLIC_DEV_AUTH === 'true',
     },
     oauth: {
       zitadel: {

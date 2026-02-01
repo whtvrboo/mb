@@ -4,7 +4,7 @@ interface Props {
   title?: string
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   variant: 'info',
 })
 
@@ -18,7 +18,7 @@ const classes = computed(() => {
 
   return [
     'border rounded-md p-4',
-    variants[variant],
+    variants[props.variant],
   ]
 })
 </script>
