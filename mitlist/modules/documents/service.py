@@ -2,9 +2,9 @@
 
 import base64
 import hashlib
+import logging
 import secrets
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from cryptography.fernet import Fernet
 from sqlalchemy import select
@@ -12,14 +12,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from mitlist.core.config import settings
 from mitlist.core.errors import ForbiddenError, NotFoundError
-from mitlist.modules.documents.models import Document, DocumentShare, SharedCredential
+from mitlist.modules.documents.models import Document, SharedCredential
 
 
 # ---------- Documents ----------
 async def list_documents(
     db: AsyncSession,
     group_id: int,
-    folder_path: Optional[str] = None,
+    folder_path: str | None = None,
 ) -> list[Document]:
     """List documents for a group, optionally filtered by folder."""
     q = select(Document).where(
@@ -33,7 +33,7 @@ async def list_documents(
     return list(result.scalars().all())
 
 
-async def get_document_by_id(db: AsyncSession, document_id: int) -> Optional[Document]:
+async def get_document_by_id(db: AsyncSession, document_id: int) -> Document | None:
     """Get a document by ID."""
     result = await db.execute(
         select(Document).where(Document.id == document_id, Document.deleted_at.is_(None))
@@ -49,8 +49,8 @@ async def create_document(
     file_key: str,
     mime_type: str,
     file_size_bytes: int,
-    folder_path: Optional[str] = None,
-    tags: Optional[dict] = None,
+    folder_path: str | None = None,
+    tags: dict | None = None,
     is_encrypted: bool = False,
 ) -> Document:
     """Create a document record."""
@@ -76,7 +76,7 @@ async def delete_document(db: AsyncSession, document_id: int) -> None:
     doc = await get_document_by_id(db, document_id)
     if not doc:
         raise NotFoundError(code="DOCUMENT_NOT_FOUND", detail=f"Document {document_id} not found")
-    doc.deleted_at = datetime.now(timezone.utc)
+    doc.deleted_at = datetime.now(UTC)
     await db.flush()
 
 
@@ -93,7 +93,7 @@ def generate_presigned_upload_url(
     Returns (upload_url, file_key, expires_in_seconds).
     """
     # Generate a unique file key
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+    timestamp = datetime.now(UTC).strftime("%Y%m%d%H%M%S")
     random_suffix = secrets.token_hex(8)
     safe_name = file_name.replace(" ", "_").replace("/", "_")
     file_key = f"groups/{group_id}/documents/{timestamp}_{random_suffix}_{safe_name}"
@@ -129,7 +129,7 @@ async def list_credentials(db: AsyncSession, group_id: int) -> list[SharedCreden
     return list(result.scalars().all())
 
 
-async def get_credential_by_id(db: AsyncSession, credential_id: int) -> Optional[SharedCredential]:
+async def get_credential_by_id(db: AsyncSession, credential_id: int) -> SharedCredential | None:
     """Get a credential by ID."""
     result = await db.execute(
         select(SharedCredential).where(SharedCredential.id == credential_id)
@@ -144,10 +144,10 @@ async def create_credential(
     credential_type: str,
     password: str,
     access_level: str,
-    username_identity: Optional[str] = None,
-    url: Optional[str] = None,
-    rotation_reminder_days: Optional[int] = None,
-    notes: Optional[str] = None,
+    username_identity: str | None = None,
+    url: str | None = None,
+    rotation_reminder_days: int | None = None,
+    notes: str | None = None,
 ) -> SharedCredential:
     """Create a shared credential with encrypted password."""
     # In production, use proper encryption (e.g., cryptography.fernet, age, or vault)
@@ -163,7 +163,7 @@ async def create_credential(
         url=url,
         rotation_reminder_days=rotation_reminder_days,
         notes=notes,
-        last_rotated_at=datetime.now(timezone.utc),
+        last_rotated_at=datetime.now(UTC),
     )
     db.add(cred)
     await db.flush()
@@ -185,11 +185,15 @@ async def reveal_credential(
     """
     cred = await get_credential_by_id(db, credential_id)
     if not cred:
-        raise NotFoundError(code="CREDENTIAL_NOT_FOUND", detail=f"Credential {credential_id} not found")
+        raise NotFoundError(
+            code="CREDENTIAL_NOT_FOUND", detail=f"Credential {credential_id} not found"
+        )
 
     # Check access level
     if cred.access_level == "ADMIN_ONLY" and user_role != "ADMIN":
-        raise ForbiddenError(code="ACCESS_DENIED", detail="Admin access required for this credential")
+        raise ForbiddenError(
+            code="ACCESS_DENIED", detail="Admin access required for this credential"
+        )
 
     decrypted = _decrypt_password(cred.encrypted_password)
     return cred, decrypted
@@ -199,7 +203,9 @@ async def delete_credential(db: AsyncSession, credential_id: int) -> None:
     """Delete a credential."""
     cred = await get_credential_by_id(db, credential_id)
     if not cred:
-        raise NotFoundError(code="CREDENTIAL_NOT_FOUND", detail=f"Credential {credential_id} not found")
+        raise NotFoundError(
+            code="CREDENTIAL_NOT_FOUND", detail=f"Credential {credential_id} not found"
+        )
     await db.delete(cred)
     await db.flush()
 
@@ -222,13 +228,16 @@ def _encrypt_password(password: str) -> str:
 
 def _decrypt_password(encrypted: str) -> str:
     """Decrypt password using Fernet, falling back to Base64 for legacy data."""
-    try:
+    # Fernet tokens (version 128) start with gAAAA
+    if encrypted.startswith("gAAAA"):
         f = _get_fernet()
+        # If this fails (InvalidToken), we want it to raise, not fallback
         return f.decrypt(encrypted.encode()).decode()
-    except Exception:
-        # Fallback to base64 (legacy) if Fernet decryption fails
-        # This allows reading existing data that hasn't been re-encrypted yet
-        try:
-            return base64.b64decode(encrypted.encode()).decode()
-        except Exception:
-            raise ValueError("Failed to decrypt password")
+
+    # Fallback to base64 (legacy) if not a Fernet token
+    # This allows reading existing data that hasn't been re-encrypted yet
+    try:
+        logging.getLogger(__name__).warning("Legacy Base64 password access detected.")
+        return base64.b64decode(encrypted.encode()).decode()
+    except Exception as e:
+        raise ValueError("Failed to decrypt password") from e
