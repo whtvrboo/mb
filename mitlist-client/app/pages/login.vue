@@ -10,6 +10,9 @@ const showPassword = ref(false)
 const config = useRuntimeConfig()
 const devAuthEnabled = computed(() => config.public.devAuth === true)
 
+const emailId = useId()
+const passwordId = useId()
+
 const handleZitadelLogin = () => {
   window.location.href = '/auth/zitadel'
 }
@@ -65,12 +68,12 @@ const handleDevLogin = () => {
       <!-- Form -->
       <form class="flex flex-col gap-5 w-full" @submit.prevent>
         <div class="flex flex-col gap-1.5 group">
-          <label
+          <label :for="emailId"
             class="font-bold text-sm uppercase ml-1 flex items-center gap-1 group-focus-within:text-primary transition-colors duration-300">
             Email Address
           </label>
           <div class="relative">
-            <input v-model="email"
+            <input :id="emailId" v-model="email"
               class="w-full h-14 bg-white border-[3px] border-background-dark rounded-xl px-4 text-lg font-bold placeholder:text-gray-300 placeholder:font-medium focus:ring-0 focus:border-primary focus:outline-none shadow-neobrutalism transition-all"
               placeholder="hello@mitlist.com" type="email" />
             <span
@@ -79,16 +82,18 @@ const handleDevLogin = () => {
         </div>
 
         <div class="flex flex-col gap-1.5 group">
-          <label
+          <label :for="passwordId"
             class="font-bold text-sm uppercase ml-1 flex items-center gap-1 group-focus-within:text-primary transition-colors duration-300">
             Password
           </label>
           <div class="relative">
-            <input v-model="password" :type="showPassword ? 'text' : 'password'"
+            <input :id="passwordId" v-model="password" :type="showPassword ? 'text' : 'password'"
               class="w-full h-14 bg-white border-[3px] border-background-dark rounded-xl px-4 text-lg font-bold placeholder:text-gray-300 placeholder:font-medium focus:ring-0 focus:border-primary focus:outline-none shadow-neobrutalism transition-all"
               placeholder="••••••••" />
-            <button type="button" @click="showPassword = !showPassword"
-              class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-background-dark transition-colors outline-none">
+            <button type="button"
+              class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-background-dark transition-colors outline-none"
+              :aria-label="showPassword ? 'Hide password' : 'Show password'"
+              @click="showPassword = !showPassword">
               <span class="material-symbols-outlined text-[22px]">{{ showPassword ? 'visibility' : 'visibility_off'
               }}</span>
             </button>
