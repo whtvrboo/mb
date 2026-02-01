@@ -8,9 +8,21 @@ interface Column {
 interface Props {
     columns: Column[]
     rows: any[]
+    rowKey?: string | ((row: any) => string | number)
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+
+const getRowKey = (row: any, index: number) => {
+    if (typeof props.rowKey === 'function') {
+        return props.rowKey(row)
+    }
+    if (typeof props.rowKey === 'string') {
+        const key = row[props.rowKey]
+        if (key !== undefined && key !== null) return key
+    }
+    return index
+}
 </script>
 
 <template>
@@ -25,9 +37,9 @@ defineProps<Props>()
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(row, rowIndex) in rows" :key="rowIndex"
+                <tr v-for="(row, rowIndex) in rows" :key="getRowKey(row, rowIndex)"
                     class="border-b-[2px] border-background-dark last:border-b-0 hover:bg-yellow-50/50 transition-colors group">
-                    <td v-for="col in columns" :key="`${rowIndex}-${col.key}`"
+                    <td v-for="col in columns" :key="col.key"
                         class="px-6 py-4 font-medium text-background-dark" :class="col.class">
                         <slot :name="col.key" :row="row" :index="rowIndex">
                             {{ row[col.key] }}
