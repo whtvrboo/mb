@@ -87,6 +87,10 @@ const iconClasses = computed(() => {
         default: return 'text-primary'
     }
 })
+
+const role = computed(() => {
+    return ['error', 'warning'].includes(props.variant) ? 'alert' : 'status'
+})
 </script>
 
 <template>
@@ -97,7 +101,7 @@ const iconClasses = computed(() => {
             leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100"
             leave-to-class="opacity-0">
             <div v-if="modelValue" class="fixed z-[60] max-w-sm w-full pointer-events-auto" :class="positionClasses">
-                <div class="w-full border-[3px] rounded-lg p-4 flex items-start gap-3" :class="variantClasses">
+                <div class="w-full border-[3px] rounded-lg p-4 flex items-start gap-3" :class="variantClasses" :role="role">
                     <div v-if="variant === 'success'"
                         class="bg-sage text-background-dark p-1 rounded border-2 border-white flex items-center justify-center shrink-0">
                         <span class="material-symbols-outlined font-bold text-[20px]">{{ iconName }}</span>
@@ -111,7 +115,7 @@ const iconClasses = computed(() => {
                         <slot />
                     </div>
 
-                    <button @click="close" class="shrink-0 opacity-50 hover:opacity-100 transition-opacity">
+                    <button @click="close" class="shrink-0 opacity-50 hover:opacity-100 transition-opacity" aria-label="Close notification">
                         <span class="material-symbols-outlined">close</span>
                     </button>
                 </div>
