@@ -86,8 +86,8 @@ class ChoreAssignment(BaseModel, TimestampMixin):
     __tablename__ = "chore_assignments"
 
     chore_id: Mapped[int] = mapped_column(ForeignKey("chores.id"), nullable=False, index=True)
-    assigned_to_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    due_date: Mapped[datetime] = mapped_column(nullable=False)
+    assigned_to_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    due_date: Mapped[datetime] = mapped_column(nullable=False, index=True)
     completed_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
     completed_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="PENDING", nullable=False)
