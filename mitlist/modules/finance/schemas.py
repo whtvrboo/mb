@@ -80,7 +80,7 @@ class ExpenseCreate(ExpenseBase):
     group_id: int
     paid_by_user_id: int
     exchange_rate: Optional[Decimal] = Field(None, gt=0)
-    splits: list[ExpenseSplitInput] = Field(default_factory=list)
+    splits: list[ExpenseSplitInput] = Field(default_factory=list, max_length=100)
     linked_proposal_id: Optional[int] = None
     linked_pet_medical_id: Optional[int] = None
     linked_maintenance_log_id: Optional[int] = None
@@ -90,7 +90,7 @@ class ExpenseCreateRequest(ExpenseBase):
     """Request schema for creating expense (omits group_id and paid_by_user_id)."""
 
     exchange_rate: Optional[Decimal] = Field(None, gt=0)
-    splits: list[ExpenseSplitInput] = Field(default_factory=list)
+    splits: list[ExpenseSplitInput] = Field(default_factory=list, max_length=100)
     linked_proposal_id: Optional[int] = None
     linked_pet_medical_id: Optional[int] = None
     linked_maintenance_log_id: Optional[int] = None
@@ -279,13 +279,13 @@ class SplitPresetCreate(SplitPresetBase):
     """Schema for creating a split preset."""
 
     group_id: int
-    members: list[SplitPresetMemberInput] = Field(default_factory=list)
+    members: list[SplitPresetMemberInput] = Field(default_factory=list, max_length=100)
 
 
 class SplitPresetCreateRequest(SplitPresetBase):
     """Request schema for creating split preset (omits group_id)."""
 
-    members: list[SplitPresetMemberInput] = Field(default_factory=list)
+    members: list[SplitPresetMemberInput] = Field(default_factory=list, max_length=100)
 
 
 class SplitPresetUpdate(BaseModel):
