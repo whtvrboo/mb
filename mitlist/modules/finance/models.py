@@ -83,7 +83,7 @@ class Expense(BaseModel, TimestampMixin, VersionMixin):
     __tablename__ = "expenses"
 
     group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False)
-    paid_by_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    paid_by_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
     description: Mapped[str] = mapped_column(String(500), nullable=False)
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     currency_code: Mapped[str] = mapped_column(String(3), default="USD", nullable=False)
@@ -115,6 +115,8 @@ class Expense(BaseModel, TimestampMixin, VersionMixin):
         Index("ix_expenses_group_date", "group_id", "expense_date"),
         # Optimization: Composite index for efficient budget calc (filter by category, sort by date)
         Index("ix_expenses_group_category_date", "group_id", "category_id", "expense_date"),
+        # Optimization: Composite index for efficient user filtering (filter by user, sort by date)
+        Index("ix_expenses_group_user_date", "group_id", "paid_by_user_id", "expense_date"),
     )
 
 
