@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useId } from 'vue'
 
 interface Props {
     modelValue?: any
@@ -26,7 +26,8 @@ const handleChange = () => {
     }
 }
 
-const inputId = computed(() => props.id || `radio-${Math.random().toString(36).substring(7)}`)
+const generatedId = useId()
+const inputId = computed(() => props.id || generatedId)
 </script>
 
 <template>

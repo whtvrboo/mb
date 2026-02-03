@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useId } from 'vue'
 
 interface Props {
     modelValue?: boolean | any[]
@@ -41,7 +41,8 @@ const handleChange = (e: Event) => {
     }
 }
 
-const inputId = computed(() => props.id || `checkbox-${Math.random().toString(36).substring(7)}`)
+const generatedId = useId()
+const inputId = computed(() => props.id || generatedId)
 </script>
 
 <template>
