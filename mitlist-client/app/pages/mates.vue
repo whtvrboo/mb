@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useAuth } from '~/composables/useAuth'
-import type { GroupResponse, GroupMemberResponse } from '~/types/auth'
+import type { GroupResponse, GroupMemberResponse, UserResponse } from '~/types/auth'
 
 const { listGroups, listGroupMembers, groupId } = useAuth()
 
 // State
 const houses = ref<GroupResponse[]>([])
 const members = ref<GroupMemberResponse[]>([])
+const currentUser = ref<UserResponse | null>(null)
 const isLoading = ref(true)
 
 // Computed
@@ -17,16 +18,25 @@ const currentHouseId = computed(() => groupId.value)
 const fetchData = async () => {
     isLoading.value = true
     try {
+        const { $api } = useNuxtApp()
+        const userData = await $api<UserResponse>('/users/me').catch(() => null)
+        if (userData) {
+            currentUser.value = userData
+        }
+
         // 1. Fetch User's Groups
-        houses.value = await listGroups()
+        const { data: groups } = await listGroups()
+        houses.value = (groups.value as unknown as GroupResponse[]) || []
 
         // 2. Fetch Members for current group
         if (currentHouseId.value) {
-            members.value = await listGroupMembers(currentHouseId.value)
+            const { data: groupMembers } = await listGroupMembers(currentHouseId.value!)
+            members.value = (groupMembers.value as unknown as GroupMemberResponse[]) || []
         } else if (houses.value.length > 0) {
             // Fallback if no current group selected (though useAuth usually handles this)
             // For now just fetch first
-            members.value = await listGroupMembers(houses.value[0].id)
+            const { data: groupMembers } = await listGroupMembers(houses.value[0]!.id)
+            members.value = (groupMembers.value as unknown as GroupMemberResponse[]) || []
         }
     } catch (error) {
         console.error('Failed to fetch mates data', error)
@@ -56,10 +66,7 @@ const getAvatarColor = (member: GroupMemberResponse) => {
     return colors[member.user.id % colors.length]
 }
 const isCurrentUser = (member: GroupMemberResponse) => {
-    // Ideally compare with my user ID, but we need to fetch 'me' first.
-    // We can fetch 'me' in fetchData or assume strict equality if we had the ID.
-    // For now, let's just leave it false or implement if we fetch user.
-    return false // TODO: compare with logged in user
+    return currentUser.value?.id === member.user.id
 }
 
 onMounted(() => {
