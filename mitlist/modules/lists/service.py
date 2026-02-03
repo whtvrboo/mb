@@ -30,11 +30,14 @@ async def list_lists(
     return list(result.scalars().all())
 
 
-async def get_list_by_id(db: AsyncSession, list_id: int) -> Optional[List]:
-    """Get a list by ID with items loaded."""
-    result = await db.execute(
-        select(List).options(selectinload(List.items)).where(List.id == list_id)
-    )
+async def get_list_by_id(
+    db: AsyncSession, list_id: int, load_items: bool = True
+) -> Optional[List]:
+    """Get a list by ID, optionally loading items."""
+    q = select(List).where(List.id == list_id)
+    if load_items:
+        q = q.options(selectinload(List.items))
+    result = await db.execute(q)
     return result.scalar_one_or_none()
 
 

@@ -297,7 +297,7 @@ async def sync_recipe_to_list(
     # Import list service to add items
     from mitlist.modules.lists.interface import bulk_add_items, get_list_by_id
 
-    list_obj = await get_list_by_id(db, list_id)
+    list_obj = await get_list_by_id(db, list_id, load_items=False)
     if not list_obj:
         raise NotFoundError(code="LIST_NOT_FOUND", detail=f"List {list_id} not found")
 
