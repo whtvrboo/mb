@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from mitlist.modules.auth.schemas import LocationBase, ServiceContactBase, InviteAcceptRequest
+from mitlist.modules.auth.schemas import LocationBase, ServiceContactBase, InviteAcceptRequest, UserCreate, UserLoginRequest
 from mitlist.modules.lists.schemas import ItemBase
 from mitlist.modules.documents.schemas import SharedCredentialBase, DocumentSearchRequest
 
@@ -68,3 +68,23 @@ def test_document_search_request_query_limit():
             query="a" * 256
         )
     assert "String should have at most 255 characters" in str(exc.value)
+
+
+def test_user_password_limits():
+    """Test UserCreate and UserLoginRequest password max_length."""
+    # UserCreate
+    with pytest.raises(ValidationError) as exc:
+        UserCreate(
+            email="test@example.com",
+            name="Test User",
+            password="a" * 129
+        )
+    assert "String should have at most 128 characters" in str(exc.value)
+
+    # UserLoginRequest
+    with pytest.raises(ValidationError) as exc:
+        UserLoginRequest(
+            email="test@example.com",
+            password="a" * 129
+        )
+    assert "String should have at most 128 characters" in str(exc.value)
