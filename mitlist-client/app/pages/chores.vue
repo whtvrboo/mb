@@ -47,6 +47,7 @@ onMounted(() => {
             class="sticky top-0 z-50 bg-background-light border-b-[3px] border-background-dark px-5 h-16 flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-3">
                 <NuxtLink to="/"
+                    aria-label="Back to dashboard"
                     class="flex items-center justify-center size-10 rounded-lg border-[2px] border-transparent hover:border-background-dark hover:bg-black/5 transition-all">
                     <span class="material-symbols-outlined text-[28px]">arrow_back</span>
                 </NuxtLink>
@@ -116,7 +117,12 @@ onMounted(() => {
                     <div class="flex p-4 gap-4 items-start">
                         <div class="mt-1">
                             <label class="relative cursor-pointer">
-                                <input type="checkbox" class="peer sr-only" @change="handleComplete(assignment.id)" />
+                                <input
+                                    type="checkbox"
+                                    class="peer sr-only"
+                                    :aria-labelledby="`chore-title-${assignment.id}`"
+                                    @change="handleComplete(assignment.id)"
+                                />
                                 <div
                                     class="size-7 border-[3px] border-background-dark rounded bg-white peer-checked:bg-primary transition-colors flex items-center justify-center hover:bg-gray-100">
                                     <span
@@ -126,7 +132,7 @@ onMounted(() => {
                         </div>
                         <div class="flex-1 flex flex-col gap-1">
                             <div class="flex justify-between items-start">
-                                <h4 class="font-bold text-xl leading-tight">{{ assignment.chore.name }}</h4>
+                                <h4 :id="`chore-title-${assignment.id}`" class="font-bold text-xl leading-tight">{{ assignment.chore.name }}</h4>
                                 <span
                                     class="text-xs font-black bg-primary/20 text-background-dark border border-background-dark/10 px-1.5 py-0.5 rounded uppercase">
                                     {{ assignment.chore.points_value }} pts
@@ -160,6 +166,7 @@ onMounted(() => {
         <!-- Floating Action Button -->
         <div class="fixed bottom-6 right-6 z-40">
             <NuxtLink to="/chores/rotation"
+                aria-label="Manage chore rotations"
                 class="size-16 bg-primary border-[3px] border-background-dark rounded-full shadow-neobrutalism-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
                 <span class="material-symbols-outlined text-4xl font-bold">autorenew</span>
             </NuxtLink>
