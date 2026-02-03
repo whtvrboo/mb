@@ -4,7 +4,7 @@ from datetime import datetime, time, timedelta, timezone
 
 from sqlalchemy import and_, case, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import contains_eager, selectinload
 
 from mitlist.core.errors import NotFoundError, ValidationError
 from mitlist.modules.chores.models import (
@@ -136,7 +136,7 @@ async def list_assignments(
         select(ChoreAssignment)
         .join(Chore, ChoreAssignment.chore_id == Chore.id)
         .where(Chore.group_id == group_id)
-        .options(selectinload(ChoreAssignment.chore))
+        .options(contains_eager(ChoreAssignment.chore))
     )
     if due_date is not None:
         day_start = (
