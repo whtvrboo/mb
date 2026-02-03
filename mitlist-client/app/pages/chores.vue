@@ -16,8 +16,8 @@ const fetchData = async () => {
             getMyStats(),
             listAssignments({ status_filter: 'pending' }) // Fetch pending assignments
         ])
-        stats.value = statsData
-        assignments.value = assignmentsData
+        stats.value = statsData.data.value
+        assignments.value = assignmentsData.data.value || []
     } catch (e) {
         console.error('Failed to fetch chores data', e)
     } finally {
@@ -32,6 +32,23 @@ const handleComplete = async (assignmentId: number) => {
         assignments.value = assignments.value.filter(a => a.id !== assignmentId)
     } catch (e) {
         console.error('Failed to complete assignment', e)
+    }
+}
+
+const getDueDateClass = (dateStr: string | null) => {
+    if (!dateStr) return 'text-gray-500 bg-gray-100 border-gray-200'
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const due = new Date(dateStr)
+    due.setHours(0, 0, 0, 0)
+
+    if (due < today) {
+        return 'text-red-600 bg-red-50 border-red-200' // Overdue
+    } else if (due.getTime() === today.getTime()) {
+        return 'text-amber-700 bg-amber-50 border-amber-200' // Due Today
+    } else {
+        return 'text-gray-600 bg-white border-gray-300' // Future
     }
 }
 
@@ -54,11 +71,13 @@ onMounted(() => {
             </div>
             <h1 class="text-xl font-bold tracking-tight uppercase truncate">House Chores</h1>
             <div class="size-10 flex items-center justify-end">
-                <div class="relative">
+                <button
+                    class="relative flex items-center justify-center size-10 rounded-lg hover:bg-black/5 transition-colors border-[2px] border-transparent hover:border-background-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background-dark"
+                    aria-label="Filter chores">
                     <span class="material-symbols-outlined text-[28px]">filter_list</span>
-                    <div class="absolute -top-1 -right-1 size-3 bg-primary rounded-full border border-background-dark">
+                    <div class="absolute top-1 right-1 size-2.5 bg-primary rounded-full border border-background-dark">
                     </div>
-                </div>
+                </button>
             </div>
         </header>
 
@@ -140,7 +159,8 @@ onMounted(() => {
                             </div>
                             <div class="flex items-center gap-2 mt-1">
                                 <span
-                                    class="text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                    class="text-xs font-bold px-1.5 py-0.5 rounded flex items-center gap-1 border transition-colors"
+                                    :class="getDueDateClass(assignment.due_date)">
                                     <span class="material-symbols-outlined text-[14px]">calendar_today</span>
                                     {{ assignment.due_date ? new Date(assignment.due_date).toLocaleDateString() : 'No due date' }}
                                 </span>
