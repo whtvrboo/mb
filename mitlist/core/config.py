@@ -20,6 +20,7 @@ class Settings(BaseSettings):
 
     # Security
     SECRET_KEY: str
+    ALLOW_LEGACY_INSECURE_PASSWORDS: bool = False
 
     # Zitadel (OIDC)
     # Self-hosted base URL, e.g. https://zitadel.example.com
