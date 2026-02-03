@@ -8,6 +8,14 @@ const { getMyStats, listAssignments, completeAssignment } = useChores()
 const stats = ref<UserChoreStatsResponse | null>(null)
 const assignments = ref<ChoreAssignmentWithChoreResponse[]>([])
 const isLoading = ref(true)
+const filterMode = ref<'mine' | 'all'>('mine')
+
+const filteredAssignments = computed(() => {
+    if (filterMode.value === 'all') return assignments.value
+    // If stats not loaded yet, show all or empty. defaulting to assignments.value to avoid empty flash if delayed
+    if (!stats.value) return assignments.value
+    return assignments.value.filter(a => a.assigned_to_id === stats.value?.user_id)
+})
 
 const fetchData = async () => {
     isLoading.value = true
@@ -94,13 +102,23 @@ onMounted(() => {
             </section>
 
             <!-- Toggle (My Tasks vs All) -->
-            <div class="flex bg-white border-[3px] border-background-dark rounded-lg p-1 shadow-neobrutalism-sm">
+            <div class="flex bg-white border-[3px] border-background-dark rounded-lg p-1 shadow-neobrutalism-sm" role="group" aria-label="Filter chores">
                 <button
-                    class="flex-1 py-2 rounded font-bold text-sm uppercase bg-background-dark text-white shadow-sm transition-all">My
-                    Tasks</button>
+                    type="button"
+                    @click="filterMode = 'mine'"
+                    :aria-pressed="filterMode === 'mine'"
+                    class="flex-1 py-2 rounded font-bold text-sm uppercase transition-all"
+                    :class="filterMode === 'mine' ? 'bg-background-dark text-white shadow-sm' : 'hover:bg-gray-100 text-gray-500'">
+                    My Tasks
+                </button>
                 <button
-                    class="flex-1 py-2 rounded font-bold text-sm uppercase hover:bg-gray-100 text-gray-500 transition-all">All
-                    Chores</button>
+                    type="button"
+                    @click="filterMode = 'all'"
+                    :aria-pressed="filterMode === 'all'"
+                    class="flex-1 py-2 rounded font-bold text-sm uppercase transition-all"
+                    :class="filterMode === 'all' ? 'bg-background-dark text-white shadow-sm' : 'hover:bg-gray-100 text-gray-500'">
+                    All Chores
+                </button>
             </div>
 
             <!-- Task List -->
@@ -108,10 +126,10 @@ onMounted(() => {
                 <h3 class="font-bold text-lg uppercase tracking-wide opacity-80 pl-1">Results</h3>
 
                 <div v-if="isLoading" class="text-center py-4">Loading chores...</div>
-                <div v-if="!isLoading && assignments.length === 0" class="text-center py-4 font-bold opacity-50">No
+                <div v-if="!isLoading && filteredAssignments.length === 0" class="text-center py-4 font-bold opacity-50">No
                     pending chores!</div>
 
-                <div v-for="assignment in assignments" :key="assignment.id"
+                <div v-for="assignment in filteredAssignments" :key="assignment.id"
                     class="group relative bg-white border-[3px] border-background-dark rounded-xl p-0 shadow-neobrutalism transition-all hover:bg-gray-50 overflow-hidden">
 
                     <div class="flex p-4 gap-4 items-start">
