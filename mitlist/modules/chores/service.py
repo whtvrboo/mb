@@ -1,7 +1,6 @@
 """Chores module service layer - business logic. PRIVATE - other modules import from interface.py."""
 
-from datetime import date, datetime, time, timedelta, timezone
-from typing import Optional
+from datetime import datetime, time, timedelta, timezone
 
 from sqlalchemy import and_, case, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -140,7 +139,9 @@ async def list_assignments(
         .options(selectinload(ChoreAssignment.chore))
     )
     if due_date is not None:
-        day_start = due_date if isinstance(due_date, datetime) else datetime.combine(due_date, time.min)
+        day_start = (
+            due_date if isinstance(due_date, datetime) else datetime.combine(due_date, time.min)
+        )
         day_end = day_start + timedelta(days=1)
         q = q.where(ChoreAssignment.due_date >= day_start).where(ChoreAssignment.due_date < day_end)
     if status_filter is not None:
@@ -171,7 +172,9 @@ async def complete_assignment(
     result = await db.execute(select(ChoreAssignment).where(ChoreAssignment.id == assignment_id))
     a = result.scalar_one_or_none()
     if not a:
-        raise NotFoundError(code="ASSIGNMENT_NOT_FOUND", detail=f"Assignment {assignment_id} not found")
+        raise NotFoundError(
+            code="ASSIGNMENT_NOT_FOUND", detail=f"Assignment {assignment_id} not found"
+        )
     a.status = "COMPLETED"
     a.completed_at = datetime.now(timezone.utc)
     a.completed_by_id = completed_by_id
@@ -189,19 +192,25 @@ async def skip_assignment(db: AsyncSession, assignment_id: int) -> ChoreAssignme
     result = await db.execute(select(ChoreAssignment).where(ChoreAssignment.id == assignment_id))
     a = result.scalar_one_or_none()
     if not a:
-        raise NotFoundError(code="ASSIGNMENT_NOT_FOUND", detail=f"Assignment {assignment_id} not found")
+        raise NotFoundError(
+            code="ASSIGNMENT_NOT_FOUND", detail=f"Assignment {assignment_id} not found"
+        )
     a.status = "SKIPPED"
     await db.flush()
     await db.refresh(a)
     return a
 
 
-async def reassign_assignment(db: AsyncSession, assignment_id: int, assigned_to_id: int) -> ChoreAssignment:
+async def reassign_assignment(
+    db: AsyncSession, assignment_id: int, assigned_to_id: int
+) -> ChoreAssignment:
     """Pass chore to another member."""
     result = await db.execute(select(ChoreAssignment).where(ChoreAssignment.id == assignment_id))
     a = result.scalar_one_or_none()
     if not a:
-        raise NotFoundError(code="ASSIGNMENT_NOT_FOUND", detail=f"Assignment {assignment_id} not found")
+        raise NotFoundError(
+            code="ASSIGNMENT_NOT_FOUND", detail=f"Assignment {assignment_id} not found"
+        )
     a.assigned_to_id = assigned_to_id
     await db.flush()
     await db.refresh(a)
@@ -264,9 +273,7 @@ async def add_dependency(
 
 async def get_dependency_by_id(db: AsyncSession, dependency_id: int) -> ChoreDependency | None:
     """Get dependency by ID (for group ownership check via chore_id)."""
-    result = await db.execute(
-        select(ChoreDependency).where(ChoreDependency.id == dependency_id)
-    )
+    result = await db.execute(select(ChoreDependency).where(ChoreDependency.id == dependency_id))
     return result.scalar_one_or_none()
 
 
@@ -275,16 +282,16 @@ async def remove_dependency(db: AsyncSession, dependency_id: int) -> None:
     result = await db.execute(select(ChoreDependency).where(ChoreDependency.id == dependency_id))
     dep = result.scalar_one_or_none()
     if not dep:
-        raise NotFoundError(code="DEPENDENCY_NOT_FOUND", detail=f"Dependency {dependency_id} not found")
+        raise NotFoundError(
+            code="DEPENDENCY_NOT_FOUND", detail=f"Dependency {dependency_id} not found"
+        )
     await db.delete(dep)
     await db.flush()
 
 
 async def get_dependencies(db: AsyncSession, chore_id: int) -> list[ChoreDependency]:
     """Get dependencies for a chore."""
-    result = await db.execute(
-        select(ChoreDependency).where(ChoreDependency.chore_id == chore_id)
-    )
+    result = await db.execute(select(ChoreDependency).where(ChoreDependency.chore_id == chore_id))
     return list(result.scalars().all())
 
 
@@ -303,21 +310,43 @@ async def check_dependencies_met(db: AsyncSession, assignment_id: int) -> bool:
         return True
 
     # 3. For each dependency, check if there is a COMPLETED assignment for that chore
-    # within the relevant time window. This is complex logic in a real app (e.g. "did I do the pre-req TODAY?").
+    # within the relevant time window. This is complex logic (e.g. "did I do the pre-req TODAY?").
     # Simplified: Check if the LATEST assignment of the dependency chore is completed.
-    for dep in blocking_deps:
-        # Get latest assignment for the dependency chore
-        latest_sub_q = (
-            select(ChoreAssignment)
-            .where(ChoreAssignment.chore_id == dep.depends_on_chore_id)
-            .order_by(ChoreAssignment.due_date.desc())
-            .limit(1)
-        )
-        res = await db.execute(latest_sub_q)
-        latest_assignment = res.scalar_one_or_none()
 
+    # Optimized: Fetch latest status for all dependencies in one query using Window Function
+    from sqlalchemy import func
+
+    blocking_dep_ids = [d.depends_on_chore_id for d in blocking_deps]
+
+    # Subquery: Rank assignments by due_date desc for each chore
+    subq = (
+        select(
+            ChoreAssignment.chore_id,
+            ChoreAssignment.status,
+            func.row_number()
+            .over(
+                partition_by=ChoreAssignment.chore_id,
+                order_by=ChoreAssignment.due_date.desc(),
+            )
+            .label("rn"),
+        )
+        .where(ChoreAssignment.chore_id.in_(blocking_dep_ids))
+        .subquery()
+    )
+
+    # Query: Get status of the latest assignment (rn=1)
+    q = select(subq.c.chore_id, subq.c.status).where(subq.c.rn == 1)
+
+    result = await db.execute(q)
+    rows = result.all()
+
+    # Map chore_id -> status
+    latest_status_map = {row.chore_id: row.status for row in rows}
+
+    for dep in blocking_deps:
+        status = latest_status_map.get(dep.depends_on_chore_id)
         # If never assigned, or last assignment not completed, then blocked.
-        if not latest_assignment or latest_assignment.status != "COMPLETED":
+        if not status or status != "COMPLETED":
             return False
 
     return True
@@ -535,7 +564,9 @@ async def get_leaderboard(db: AsyncSession, group_id: int, period="monthly") -> 
             func.sum(case((ChoreAssignment.status == "PENDING", 1), else_=0)).label("pending"),
             func.sum(case((ChoreAssignment.status == "SKIPPED", 1), else_=0)).label("skipped"),
             func.avg(ChoreAssignment.quality_rating).label("average_quality_rating"),
-            func.sum(case((ChoreAssignment.status == "COMPLETED", Chore.effort_value), else_=0)).label("total_effort_points"),
+            func.sum(
+                case((ChoreAssignment.status == "COMPLETED", Chore.effort_value), else_=0)
+            ).label("total_effort_points"),
         )
         .join(Chore, ChoreAssignment.chore_id == Chore.id)
         .where(Chore.group_id == group_id)
@@ -552,16 +583,18 @@ async def get_leaderboard(db: AsyncSession, group_id: int, period="monthly") -> 
         completed = row.completed or 0
         completion_rate = (completed / total) if total > 0 else 0.0
 
-        rankings.append({
-            "user_id": row.assigned_to_id,
-            "total_assigned": total,
-            "completed": completed,
-            "pending": row.pending or 0,
-            "skipped": row.skipped or 0,
-            "total_effort_points": row.total_effort_points or 0,
-            "average_quality_rating": float(row.average_quality_rating or 0.0),
-            "completion_rate": completion_rate,
-        })
+        rankings.append(
+            {
+                "user_id": row.assigned_to_id,
+                "total_assigned": total,
+                "completed": completed,
+                "pending": row.pending or 0,
+                "skipped": row.skipped or 0,
+                "total_effort_points": row.total_effort_points or 0,
+                "average_quality_rating": float(row.average_quality_rating or 0.0),
+                "completion_rate": completion_rate,
+            }
+        )
 
     return rankings
 
@@ -571,7 +604,9 @@ async def start_assignment(db: AsyncSession, assignment_id: int, user_id: int) -
     result = await db.execute(select(ChoreAssignment).where(ChoreAssignment.id == assignment_id))
     a = result.scalar_one_or_none()
     if not a:
-        raise NotFoundError(code="ASSIGNMENT_NOT_FOUND", detail=f"Assignment {assignment_id} not found")
+        raise NotFoundError(
+            code="ASSIGNMENT_NOT_FOUND", detail=f"Assignment {assignment_id} not found"
+        )
 
     a.status = "IN_PROGRESS"
     a.started_at = datetime.now(timezone.utc)
@@ -590,7 +625,9 @@ async def rate_assignment(
     result = await db.execute(select(ChoreAssignment).where(ChoreAssignment.id == assignment_id))
     a = result.scalar_one_or_none()
     if not a:
-        raise NotFoundError(code="ASSIGNMENT_NOT_FOUND", detail=f"Assignment {assignment_id} not found")
+        raise NotFoundError(
+            code="ASSIGNMENT_NOT_FOUND", detail=f"Assignment {assignment_id} not found"
+        )
 
     if a.status != "COMPLETED":
         raise ValidationError(code="INVALID_STATUS", detail="Cannot rate an uncompleted assignment")
@@ -600,4 +637,3 @@ async def rate_assignment(
     await db.flush()
     await db.refresh(a)
     return a
-
