@@ -104,7 +104,11 @@ onMounted(() => {
                         class="flex flex-col gap-0 bg-white border-[3px] border-background-dark rounded-xl overflow-hidden shadow-neobrutalism">
 
                         <!-- Push Toggle -->
-                        <div class="flex items-center justify-between p-4 border-b-[2px] border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer group"
+                        <button
+                            type="button"
+                            role="switch"
+                            :aria-checked="pushEnabled"
+                            class="w-full text-left flex items-center justify-between p-4 border-b-[2px] border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer group"
                             @click="updatePreference('push_notifications', !pushEnabled)">
                             <div class="flex items-center gap-3">
                                 <div
@@ -118,10 +122,14 @@ onMounted(() => {
                                 <div class="size-4 bg-white border-2 border-background-dark rounded-full absolute top-[2px] left-[2px] transition-transform"
                                     :class="{ 'translate-x-[24px]': pushEnabled }"></div>
                             </div>
-                        </div>
+                        </button>
 
                         <!-- Email Toggle -->
-                        <div class="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors cursor-pointer group"
+                        <button
+                            type="button"
+                            role="switch"
+                            :aria-checked="emailEnabled"
+                            class="w-full text-left flex items-center justify-between p-4 hover:bg-gray-50 transition-colors cursor-pointer group"
                             @click="updatePreference('email_digest', !emailEnabled)">
                             <div class="flex items-center gap-3">
                                 <div
@@ -135,7 +143,7 @@ onMounted(() => {
                                 <div class="size-4 bg-white border-2 border-background-dark rounded-full absolute top-[2px] left-[2px] transition-transform"
                                     :class="{ 'translate-x-[24px]': emailEnabled }"></div>
                             </div>
-                        </div>
+                        </button>
 
                     </div>
                 </div>
@@ -146,7 +154,9 @@ onMounted(() => {
                     <div
                         class="flex flex-col gap-0 bg-white border-[3px] border-background-dark rounded-xl overflow-hidden shadow-neobrutalism">
                         <!-- Invite -->
-                        <div class="flex items-center justify-between p-4 border-b-[2px] border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer group"
+                        <button
+                            type="button"
+                            class="w-full text-left flex items-center justify-between p-4 border-b-[2px] border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer group"
                             @click="copyInviteLink">
                             <div class="flex items-center gap-3">
                                 <div
@@ -159,7 +169,7 @@ onMounted(() => {
                                 Copy
                                 <span class="material-symbols-outlined text-[16px]">content_copy</span>
                             </div>
-                        </div>
+                        </button>
 
                         <!-- Manage -->
                         <NuxtLink to="/mates"
