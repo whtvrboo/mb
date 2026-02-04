@@ -9,3 +9,7 @@
 ## 2024-05-24 - Redundant Indexing with Composite Indexes
 **Learning:** When adding a composite index `(col_a, col_b)` to optimize `WHERE col_a = ? ORDER BY col_b`, the existing index on `col_a` becomes redundant as the composite index can serve queries on `col_a` alone.
 **Action:** Remove `index=True` from the leading column of a new composite index to save storage and write overhead.
+
+## 2024-05-24 - N+1 in Joined Queries
+**Learning:** `selectinload` always executes a separate query, even if the parent query already joins the related table for filtering. This results in 2 queries instead of 1.
+**Action:** When a query already joins a relationship (e.g. for filtering), use `contains_eager` instead of `selectinload` to reuse the joined columns and eliminate the extra query.
