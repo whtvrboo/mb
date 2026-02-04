@@ -1,0 +1,156 @@
+Navigating to verify-modal...
+Waiting for Open Modal button...
+<!DOCTYPE html><html class="light"><head>
+<script>
+window.__hints_TPC_start_time = Date.now();
+
+function __hints_TPC_saveTime(script, startTime) {
+    script.__hints_TPC_end_time = Date.now();
+    const scriptStartTime = startTime || script.__hints_TPC_start_time || window.__hints_TPC_start_time;
+
+    const resourceEntries = performance.getEntriesByName(script.src)
+    const scriptEntry = resourceEntries.find(entry => entry.name === script.src)
+
+    if (scriptEntry) {
+        // Calculate parse + execute time using modern API
+        const navigationEntry = performance.getEntriesByType('navigation')[0]
+        const navigationStart = navigationEntry ? performance.timeOrigin : performance.timeOrigin
+
+        script.requestTime = (scriptEntry.responseStart - scriptEntry.requestStart);
+        script.downloadTime = (scriptEntry.responseEnd - scriptEntry.responseStart);
+        script.totalNetworkTime = (scriptEntry.responseEnd - scriptEntry.startTime);
+        script.parseExecuteTime =  script.__hints_TPC_end_time - (navigationStart + scriptEntry.responseEnd);
+        script.loaded = true;
+        console.log('[@nuxt/hints]: 📊 Detailed timing for', script.src, {
+            'Request': script.requestTime.toFixed(2) + 'ms',
+            'Download': script.downloadTime.toFixed(2) + 'ms',
+            'Total Network': script.totalNetworkTime.toFixed(2) + 'ms',
+            'Parse + Execute': script.parseExecuteTime.toFixed(2) + 'ms'
+        });
+    }
+}
+</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style id="nuxt-ui-colors">@layer theme {
+  :root, :host {
+  --ui-color-primary-50: var(--color-blue-50, oklch(97% 0.014 254.604));
+  --ui-color-primary-100: var(--color-blue-100, oklch(93.2% 0.032 255.585));
+  --ui-color-primary-200: var(--color-blue-200, oklch(88.2% 0.059 254.128));
+  --ui-color-primary-300: var(--color-blue-300, oklch(80.9% 0.105 251.813));
+  --ui-color-primary-400: var(--color-blue-400, oklch(70.7% 0.165 254.624));
+  --ui-color-primary-500: var(--color-blue-500, oklch(62.3% 0.214 259.815));
+  --ui-color-primary-600: var(--color-blue-600, oklch(54.6% 0.245 262.881));
+  --ui-color-primary-700: var(--color-blue-700, oklch(48.8% 0.243 264.376));
+  --ui-color-primary-800: var(--color-blue-800, oklch(42.4% 0.199 265.638));
+  --ui-color-primary-900: var(--color-blue-900, oklch(37.9% 0.146 265.522));
+  --ui-color-primary-950: var(--color-blue-950, oklch(28.2% 0.091 267.935));
+  --ui-color-secondary-50: var(--color-blue-50, oklch(97% 0.014 254.604));
+  --ui-color-secondary-100: var(--color-blue-100, oklch(93.2% 0.032 255.585));
+  --ui-color-secondary-200: var(--color-blue-200, oklch(88.2% 0.059 254.128));
+  --ui-color-secondary-300: var(--color-blue-300, oklch(80.9% 0.105 251.813));
+  --ui-color-secondary-400: var(--color-blue-400, oklch(70.7% 0.165 254.624));
+  --ui-color-secondary-500: var(--color-blue-500, oklch(62.3% 0.214 259.815));
+  --ui-color-secondary-600: var(--color-blue-600, oklch(54.6% 0.245 262.881));
+  --ui-color-secondary-700: var(--color-blue-700, oklch(48.8% 0.243 264.376));
+  --ui-color-secondary-800: var(--color-blue-800, oklch(42.4% 0.199 265.638));
+  --ui-color-secondary-900: var(--color-blue-900, oklch(37.9% 0.146 265.522));
+  --ui-color-secondary-950: var(--color-blue-950, oklch(28.2% 0.091 267.935));
+  --ui-color-success-50: var(--color-green-50, oklch(98.2% 0.018 155.826));
+  --ui-color-success-100: var(--color-green-100, oklch(96.2% 0.044 156.743));
+  --ui-color-success-200: var(--color-green-200, oklch(92.5% 0.084 155.995));
+  --ui-color-success-300: var(--color-green-300, oklch(87.1% 0.15 154.449));
+  --ui-color-success-400: var(--color-green-400, oklch(79.2% 0.209 151.711));
+  --ui-color-success-500: var(--color-green-500, oklch(72.3% 0.219 149.579));
+  --ui-color-success-600: var(--color-green-600, oklch(62.7% 0.194 149.214));
+  --ui-color-success-700: var(--color-green-700, oklch(52.7% 0.154 150.069));
+  --ui-color-success-800: var(--color-green-800, oklch(44.8% 0.119 151.328));
+  --ui-color-success-900: var(--color-green-900, oklch(39.3% 0.095 152.535));
+  --ui-color-success-950: var(--color-green-950, oklch(26.6% 0.065 152.934));
+  --ui-color-info-50: var(--color-blue-50, oklch(97% 0.014 254.604));
+  --ui-color-info-100: var(--color-blue-100, oklch(93.2% 0.032 255.585));
+  --ui-color-info-200: var(--color-blue-200, oklch(88.2% 0.059 254.128));
+  --ui-color-info-300: var(--color-blue-300, oklch(80.9% 0.105 251.813));
+  --ui-color-info-400: var(--color-blue-400, oklch(70.7% 0.165 254.624));
+  --ui-color-info-500: var(--color-blue-500, oklch(62.3% 0.214 259.815));
+  --ui-color-info-600: var(--color-blue-600, oklch(54.6% 0.245 262.881));
+  --ui-color-info-700: var(--color-blue-700, oklch(48.8% 0.243 264.376));
+  --ui-color-info-800: var(--color-blue-800, oklch(42.4% 0.199 265.638));
+  --ui-color-info-900: var(--color-blue-900, oklch(37.9% 0.146 265.522));
+  --ui-color-info-950: var(--color-blue-950, oklch(28.2% 0.091 267.935));
+  --ui-color-warning-50: var(--color-yellow-50, oklch(98.7% 0.026 102.212));
+  --ui-color-warning-100: var(--color-yellow-100, oklch(97.3% 0.071 103.193));
+  --ui-color-warning-200: var(--color-yellow-200, oklch(94.5% 0.129 101.54));
+  --ui-color-warning-300: var(--color-yellow-300, oklch(90.5% 0.182 98.111));
+  --ui-color-warning-400: var(--color-yellow-400, oklch(85.2% 0.199 91.936));
+  --ui-color-warning-500: var(--color-yellow-500, oklch(79.5% 0.184 86.047));
+  --ui-color-warning-600: var(--color-yellow-600, oklch(68.1% 0.162 75.834));
+  --ui-color-warning-700: var(--color-yellow-700, oklch(55.4% 0.135 66.442));
+  --ui-color-warning-800: var(--color-yellow-800, oklch(47.6% 0.114 61.907));
+  --ui-color-warning-900: var(--color-yellow-900, oklch(42.1% 0.095 57.708));
+  --ui-color-warning-950: var(--color-yellow-950, oklch(28.6% 0.066 53.813));
+  --ui-color-error-50: var(--color-red-50, oklch(97.1% 0.013 17.38));
+  --ui-color-error-100: var(--color-red-100, oklch(93.6% 0.032 17.717));
+  --ui-color-error-200: var(--color-red-200, oklch(88.5% 0.062 18.334));
+  --ui-color-error-300: var(--color-red-300, oklch(80.8% 0.114 19.571));
+  --ui-color-error-400: var(--color-red-400, oklch(70.4% 0.191 22.216));
+  --ui-color-error-500: var(--color-red-500, oklch(63.7% 0.237 25.331));
+  --ui-color-error-600: var(--color-red-600, oklch(57.7% 0.245 27.325));
+  --ui-color-error-700: var(--color-red-700, oklch(50.5% 0.213 27.518));
+  --ui-color-error-800: var(--color-red-800, oklch(44.4% 0.177 26.899));
+  --ui-color-error-900: var(--color-red-900, oklch(39.6% 0.141 25.723));
+  --ui-color-error-950: var(--color-red-950, oklch(25.8% 0.092 26.042));
+  --ui-color-neutral-50: var(--color-slate-50, oklch(98.4% 0.003 247.858));
+  --ui-color-neutral-100: var(--color-slate-100, oklch(96.8% 0.007 247.896));
+  --ui-color-neutral-200: var(--color-slate-200, oklch(92.9% 0.013 255.508));
+  --ui-color-neutral-300: var(--color-slate-300, oklch(86.9% 0.022 252.894));
+  --ui-color-neutral-400: var(--color-slate-400, oklch(70.4% 0.04 256.788));
+  --ui-color-neutral-500: var(--color-slate-500, oklch(55.4% 0.046 257.417));
+  --ui-color-neutral-600: var(--color-slate-600, oklch(44.6% 0.043 257.281));
+  --ui-color-neutral-700: var(--color-slate-700, oklch(37.2% 0.044 257.287));
+  --ui-color-neutral-800: var(--color-slate-800, oklch(27.9% 0.041 260.031));
+  --ui-color-neutral-900: var(--color-slate-900, oklch(20.8% 0.042 265.755));
+  --ui-color-neutral-950: var(--color-slate-950, oklch(12.9% 0.042 264.695));
+  }
+  :root, :host, .light {
+  --ui-primary: var(--ui-color-primary-500);
+  --ui-secondary: var(--ui-color-secondary-500);
+  --ui-success: var(--ui-color-success-500);
+  --ui-info: var(--ui-color-info-500);
+  --ui-warning: var(--ui-color-warning-500);
+  --ui-error: var(--ui-color-error-500);
+  }
+  .dark {
+  --ui-primary: var(--ui-color-primary-400);
+  --ui-secondary: var(--ui-color-secondary-400);
+  --ui-success: var(--ui-color-success-400);
+  --ui-info: var(--ui-color-info-400);
+  --ui-warning: var(--ui-color-warning-400);
+  --ui-error: var(--ui-color-error-400);
+  }
+}</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&amp;display=swap"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"><link rel="stylesheet" href="/_nuxt/virtual:nuxt:%2Fapp%2Fmitlist-client%2F.nuxt%2Fnuxt-fonts-global.css" crossorigin=""><link rel="stylesheet" href="/_nuxt/assets/css/main.css" crossorigin=""><link rel="modulepreload" as="script" crossorigin="" href="/_nuxt/app/mitlist-client/node_modules/.pnpm/nuxt@4.3.0_@parcel+watcher@2.5.6_@types+node@25.2.0_@vue+compiler-sfc@3.5.27_cac@6.7.14_57ad76ce077f12dde6e5d35bd62a34a8/node_modules/nuxt/dist/app/entry.async.js"><script type="module" src="/_nuxt/@vite/client" crossorigin=""></script><script type="module" src="/_nuxt/app/mitlist-client/node_modules/.pnpm/nuxt@4.3.0_@parcel+watcher@2.5.6_@types+node@25.2.0_@vue+compiler-sfc@3.5.27_cac@6.7.14_57ad76ce077f12dde6e5d35bd62a34a8/node_modules/nuxt/dist/app/entry.async.js" crossorigin=""></script><script>
+if (!window.__NUXT_DEVTOOLS_TIME_METRIC__) {
+  Object.defineProperty(window, '__NUXT_DEVTOOLS_TIME_METRIC__', {
+    value: {},
+    enumerable: false,
+    configurable: true,
+  })
+}
+window.__NUXT_DEVTOOLS_TIME_METRIC__.appInit = Date.now()
+</script>
+<script>
+for (const script of document.scripts) {
+    if (script.src && !script.src.startsWith(window.location.origin)) {
+        script.__hints_TPC_start_time = window.__hints_TPC_start_time || Date.now();
+        script.addEventListener('load', () => {
+            __hints_TPC_saveTime(script, script.__hints_TPC_start_time);
+        })
+        __hints_TPC_saveTime(script, script.__hints_TPC_start_time);
+    }
+}
+</script>
+  <script>"use strict";(()=>{const t=window,e=document.documentElement,c=["dark","light"],n=getStorageValue("localStorage","nuxt-color-mode")||"system";let i=n==="system"?u():n;const r=e.getAttribute("data-color-mode-forced");r&&(i=r),l(i),t["__NUXT_COLOR_MODE__"]={preference:n,value:i,getColorScheme:u,addColorScheme:l,removeColorScheme:d};function l(o){const s=""+o+"",a="";e.classList?e.classList.add(s):e.className+=" "+s,a&&e.setAttribute("data-"+a,o)}function d(o){const s=""+o+"",a="";e.classList?e.classList.remove(s):e.className=e.className.replace(new RegExp(s,"g"),""),a&&e.removeAttribute("data-"+a)}function f(o){return t.matchMedia("(prefers-color-scheme"+o+")")}function u(){if(t.matchMedia&&f("").media!=="not all"){for(const o of c)if(f(":"+o).matches)return o}return"light"}})();function getStorageValue(t,e){switch(t){case"localStorage":return window.localStorage.getItem(e);case"sessionStorage":return window.sessionStorage.getItem(e);case"cookie":return getCookie(e);default:return null}}function getCookie(t){const c=("; "+window.document.cookie).split("; "+t+"=");if(c.length===2)return c.pop()?.split(";").shift()}</script></head><body><!--teleport start anchor--><!----><!--teleport anchor--><div id="__nuxt" class="isolate"><div><div></div><div><!--[--><div class="p-10"><button id="open-btn">Open Modal</button><!--teleport start--><!--teleport end--></div><!--]--></div></div></div><div id="teleports"></div><script type="application/json" data-nuxt-logs="nuxt-app">[[]]</script><script>window.__NUXT__={};window.__NUXT__.config={public:{apiBase:"http://localhost:8000/api/v1",devAuth:false,axe:{options:{},runOptions:{}},a11yDefaultHighlight:false,a11yLogIssues:true,auth:{loadStrategy:"server-first"}},app:{baseURL:"/",buildId:"dev",buildAssetsDir:"/_nuxt/",cdnURL:""}}</script><script type="application/json" data-nuxt-data="nuxt-app" data-ssr="true" id="__NUXT_DATA__">[["ShallowReactive",1],{"data":2,"state":6,"once":17,"_errors":18,"serverRendered":10,"path":20,"isCached":15},["ShallowReactive",3],{"$fMHFUj2NuonG6IYSGTplZqHNIagiGEhT5WRHF6PzPo7g":4},{"id":5},"061ecb1b-96dc-40b0-b038-c2c84aa73cf8",["Reactive",7],{"$snuxt-session":8,"$snuxt-auth-ready":10,"$s__nuxt_devtools__":11,"$scolor-mode":13,"$sapi-token":16},{"id":9},"61be31cd-a316-4a33-8ebe-557c2ac6d31f",true,{"timeSsrStart":12},1770185765037,{"preference":14,"value":14,"unknown":10,"forced":15},"system",false,null,["Set"],["ShallowReactive",19],{"$fMHFUj2NuonG6IYSGTplZqHNIagiGEhT5WRHF6PzPo7g":-1},"/verify-modal"]</script></body></html>
+Error: Locator expected to be visible
+Actual value: None
+Error: element(s) not found
+Call log:
+  - Expect "to_be_visible" with timeout 5000ms
+  - waiting for locator("div[role=\"dialog\"]")
