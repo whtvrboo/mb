@@ -36,15 +36,15 @@ onMounted(() => {
         <header
             class="sticky top-0 z-50 bg-background-light border-b-[3px] border-background-dark px-5 h-16 flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-3">
-                <NuxtLink to="/"
+                <NuxtLink to="/" aria-label="Go back"
                     class="flex items-center justify-center size-10 rounded-lg border-[2px] border-transparent hover:border-background-dark hover:bg-black/5 transition-colors">
-                    <span class="material-symbols-outlined text-[28px]">arrow_back</span>
+                    <span class="material-symbols-outlined text-[28px]" aria-hidden="true">arrow_back</span>
                 </NuxtLink>
             </div>
             <h1 class="text-xl font-bold tracking-tight uppercase">Kitchen</h1>
-            <div class="size-10 flex items-center justify-end">
-                <span class="material-symbols-outlined text-[24px]">search</span>
-            </div>
+            <button class="size-10 flex items-center justify-end rounded-lg hover:bg-black/5 transition-colors" aria-label="Search recipes">
+                <span class="material-symbols-outlined text-[24px]" aria-hidden="true">search</span>
+            </button>
         </header>
 
         <main class="flex flex-col gap-8 p-5 max-w-lg mx-auto w-full">
@@ -67,7 +67,7 @@ onMounted(() => {
                     <h2 class="text-lg font-bold uppercase tracking-wide flex items-center gap-2">
                         <span class="material-symbols-outlined">menu_book</span> Cookbook
                     </h2>
-                    <button
+                    <button aria-label="Create new recipe"
                         class="bg-primary px-3 py-1 rounded border-[2px] border-background-dark font-bold text-xs uppercase shadow-sm hover:translate-y-0.5 hover:shadow-none transition-all">
                         + New
                     </button>
