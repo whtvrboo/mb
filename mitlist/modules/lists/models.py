@@ -26,7 +26,7 @@ class List(BaseModel, TimestampMixin):
 
     __tablename__ = "lists"
 
-    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False, index=True)
+    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     type: Mapped[ListType] = mapped_column(String(20), nullable=False)
     created_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
@@ -40,6 +40,10 @@ class List(BaseModel, TimestampMixin):
     version_id: Mapped[int] = mapped_column(nullable=False, default=1)
 
     __mapper_args__ = {"version_id_col": version_id}
+    __table_args__ = (
+        # Optimization: Composite index for efficient querying by group_id and sorting by id
+        Index("ix_lists_group_id_id", "group_id", "id"),
+    )
 
     # Relationships
     items: Mapped[list["Item"]] = relationship("Item", back_populates="list", cascade="all, delete-orphan")
