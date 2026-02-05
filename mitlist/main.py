@@ -16,6 +16,7 @@ from mitlist.core.errors import AppError, app_error_handler
 from mitlist.core.logging import setup_logging
 from mitlist.core.otel import setup_otel
 from mitlist.core.request_context import set_trace_id
+from mitlist.core.security import SecurityHeadersMiddleware
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +69,9 @@ def create_application() -> FastAPI:
         redoc_url="/redoc" if settings.is_development else None,
         lifespan=lifespan,
     )
+
+    # Security headers middleware
+    application.add_middleware(SecurityHeadersMiddleware)
 
     # CORS middleware
     application.add_middleware(
