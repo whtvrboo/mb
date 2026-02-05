@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import CheckConstraint, ForeignKey, Integer, String, Text
+from sqlalchemy import CheckConstraint, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from mitlist.db.base import Base, BaseModel, TimestampMixin
@@ -102,7 +102,12 @@ class ChoreAssignment(BaseModel, TimestampMixin):
     chore: Mapped["Chore"] = relationship("Chore", back_populates="assignments")
 
     __table_args__ = (
-        CheckConstraint("quality_rating IS NULL OR (quality_rating >= 1 AND quality_rating <= 5)", name="ck_chore_rating"),
+        CheckConstraint(
+            "quality_rating IS NULL OR (quality_rating >= 1 AND quality_rating <= 5)",
+            name="ck_chore_rating",
+        ),
+        # ⚡ Bolt: Composite index to optimize history queries (filter by status='COMPLETED', sort by completed_at)
+        Index("ix_chore_assignments_status_completed_at", "status", "completed_at"),
     )
 
 
@@ -111,9 +116,14 @@ class ChoreDependency(BaseModel, TimestampMixin):
 
     __tablename__ = "chore_dependencies"
 
-    chore_id: Mapped[int] = mapped_column(ForeignKey("chores.id"), nullable=False)
-    depends_on_chore_id: Mapped[int] = mapped_column(ForeignKey("chores.id"), nullable=False)
-    dependency_type: Mapped[str] = mapped_column(String(20), nullable=False)  # BLOCKING, SUGGESTED
+    # ⚡ Bolt: Indexing FKs to optimize dependency checks and prevent sequential scans
+    chore_id: Mapped[int] = mapped_column(ForeignKey("chores.id"), nullable=False, index=True)
+    depends_on_chore_id: Mapped[int] = mapped_column(
+        ForeignKey("chores.id"), nullable=False, index=True
+    )
+    dependency_type: Mapped[str] = mapped_column(
+        String(20), nullable=False
+    )  # BLOCKING, SUGGESTED
 
 
 class ChoreTemplate(BaseModel, TimestampMixin):
