@@ -5,3 +5,7 @@
 ## 2026-01-31 - Secure ID Generation
 **Learning:** Using `Math.random()` for ID generation causes hydration mismatches in Nuxt/SSR applications and potential ID collisions.
 **Action:** Replace all instances of `Math.random()` with Vue 3.5's `useId()` composable for stable, unique, and accessible ID generation.
+
+## 2026-02-14 - Accessible Custom Checkboxes
+**Learning:** Custom form controls (like checkboxes built with `div`s) hidden with `.sr-only` must explicitly implement focus styles on the visible sibling using `peer-focus-visible`.
+**Action:** Use `peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-background-dark` on the visible element to ensure keyboard users can see their focus state.

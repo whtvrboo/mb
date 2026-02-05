@@ -8,6 +8,7 @@ const { getMyStats, listAssignments, completeAssignment } = useChores()
 const stats = ref<UserChoreStatsResponse | null>(null)
 const assignments = ref<ChoreAssignmentWithChoreResponse[]>([])
 const isLoading = ref(true)
+const completingId = ref<number | null>(null)
 
 const fetchData = async () => {
     isLoading.value = true
@@ -26,12 +27,15 @@ const fetchData = async () => {
 }
 
 const handleComplete = async (assignmentId: number) => {
+    completingId.value = assignmentId
     try {
         await completeAssignment(assignmentId, { completed_at: new Date().toISOString() })
         // Refresh or optimistically update
         assignments.value = assignments.value.filter(a => a.id !== assignmentId)
     } catch (e) {
         console.error('Failed to complete assignment', e)
+    } finally {
+        completingId.value = null
     }
 }
 
@@ -120,12 +124,15 @@ onMounted(() => {
                                 <input
                                     type="checkbox"
                                     class="peer sr-only"
+                                    :disabled="completingId === assignment.id"
                                     :aria-labelledby="`chore-title-${assignment.id}`"
                                     @change="handleComplete(assignment.id)"
                                 />
                                 <div
-                                    class="size-7 border-[3px] border-background-dark rounded bg-white peer-checked:bg-primary transition-colors flex items-center justify-center hover:bg-gray-100">
-                                    <span
+                                    class="size-7 border-[3px] border-background-dark rounded bg-white peer-checked:bg-primary peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-background-dark peer-disabled:opacity-50 peer-disabled:cursor-not-allowed transition-colors flex items-center justify-center hover:bg-gray-100">
+                                    <span v-if="completingId === assignment.id"
+                                        class="material-symbols-outlined text-sm animate-spin font-bold">autorenew</span>
+                                    <span v-else
                                         class="material-symbols-outlined text-sm opacity-0 peer-checked:opacity-100 font-bold">check</span>
                                 </div>
                             </label>
