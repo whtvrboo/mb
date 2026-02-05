@@ -17,20 +17,26 @@ const emailEnabled = ref(false)
 const fetchData = async () => {
     isLoading.value = true
     try {
-        const [groups, userData] = await Promise.all([
+        const [groupsResult, userResult] = await Promise.all([
             listGroups(),
             getMe()
         ])
+
+        const userData = userResult.data.value
+        const groups = groupsResult.data.value
+
+        if (!userData) throw new Error('Failed to load user data')
 
         user.value = userData
         // Initialize toggles from preferences or default
         pushEnabled.value = (userData.preferences?.push_notifications as boolean) ?? true
         emailEnabled.value = (userData.preferences?.email_digest as boolean) ?? false
 
-        if (groups.length > 0) {
+        if (groups && groups.length > 0) {
             house.value = groups[0] // Select first house for now
-            const members = await listGroupMembers(house.value.id)
-            memberCount.value = members.length
+            const membersResult = await listGroupMembers(house.value.id)
+            const members = membersResult.data.value
+            memberCount.value = members ? members.length : 0
         }
     } catch (e) {
         console.error('Failed to fetch settings data', e)
@@ -72,7 +78,7 @@ onMounted(() => {
             class="sticky top-0 z-50 bg-background-light border-b-[3px] border-background-dark px-5 h-16 flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-3">
                 <NuxtLink to="/"
-                    class="flex items-center justify-center size-10 rounded-lg border-[2px] border-transparent hover:border-background-dark hover:bg-black/5 transition-colors">
+                    class="flex items-center justify-center size-10 rounded-lg border-[2px] border-transparent hover:border-background-dark hover:bg-black/5 focus-visible:border-background-dark focus-visible:bg-black/5 focus-visible:outline-none transition-colors">
                     <span class="material-symbols-outlined text-[28px]">arrow_back</span>
                 </NuxtLink>
             </div>
@@ -108,7 +114,7 @@ onMounted(() => {
                             type="button"
                             role="switch"
                             :aria-checked="pushEnabled"
-                            class="w-full text-left flex items-center justify-between p-4 border-b-[2px] border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer group"
+                            class="w-full text-left flex items-center justify-between p-4 border-b-[2px] border-gray-100 hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-background-dark transition-colors cursor-pointer group"
                             @click="updatePreference('push_notifications', !pushEnabled)">
                             <div class="flex items-center gap-3">
                                 <div
@@ -129,7 +135,7 @@ onMounted(() => {
                             type="button"
                             role="switch"
                             :aria-checked="emailEnabled"
-                            class="w-full text-left flex items-center justify-between p-4 hover:bg-gray-50 transition-colors cursor-pointer group"
+                            class="w-full text-left flex items-center justify-between p-4 hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-background-dark transition-colors cursor-pointer group"
                             @click="updatePreference('email_digest', !emailEnabled)">
                             <div class="flex items-center gap-3">
                                 <div
@@ -156,7 +162,7 @@ onMounted(() => {
                         <!-- Invite -->
                         <button
                             type="button"
-                            class="w-full text-left flex items-center justify-between p-4 border-b-[2px] border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer group"
+                            class="w-full text-left flex items-center justify-between p-4 border-b-[2px] border-gray-100 hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-background-dark transition-colors cursor-pointer group"
                             @click="copyInviteLink">
                             <div class="flex items-center gap-3">
                                 <div
@@ -173,7 +179,7 @@ onMounted(() => {
 
                         <!-- Manage -->
                         <NuxtLink to="/mates"
-                            class="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors cursor-pointer group">
+                            class="flex items-center justify-between p-4 hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-background-dark transition-colors cursor-pointer group">
                             <div class="flex items-center gap-3">
                                 <div
                                     class="size-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 group-hover:bg-primary group-hover:text-background-dark transition-colors">
@@ -193,7 +199,7 @@ onMounted(() => {
                 <div class="flex flex-col gap-2 mt-4">
                     <h3 class="font-bold uppercase tracking-wider text-red-500 ml-1">Danger Zone</h3>
                     <button
-                        class="w-full bg-red-100 text-red-600 border-[3px] border-red-500 rounded-xl p-4 font-bold uppercase shadow-[4px_4px_0px_0px_#ef4444] active:shadow-none active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2">
+                        class="w-full bg-red-100 text-red-600 border-[3px] border-red-500 rounded-xl p-4 font-bold uppercase shadow-[4px_4px_0px_0px_#ef4444] active:shadow-none active:translate-x-1 active:translate-y-1 focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 focus-visible:outline-none transition-all flex items-center justify-center gap-2">
                         <span class="material-symbols-outlined">logout</span>
                         Leave House
                     </button>
