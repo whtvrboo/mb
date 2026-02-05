@@ -127,7 +127,7 @@ onMounted(() => {
       <header
         class="shrink-0 bg-background-light dark:bg-background-dark pt-6 pb-2 px-5 z-10 border-b-[3px] border-background-dark">
         <div class="flex items-center justify-between mb-4">
-          <NuxtLink to="/"
+          <NuxtLink to="/" aria-label="Go back"
             class="flex items-center justify-center size-10 rounded-full border-[2px] border-background-dark hover:bg-background-dark hover:text-white transition-colors active:translate-y-[2px] active:translate-x-[2px] active:shadow-none shadow-neobrutalism-sm bg-white text-background-dark">
             <span class="material-symbols-outlined font-bold">arrow_back</span>
           </NuxtLink>
@@ -191,17 +191,17 @@ onMounted(() => {
       <!-- Sticky Bottom Input -->
       <div
         class="fixed md:absolute bottom-0 left-0 w-full bg-background-light p-4 z-20 border-t-[3px] border-background-dark max-w-md mx-auto">
-        <div class="flex gap-3">
+        <form class="flex gap-3" @submit.prevent="handleAddItem">
           <div class="relative flex-1">
-            <input v-model="newItemName" @keyup.enter="handleAddItem" :disabled="isLoading || !currentListId"
+            <input v-model="newItemName" :disabled="isLoading || !currentListId" aria-label="Add new item"
               class="w-full h-14 bg-white border-[3px] border-background-dark rounded-lg px-4 text-lg font-medium placeholder:text-gray-400 shadow-neobrutalism-sm focus:outline-none focus:ring-0 focus:shadow-neobrutalism focus:-translate-y-1 transition-all disabled:opacity-50"
               placeholder="Add new item..." type="text" />
           </div>
-          <button @click="handleAddItem" :disabled="isLoading || !currentListId"
+          <button type="submit" :disabled="isLoading || !currentListId" aria-label="Add item"
             class="size-14 bg-primary border-[3px] border-background-dark rounded-lg shadow-neobrutalism-sm flex items-center justify-center hover:bg-[#ffe14f] active:shadow-none active:translate-y-[2px] active:translate-x-[2px] transition-all disabled:opacity-50">
             <span class="material-symbols-outlined text-background-dark text-3xl font-bold">add</span>
           </button>
-        </div>
+        </form>
         <!-- Bottom safe area spacer -->
         <div class="h-4 w-full"></div>
       </div>
