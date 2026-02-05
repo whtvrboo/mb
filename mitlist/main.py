@@ -16,6 +16,7 @@ from mitlist.core.errors import AppError, app_error_handler
 from mitlist.core.logging import setup_logging
 from mitlist.core.otel import setup_otel
 from mitlist.core.request_context import set_trace_id
+from mitlist.core.security import SecurityHeadersMiddleware
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +78,9 @@ def create_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # Security headers middleware
+    application.add_middleware(SecurityHeadersMiddleware)
 
     # Trace ID middleware
     @application.middleware("http")
