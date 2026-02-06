@@ -26,7 +26,7 @@ class List(BaseModel, TimestampMixin):
 
     __tablename__ = "lists"
 
-    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False, index=True)
+    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     type: Mapped[ListType] = mapped_column(String(20), nullable=False)
     created_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
@@ -40,6 +40,9 @@ class List(BaseModel, TimestampMixin):
     version_id: Mapped[int] = mapped_column(nullable=False, default=1)
 
     __mapper_args__ = {"version_id_col": version_id}
+    # Bolt Optimization: Composite index on (group_id, id) allows fetching lists
+    # for a group sorted by creation order (id) without an explicit sort step.
+    __table_args__ = (Index("ix_lists_group_id_id", "group_id", "id"),)
 
     # Relationships
     items: Mapped[list["Item"]] = relationship("Item", back_populates="list", cascade="all, delete-orphan")
@@ -61,7 +64,7 @@ class InventoryItem(BaseModel, TimestampMixin):
 
     __tablename__ = "inventory_items"
 
-    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False, index=True)
+    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False)
     location_id: Mapped[Optional[int]] = mapped_column(ForeignKey("locations.id"), nullable=True)
     concept_id: Mapped[Optional[int]] = mapped_column(ForeignKey("common_item_concepts.id"), nullable=True)
     quantity_value: Mapped[Optional[float]] = mapped_column(nullable=True)
@@ -69,6 +72,10 @@ class InventoryItem(BaseModel, TimestampMixin):
     expiration_date: Mapped[Optional[datetime]] = mapped_column(nullable=True)
     opened_date: Mapped[Optional[datetime]] = mapped_column(nullable=True)
     restock_threshold: Mapped[Optional[float]] = mapped_column(nullable=True)
+
+    # Bolt Optimization: Composite index on (group_id, id) allows fetching inventory
+    # items for a group sorted by creation order (id) without an explicit sort step.
+    __table_args__ = (Index("ix_inventory_items_group_id_id", "group_id", "id"),)
 
 
 class Item(BaseModel, TimestampMixin, VersionMixin):
