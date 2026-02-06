@@ -1,5 +1,6 @@
 """Application configuration using pydantic-settings."""
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -80,6 +81,15 @@ class Settings(BaseSettings):
     def is_development(self) -> bool:
         """Check if running in development environment."""
         return self.ENVIRONMENT.lower() in ("local", "development", "dev")
+
+    @model_validator(mode="after")
+    def prevent_dev_auth_in_prod(self) -> "Settings":
+        """Ensure that dev auth is never enabled in production."""
+        if self.is_production and self.DEV_TEST_USER_ENABLED:
+            raise ValueError(
+                "Security Risk: DEV_TEST_USER_ENABLED cannot be True in production environment."
+            )
+        return self
 
 
 settings = Settings()

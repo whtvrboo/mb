@@ -122,7 +122,9 @@ async def test_category(db: AsyncSession, test_group: Group) -> Category:
 
 
 @pytest.fixture
-async def client(db: AsyncSession, test_user: User) -> AsyncGenerator[AsyncClient, None]:
+async def client(
+    db: AsyncSession, test_user: User, test_group: Group
+) -> AsyncGenerator[AsyncClient, None]:
     """Create test client with mocked authentication."""
 
     async def override_get_db():
@@ -139,7 +141,7 @@ async def client(db: AsyncSession, test_user: User) -> AsyncGenerator[AsyncClien
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://test",
-        headers={"X-Group-ID": "1"},
+        headers={"X-Group-ID": str(test_group.id)},
     ) as ac:
         yield ac
 
