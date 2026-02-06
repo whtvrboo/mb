@@ -236,6 +236,9 @@ def _decrypt_password(encrypted: str) -> str:
 
     # Fallback to base64 (legacy) if not a Fernet token
     # This allows reading existing data that hasn't been re-encrypted yet
+    if not settings.ALLOW_LEGACY_INSECURE_PASSWORDS:
+        raise ValueError("Legacy Base64 password access is disabled.")
+
     try:
         logging.getLogger(__name__).warning("Legacy Base64 password access detected.")
         return base64.b64decode(encrypted.encode()).decode()
