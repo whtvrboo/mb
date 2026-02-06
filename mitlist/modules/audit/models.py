@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import JSON, ForeignKey, String, Text
+from sqlalchemy import JSON, ForeignKey, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from mitlist.db.base import Base, BaseModel, TimestampMixin
@@ -32,6 +32,7 @@ class AuditLog(BaseModel, TimestampMixin):
     """Audit log - track all changes."""
 
     __tablename__ = "audit_logs"
+    __table_args__ = (Index("ix_audit_logs_group_occurred", "group_id", "occurred_at"),)
 
     group_id: Mapped[Optional[int]] = mapped_column(ForeignKey("groups.id"), nullable=True, index=True)
     user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
