@@ -1,8 +1,10 @@
 import base64
+from unittest import mock
 
 import pytest
 from cryptography.fernet import InvalidToken
 
+from mitlist.core.config import settings
 from mitlist.modules.documents.service import _decrypt_password, _encrypt_password
 
 
@@ -25,13 +27,21 @@ def test_encryption_implementation():
     assert decrypted == password
 
 def test_legacy_backward_compatibility():
-    """Test that we can still decrypt legacy Base64 passwords."""
+    """Test legacy Base64 password decryption logic."""
     password = "legacy_password"
     legacy_encrypted = base64.b64encode(password.encode()).decode()
 
-    # This should work via fallback mechanism
-    decrypted = _decrypt_password(legacy_encrypted)
-    assert decrypted == password
+    # 1. By default (setting=False), this should FAIL
+    # We verify the setting is indeed False by default
+    assert settings.ALLOW_LEGACY_INSECURE_PASSWORDS is False
+
+    with pytest.raises(ValueError, match="Legacy Base64 password access is disabled"):
+        _decrypt_password(legacy_encrypted)
+
+    # 2. When enabled (setting=True), this should SUCCEED
+    with mock.patch.object(settings, "ALLOW_LEGACY_INSECURE_PASSWORDS", True):
+        decrypted = _decrypt_password(legacy_encrypted)
+        assert decrypted == password
 
 def test_corrupted_fernet_token():
     """Test that a corrupted Fernet token raises an error instead of returning garbage."""
