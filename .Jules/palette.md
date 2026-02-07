@@ -5,3 +5,7 @@
 ## 2026-01-31 - Secure ID Generation
 **Learning:** Using `Math.random()` for ID generation causes hydration mismatches in Nuxt/SSR applications and potential ID collisions.
 **Action:** Replace all instances of `Math.random()` with Vue 3.5's `useId()` composable for stable, unique, and accessible ID generation.
+
+## 2026-02-01 - Focus Styles for Custom Controls
+**Learning:** Custom form controls (checkboxes/radios) using `appearance-none` remove the native focus ring, making them invisible to keyboard users unless custom focus styles are explicitly added.
+**Action:** Always add `focus-visible` styles (e.g., `ring`, `outline`) to any element using `appearance-none` to restore keyboard accessibility.
