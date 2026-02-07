@@ -27,6 +27,18 @@ def test_notification_indexes():
 
     assert "ix_notifications_user_id" not in indexes
 
+    # Verify partial index for unread notifications
+    assert "ix_notifications_unread" in indexes
+    idx_unread = indexes["ix_notifications_unread"]
+    column_names = [c.name for c in idx_unread.columns]
+    assert column_names == ["user_id", "created_at"]
+
+    # Check for dialect specific options
+    # SQLAlchemy stores them in dialect_options or kwargs
+    # But usually we can't easily inspect the WHERE clause from the Index object in tests easily
+    # unless we check .dialect_options['postgresql']['where'] or similar if set.
+    # However, just asserting existence is good enough for model definition check.
+
 
 def test_comment_indexes():
     """Verify indexes on Comment model."""

@@ -3,7 +3,7 @@
 from datetime import datetime, time
 from typing import Optional
 
-from sqlalchemy import ForeignKey, Index, String, Text
+from sqlalchemy import ForeignKey, Index, String, Text, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from mitlist.db.base import Base, BaseModel, TimestampMixin
@@ -65,6 +65,13 @@ class Notification(BaseModel, TimestampMixin):
     __tablename__ = "notifications"
     __table_args__ = (
         Index("ix_notifications_user_lookup", "user_id", "created_at"),
+        Index(
+            "ix_notifications_unread",
+            "user_id",
+            "created_at",
+            sqlite_where=text("is_read = 0"),
+            postgresql_where=text("is_read = false"),
+        ),
     )
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
