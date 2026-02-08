@@ -9,3 +9,7 @@
 ## 2024-05-24 - Redundant Indexing with Composite Indexes
 **Learning:** When adding a composite index `(col_a, col_b)` to optimize `WHERE col_a = ? ORDER BY col_b`, the existing index on `col_a` becomes redundant as the composite index can serve queries on `col_a` alone.
 **Action:** Remove `index=True` from the leading column of a new composite index to save storage and write overhead.
+
+## 2025-02-08 - Vue List Rendering Performance - O(N*M) Lookup
+**Learning:** `v-for` loops that call a function performing an `Array.find` (O(M)) for each item create an O(N*M) performance bottleneck, especially visible on mobile devices with large lists.
+**Action:** Replace repeated array lookups in templates with a computed `Map` (O(1)) and pass the resolved value or use the map directly.
