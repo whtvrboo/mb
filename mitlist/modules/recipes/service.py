@@ -192,12 +192,24 @@ async def list_meal_plans(
     db: AsyncSession,
     group_id: int,
     week_start: Optional[date] = None,
+    load_recipes: bool = False,
 ) -> list[MealPlan]:
     """List meal plans for a group, optionally for a specific week."""
     q = select(MealPlan).where(MealPlan.group_id == group_id)
     if week_start:
         week_end = week_start + timedelta(days=7)
         q = q.where(MealPlan.plan_date >= week_start, MealPlan.plan_date < week_end)
+
+    if load_recipes:
+        # Performance optimization: Eager load recipe + ingredients + steps
+        # This prevents N+1 queries when accessing meal_plan.recipe later
+        q = q.options(
+            selectinload(MealPlan.recipe).options(
+                selectinload(Recipe.ingredients),
+                selectinload(Recipe.steps),
+            )
+        )
+
     q = q.order_by(MealPlan.plan_date, MealPlan.meal_type)
     result = await db.execute(q)
     return list(result.scalars().all())
