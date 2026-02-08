@@ -109,7 +109,16 @@ async def get_current_user(
         # update last_login and ensure we remember sub
         user.last_login_at = datetime.now(timezone.utc)
         prefs = user.preferences or {}
-        if prefs.get("zitadel_sub") != sub:
+        linked_sub = prefs.get("zitadel_sub")
+
+        # Security: Prevent account takeover by verifying identity binding
+        if linked_sub and linked_sub != sub:
+            raise UnauthorizedError(
+                code="IDENTITY_CONFLICT",
+                detail="This email address is already associated with another account.",
+            )
+
+        if linked_sub != sub:
             prefs["zitadel_sub"] = sub
             user.preferences = prefs
         await db.flush()
