@@ -1,5 +1,14 @@
 """Pytest fixtures for testing."""
 
+import os
+
+# Set dummy environment variables BEFORE importing app config
+os.environ.setdefault("POSTGRES_SERVER", "test")
+os.environ.setdefault("POSTGRES_USER", "test")
+os.environ.setdefault("POSTGRES_PASSWORD", "test")
+os.environ.setdefault("POSTGRES_DB", "test")
+os.environ.setdefault("SECRET_KEY", "test")
+
 import asyncio
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
