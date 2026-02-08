@@ -35,7 +35,7 @@ const inputId = computed(() => props.id || generatedId)
         <div class="relative flex items-center justify-center">
             <input type="radio" :id="inputId" :name="name" :value="value" :disabled="disabled" :checked="isChecked"
                 @change="handleChange"
-                class="peer appearance-none size-6 border-[3px] border-background-dark rounded-full bg-white transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50" />
+                class="peer appearance-none size-6 border-[3px] border-background-dark rounded-full bg-white transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-background-dark focus:outline-none" />
 
             <!-- Inner dot -->
             <div
