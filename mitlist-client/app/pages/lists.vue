@@ -99,17 +99,35 @@ const handleToggleItem = async (item: ItemResponse) => {
 }
 
 // Helpers
+const memberMap = computed(() => {
+  const map = new Map<number, string>()
+  for (const m of members.value) {
+    if (m.user_id) {
+      map.set(m.user_id, m.user?.name || m.user?.email || 'User')
+    }
+  }
+  return map
+})
+
 const getMemberName = (userId: number | null) => {
   if (!userId) return ''
-  const member = members.value.find(m => m.user_id === userId)
-  return member ? (member.user?.name || member.user?.email || 'User') : 'Unknown'
+  return memberMap.value.get(userId) || 'Unknown'
 }
 
 // Computed Grouping
-// Since API doesn't have categories, we group by "Pending" vs "Completed" for now, or just "Items"
-// If we want categories, we'd need to add that field to API or infer it. For now, fallback to flat list or checked separation.
-const activeItems = computed(() => items.value.filter(i => !i.is_checked))
-const checkedItems = computed(() => items.value.filter(i => i.is_checked))
+// Optimized: Single pass filtering + O(1) member lookup
+const groupedItems = computed(() => {
+  const active: ItemResponse[] = []
+  const checked: ItemResponse[] = []
+  for (const item of items.value) {
+    if (item.is_checked) {
+      checked.push(item)
+    } else {
+      active.push(item)
+    }
+  }
+  return { active, checked }
+})
 
 onMounted(() => {
   fetchData()
@@ -164,22 +182,22 @@ onMounted(() => {
         </div>
 
         <!-- Active Items -->
-        <div v-if="activeItems.length > 0" class="mb-6">
+        <div v-if="groupedItems.active.length > 0" class="mb-6">
           <h3
             class="text-lg font-bold border-b-[3px] border-background-dark inline-block pr-8 mb-4 px-2 py-1 shadow-neobrutalism-sm transform rounded-sm bg-white -rotate-1">
             To Buy
           </h3>
 
-          <GroceryListItem v-for="item in activeItems" :key="item.id" :name="item.name"
+          <GroceryListItem v-for="item in groupedItems.active" :key="item.id" :name="item.name"
             :quantity-value="item.quantity_value" :quantity-unit="item.quantity_unit"
             :added-by="getMemberName(item.added_by_id)" :note="item.notes" v-model="item.is_checked"
             @update:model-value="handleToggleItem(item)" @delete="handleDeleteItem(item.id)" />
         </div>
 
         <!-- Checked Items -->
-        <div v-if="checkedItems.length > 0" class="mb-6">
+        <div v-if="groupedItems.checked.length > 0" class="mb-6">
           <h3 class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">Completed</h3>
-          <GroceryListItem v-for="item in checkedItems" :key="item.id" :name="item.name"
+          <GroceryListItem v-for="item in groupedItems.checked" :key="item.id" :name="item.name"
             :quantity-value="item.quantity_value" :quantity-unit="item.quantity_unit"
             :added-by="getMemberName(item.added_by_id)" :note="item.notes" v-model="item.is_checked"
             @update:model-value="handleToggleItem(item)" @delete="handleDeleteItem(item.id)" />
