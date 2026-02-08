@@ -109,9 +109,20 @@ async def get_current_user(
         # update last_login and ensure we remember sub
         user.last_login_at = datetime.now(timezone.utc)
         prefs = user.preferences or {}
-        if prefs.get("zitadel_sub") != sub:
+
+        # Security: Prevent account takeover via subject mismatch.
+        # Once a user is linked to a Zitadel subject (sub), it must not change.
+        existing_sub = prefs.get("zitadel_sub")
+        if existing_sub and existing_sub != sub:
+            raise UnauthorizedError(
+                code="SUBJECT_MISMATCH",
+                detail="Account already linked to a different identity subject.",
+            )
+
+        if not existing_sub:
             prefs["zitadel_sub"] = sub
             user.preferences = prefs
+
         await db.flush()
         await db.refresh(user)
 
