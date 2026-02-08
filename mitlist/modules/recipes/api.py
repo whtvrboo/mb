@@ -1,7 +1,6 @@
 """Recipes & Meal Planning module FastAPI router."""
 
 from datetime import date, timedelta
-from typing import List as ListType
 
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,7 +14,7 @@ from mitlist.modules.recipes import schemas, service
 router = APIRouter(tags=["recipes", "content"])
 
 
-@router.get("/recipes", response_model=ListType[schemas.RecipeResponse])
+@router.get("/recipes", response_model=list[schemas.RecipeResponse])
 async def get_recipes(
     group_id: int = Depends(get_current_group_id),
     user: User = Depends(get_current_user),
@@ -95,17 +94,18 @@ async def get_meal_plans(
         today = date.today()
         week_start = today - timedelta(days=today.weekday())
 
-    meal_plans = await service.list_meal_plans(db, group_id, week_start=week_start)
+    # Performance: Load recipes eagerly to avoid N+1 queries during serialization
+    meal_plans = await service.list_meal_plans(
+        db, group_id, week_start=week_start, load_recipes=True
+    )
 
     # Get recipes for meal plans that have them
     meal_plan_responses = []
     for mp in meal_plans:
         mp_response = schemas.MealPlanResponse.model_validate(mp)
         recipe = None
-        if mp.recipe_id:
-            recipe_obj = await service.get_recipe_by_id(db, mp.recipe_id)
-            if recipe_obj:
-                recipe = schemas.RecipeResponse.model_validate(recipe_obj)
+        if mp.recipe:
+            recipe = schemas.RecipeResponse.model_validate(mp.recipe)
         meal_plan_responses.append(
             schemas.MealPlanWithRecipeResponse(
                 **mp_response.model_dump(),

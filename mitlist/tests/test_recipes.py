@@ -1,5 +1,6 @@
-import pytest
 from datetime import date, timedelta
+
+import pytest
 from httpx import AsyncClient
 
 
@@ -25,7 +26,12 @@ async def test_recipes_create_and_get(authed_client: AsyncClient, auth_headers: 
         "servings": 4,
         "ingredients": [
             {"name": "Pasta", "quantity_value": 400, "quantity_unit": "g", "is_optional": False},
-            {"name": "Tomato sauce", "quantity_value": 1, "quantity_unit": "cup", "is_optional": False},
+            {
+                "name": "Tomato sauce",
+                "quantity_value": 1,
+                "quantity_unit": "cup",
+                "is_optional": False,
+            },
         ],
         "steps": [
             {"step_number": 1, "instruction": "Boil water and cook pasta."},
@@ -125,3 +131,61 @@ async def test_recipes_sync_to_list(authed_client: AsyncClient, auth_headers: di
     assert "items" in data
     assert data["items_added"] >= 1
     assert len(data["items"]) >= 1
+
+
+@pytest.mark.asyncio
+async def test_meal_plans_eager_loading(authed_client: AsyncClient, auth_headers: dict):
+    """Verify that meal plans endpoint returns recipes with ingredients and steps correctly."""
+    # 1. Create a recipe with ingredients and steps
+    recipe_data = {
+        "group_id": int(auth_headers["X-Group-ID"]),
+        "title": "Complex Recipe",
+        "prep_time_minutes": 10,
+        "cook_time_minutes": 20,
+        "servings": 2,
+        "ingredients": [
+            {"name": "Ingredient 1", "quantity_value": 100, "quantity_unit": "g"},
+            {"name": "Ingredient 2", "quantity_value": 2, "quantity_unit": "pcs"},
+        ],
+        "steps": [
+            {"step_number": 1, "instruction": "Step 1"},
+            {"step_number": 2, "instruction": "Step 2"},
+        ],
+    }
+    resp = await authed_client.post("/recipes", json=recipe_data, headers=auth_headers)
+    assert resp.status_code == 201
+    recipe_id = resp.json()["id"]
+
+    # 2. Create a meal plan using this recipe
+    today = date.today()
+    week_start = today - timedelta(days=today.weekday())
+    plan_date = week_start
+
+    plan_data = {
+        "group_id": int(auth_headers["X-Group-ID"]),
+        "plan_date": plan_date.isoformat(),
+        "meal_type": "LUNCH",
+        "recipe_id": recipe_id,
+    }
+    resp = await authed_client.post("/meal-plans", json=plan_data, headers=auth_headers)
+    assert resp.status_code == 201
+
+    # 3. List meal plans and verify recipe details are present
+    resp = await authed_client.get(
+        f"/meal-plans?week_start={week_start.isoformat()}", headers=auth_headers
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+
+    assert data["total_meals_planned"] >= 1
+    found = False
+    for mp in data["meal_plans"]:
+        if mp["recipe"] and mp["recipe"]["id"] == recipe_id:
+            found = True
+            recipe = mp["recipe"]
+            assert recipe["title"] == "Complex Recipe"
+            assert len(recipe["ingredients"]) == 2
+            assert len(recipe["steps"]) == 2
+            assert recipe["ingredients"][0]["name"] == "Ingredient 1"
+            break
+    assert found, "Created meal plan with recipe not found or recipe details missing"
