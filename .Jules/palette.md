@@ -5,3 +5,7 @@
 ## 2026-01-31 - Secure ID Generation
 **Learning:** Using `Math.random()` for ID generation causes hydration mismatches in Nuxt/SSR applications and potential ID collisions.
 **Action:** Replace all instances of `Math.random()` with Vue 3.5's `useId()` composable for stable, unique, and accessible ID generation.
+
+## 2026-02-04 - Hit Area Expansion
+**Learning:** For list items where the primary interaction is toggling a checkbox, aiming for a small input is frustrating. Wrapping the entire content (except secondary actions) in a `<label>` significantly improves usability on touch and mouse devices.
+**Action:** Wrap the checkbox input and associated text content in a `<label>` with `cursor-pointer` and `select-none` to make the whole area clickable, while keeping secondary actions (like delete) outside to avoid conflict.
