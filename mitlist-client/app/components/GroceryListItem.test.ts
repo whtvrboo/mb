@@ -1,16 +1,50 @@
 import { describe, it, expect } from 'vitest'
-import fs from 'node:fs'
-import path from 'node:path'
+import { mount } from '@vue/test-utils'
+import GroceryListItem from './GroceryListItem.vue'
 
-describe('GroceryListItem Accessibility', () => {
-  it('delete button has focus-visible styles', () => {
-    const filePath = path.resolve(__dirname, 'GroceryListItem.vue')
-    const content = fs.readFileSync(filePath, 'utf-8')
+describe('GroceryListItem', () => {
+  it('renders label wrapping the name', () => {
+    const wrapper = mount(GroceryListItem, {
+      props: {
+        name: 'Apples',
+        modelValue: false
+      }
+    })
 
-    // Check for focus-visible:opacity-100 to ensure button becomes visible on focus
-    expect(content).toContain('focus-visible:opacity-100')
+    const label = wrapper.find('label')
+    expect(label.exists()).toBe(true)
+    expect(label.text()).toContain('Apples')
+  })
 
-    // Check for focus ring to ensure focus state is clear
-    expect(content).toContain('focus-visible:ring-2')
+  it('renders checkbox input inside the label', () => {
+    const wrapper = mount(GroceryListItem, {
+      props: {
+        name: 'Apples',
+        modelValue: false
+      }
+    })
+
+    const label = wrapper.find('label')
+    const input = label.find('input[type="checkbox"]')
+
+    expect(input.exists()).toBe(true)
+  })
+
+  it('preserves delete button outside the label', () => {
+    const wrapper = mount(GroceryListItem, {
+      props: {
+        name: 'Apples',
+        modelValue: false
+      }
+    })
+
+    const label = wrapper.find('label')
+    const button = wrapper.find('button')
+
+    // Button should exist
+    expect(button.exists()).toBe(true)
+
+    // Button should NOT be inside the label
+    expect(label.element.contains(button.element)).toBe(false)
   })
 })

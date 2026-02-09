@@ -39,9 +39,10 @@ const labelId = useId()
         : 'bg-white shadow-neobrutalism active:shadow-neobrutalism-active'
     ]">
     <div class="flex items-start justify-between gap-3">
-      <div class="flex items-start gap-3 flex-1">
+      <!-- Wrapped in label for better hit area -->
+      <label class="flex items-start gap-3 flex-1 cursor-pointer select-none">
         <!-- Neo Checkbox -->
-        <label class="relative cursor-pointer mt-1 shrink-0">
+        <div class="relative mt-1 shrink-0">
           <input
             v-model="isChecked"
             type="checkbox"
@@ -54,7 +55,7 @@ const labelId = useId()
           >
             <span class="material-symbols-outlined text-sm opacity-0 peer-checked:opacity-100 font-bold transition-opacity">check</span>
           </div>
-        </label>
+        </div>
 
         <div class="flex flex-col">
           <span :id="labelId" class="text-xl font-bold leading-tight transition-colors"
@@ -71,7 +72,7 @@ const labelId = useId()
             </span>
           </div>
         </div>
-      </div>
+      </label>
 
       <button 
         class="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background-dark focus-visible:ring-offset-2 transition-opacity rounded"
