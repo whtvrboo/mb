@@ -1,5 +1,6 @@
 """Application configuration using pydantic-settings."""
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -45,6 +46,14 @@ class Settings(BaseSettings):
     # Observability (optional)
     OTEL_EXPORTER_OTLP_ENDPOINT: str = ""
     OTEL_SERVICE_NAME: str = "mitlist"
+
+    @model_validator(mode="after")
+    def validate_security_config(self) -> "Settings":
+        if self.is_production and self.DEV_TEST_USER_ENABLED:
+            raise ValueError(
+                "DEV_TEST_USER_ENABLED must be False in production environment."
+            )
+        return self
 
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
