@@ -61,3 +61,6 @@ Thumbs.db
 # UV
 .uv/
 uv.lock
+
+# Node
+node_modules/
