@@ -13,4 +13,12 @@ describe('GroceryListItem Accessibility', () => {
     // Check for focus ring to ensure focus state is clear
     expect(content).toContain('focus-visible:ring-2')
   })
+
+  it('wraps content in label for hit area expansion', () => {
+    const filePath = path.resolve(__dirname, 'GroceryListItem.vue')
+    const content = fs.readFileSync(filePath, 'utf-8')
+
+    // Check for the label with cursor-pointer wrapping the content
+    expect(content).toContain('<label class="flex items-start gap-3 flex-1 cursor-pointer select-none group/label">')
+  })
 })
