@@ -109,9 +109,20 @@ async def get_current_user(
         # update last_login and ensure we remember sub
         user.last_login_at = datetime.now(timezone.utc)
         prefs = user.preferences or {}
-        if prefs.get("zitadel_sub") != sub:
+        linked_sub = prefs.get("zitadel_sub")
+
+        # Security: Enforce strict immutability of the link between a user and their IDP subject.
+        if linked_sub and linked_sub != sub:
+            raise UnauthorizedError(
+                code="INVALID_SUB_LINK",
+                detail="Token subject does not match linked account",
+            )
+
+        # Trust On First Use: If no sub is linked, link it now.
+        if not linked_sub:
             prefs["zitadel_sub"] = sub
             user.preferences = prefs
+
         await db.flush()
         await db.refresh(user)
 
