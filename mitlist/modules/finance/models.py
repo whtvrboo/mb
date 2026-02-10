@@ -14,6 +14,7 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -137,6 +138,15 @@ class ExpenseSplit(BaseModel, TimestampMixin):
 
     __table_args__ = (
         CheckConstraint("owed_amount >= 0", name="ck_expense_split_amount_non_negative"),
+        # Optimization: Partial index for unpaid splits to speed up balance calculation
+        Index(
+            "ix_expense_splits_unpaid",
+            "expense_id",
+            "user_id",
+            "owed_amount",
+            sqlite_where=text("is_paid = 0"),
+            postgresql_where=text("is_paid = false"),
+        ),
     )
 
 
