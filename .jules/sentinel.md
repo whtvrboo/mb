@@ -12,3 +12,8 @@
 **Vulnerability:** The finance module schemas (`ExpenseCreate`, `SplitPresetCreate`) accepted lists (`splits`, `members`) without a `max_length` constraint. This allowed attackers to send massive payloads (e.g., 100k+ items), potentially causing memory exhaustion or DB bottlenecks.
 **Learning:** Pydantic's `list[T]` does not imply any size limit. It defaults to unbounded, which is dangerous for public APIs.
 **Prevention:** Always define `max_length` for `list` fields in Pydantic models that accept user input. Use `Field(..., max_length=N)`.
+
+## 2026-02-10 - [Mutable IDP Subject Account Takeover]
+**Vulnerability:** The `get_current_user` dependency blindly updated the user's `zitadel_sub` if it mismatched the incoming token's subject, assuming email uniqueness was sufficient.
+**Learning:** Blindly trusting incoming IDP claims to update user identity is dangerous. Identity linking must be immutable after initial Trust On First Use to prevent account takeover by another IDP user with the same email.
+**Prevention:** Strictly validate that the IDP subject (`sub`) matches the existing linked subject. Raise `UnauthorizedError` on mismatch instead of updating.
