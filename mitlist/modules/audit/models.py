@@ -3,10 +3,10 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import JSON, ForeignKey, String, Text
+from sqlalchemy import JSON, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from mitlist.db.base import Base, BaseModel, TimestampMixin
+from mitlist.db.base import BaseModel, TimestampMixin
 
 
 class Action(str):
@@ -32,8 +32,10 @@ class AuditLog(BaseModel, TimestampMixin):
     """Audit log - track all changes."""
 
     __tablename__ = "audit_logs"
+    # Composite index to optimize filtering by group and sorting by time (avoids in-memory sort)
+    __table_args__ = (Index("ix_audit_logs_group_occurred", "group_id", "occurred_at"),)
 
-    group_id: Mapped[Optional[int]] = mapped_column(ForeignKey("groups.id"), nullable=True, index=True)
+    group_id: Mapped[Optional[int]] = mapped_column(ForeignKey("groups.id"), nullable=True)
     user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
     action: Mapped[str] = mapped_column(String(50), nullable=False)
     entity_type: Mapped[str] = mapped_column(String(50), nullable=False)
@@ -49,8 +51,10 @@ class ReportSnapshot(BaseModel, TimestampMixin):
     """Report snapshot - pre-computed reports."""
 
     __tablename__ = "report_snapshots"
+    # Composite index to optimize filtering by group and sorting by generation time
+    __table_args__ = (Index("ix_report_snapshots_group_generated", "group_id", "generated_at"),)
 
-    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False, index=True)
+    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False)
     report_type: Mapped[str] = mapped_column(String(50), nullable=False)
     period_start_date: Mapped[datetime] = mapped_column(nullable=False)
     period_end_date: Mapped[datetime] = mapped_column(nullable=False)
