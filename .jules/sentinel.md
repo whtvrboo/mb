@@ -12,3 +12,8 @@
 **Vulnerability:** The finance module schemas (`ExpenseCreate`, `SplitPresetCreate`) accepted lists (`splits`, `members`) without a `max_length` constraint. This allowed attackers to send massive payloads (e.g., 100k+ items), potentially causing memory exhaustion or DB bottlenecks.
 **Learning:** Pydantic's `list[T]` does not imply any size limit. It defaults to unbounded, which is dangerous for public APIs.
 **Prevention:** Always define `max_length` for `list` fields in Pydantic models that accept user input. Use `Field(..., max_length=N)`.
+
+## 2024-10-24 - [Insecure Configuration Default]
+**Vulnerability:** `DEV_TEST_USER_ENABLED` allowed bypassing auth even in production if misconfigured.
+**Learning:** Default values are not enough; invalid configurations must be rejected at startup.
+**Prevention:** Use `model_validator` to enforce mutually exclusive configuration flags.
