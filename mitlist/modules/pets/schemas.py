@@ -13,9 +13,7 @@ class PetBase(BaseModel):
     """Base pet schema."""
 
     name: str = Field(..., min_length=1, max_length=255)
-    species: str = Field(
-        ..., pattern="^(DOG|CAT|BIRD|REPTILE|FISH|RODENT|OTHER)$"
-    )
+    species: str = Field(..., pattern="^(DOG|CAT|BIRD|REPTILE|FISH|RODENT|OTHER)$")
     breed: Optional[str] = Field(None, max_length=255)
     sex: Optional[str] = Field(None, pattern="^(MALE|FEMALE|UNKNOWN)$")
     date_of_birth: Optional[datetime] = None
@@ -86,9 +84,7 @@ class PetResponse(PetBase):
 class PetMedicalRecordBase(BaseModel):
     """Base pet medical record schema."""
 
-    type: str = Field(
-        ..., pattern="^(VACCINE|SURGERY|CHECKUP|MEDICATION|INJURY|ALLERGY)$"
-    )
+    type: str = Field(..., pattern="^(VACCINE|SURGERY|CHECKUP|MEDICATION|INJURY|ALLERGY)$")
     description: str = Field(..., min_length=1)
     performed_at: datetime
     performed_by: Optional[str] = Field(None, max_length=255)
@@ -136,9 +132,7 @@ class PetMedicalRecordResponse(PetMedicalRecordBase):
 class PetLogBase(BaseModel):
     """Base pet log schema."""
 
-    action: str = Field(
-        ..., pattern="^(WALK|FEED|MEDICINE|GROOM|PLAY|VET_VISIT)$"
-    )
+    action: str = Field(..., pattern="^(WALK|FEED|MEDICINE|GROOM|PLAY|VET_VISIT)$")
     value_amount: Optional[float] = Field(None, ge=0)
     value_unit: Optional[str] = Field(None, max_length=50)
     notes: Optional[str] = None
@@ -170,9 +164,7 @@ class PetLogResponse(PetLogBase):
 class PetScheduleBase(BaseModel):
     """Base pet schedule schema."""
 
-    action_type: str = Field(
-        ..., pattern="^(WALK|FEED|MEDICINE|GROOM|PLAY|VET_VISIT)$"
-    )
+    action_type: str = Field(..., pattern="^(WALK|FEED|MEDICINE|GROOM|PLAY|VET_VISIT)$")
     frequency_type: str = Field(..., pattern="^(DAILY|WEEKLY)$")
     time_of_day: Optional[time] = None
     assigned_to_id: Optional[int] = None

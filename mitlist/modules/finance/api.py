@@ -51,7 +51,9 @@ async def get_expenses(
     return [schemas.ExpenseResponse.model_validate(e) for e in expenses]
 
 
-@router.post("/expenses", response_model=schemas.ExpenseResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/expenses", response_model=schemas.ExpenseResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_expense(
     data: schemas.ExpenseCreateRequest,
     group_id: int = Depends(get_current_group_id),
@@ -187,7 +189,9 @@ async def get_categories(
     return [schemas.CategoryResponse.model_validate(c) for c in categories]
 
 
-@router.post("/categories", response_model=schemas.CategoryResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/categories", response_model=schemas.CategoryResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_category(
     data: schemas.CategoryCreate,
     group_id: int = Depends(get_current_group_id),
@@ -195,7 +199,9 @@ async def create_category(
 ) -> schemas.CategoryResponse:
     """Create category."""
     if data.group_id is not None and data.group_id != group_id:
-        raise ValidationError(code="GROUP_MISMATCH", detail="group_id in body must match current group")
+        raise ValidationError(
+            code="GROUP_MISMATCH", detail="group_id in body must match current group"
+        )
 
     category = await interface.create_category(
         db,
@@ -263,7 +269,9 @@ async def get_settlements(
     return [schemas.SettlementResponse.model_validate(s) for s in settlements]
 
 
-@router.post("/settlements", response_model=schemas.SettlementResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/settlements", response_model=schemas.SettlementResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_settlement(
     data: schemas.SettlementCreateRequest,
     group_id: int = Depends(get_current_group_id),
@@ -324,9 +332,7 @@ async def get_budgets(
     """List budgets with current spending status."""
     budgets_data = await interface.list_budgets_with_status(db, group_id=group_id)
 
-    responses = [
-        schemas.BudgetStatusResponse.model_validate(b) for b in budgets_data
-    ]
+    responses = [schemas.BudgetStatusResponse.model_validate(b) for b in budgets_data]
 
     return responses
 
@@ -429,7 +435,11 @@ async def get_recurring_expenses(
     return [schemas.RecurringExpenseResponse.model_validate(r) for r in recurring]
 
 
-@router.post("/recurring-expenses", response_model=schemas.RecurringExpenseResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/recurring-expenses",
+    response_model=schemas.RecurringExpenseResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_recurring_expense(
     data: schemas.RecurringExpenseCreateRequest,
     group_id: int = Depends(get_current_group_id),
@@ -547,7 +557,11 @@ async def get_split_presets(
     return [schemas.SplitPresetResponse.model_validate(p) for p in presets]
 
 
-@router.post("/split-presets", response_model=schemas.SplitPresetResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/split-presets",
+    response_model=schemas.SplitPresetResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_split_preset(
     data: schemas.SplitPresetCreateRequest,
     group_id: int = Depends(get_current_group_id),
@@ -583,9 +597,7 @@ async def get_split_preset(
     """Get split preset by ID."""
     preset = await interface.get_split_preset_by_id(db, preset_id)
     if not preset or preset.group_id != group_id:
-        raise NotFoundError(
-            code="PRESET_NOT_FOUND", detail=f"Split preset {preset_id} not found"
-        )
+        raise NotFoundError(code="PRESET_NOT_FOUND", detail=f"Split preset {preset_id} not found")
     return schemas.SplitPresetResponse.model_validate(preset)
 
 
@@ -599,9 +611,7 @@ async def update_split_preset(
     """Update split preset."""
     existing = await interface.get_split_preset_by_id(db, preset_id)
     if not existing or existing.group_id != group_id:
-        raise NotFoundError(
-            code="PRESET_NOT_FOUND", detail=f"Split preset {preset_id} not found"
-        )
+        raise NotFoundError(code="PRESET_NOT_FOUND", detail=f"Split preset {preset_id} not found")
 
     members_data = None
     if data.members is not None:
@@ -634,7 +644,5 @@ async def delete_split_preset(
     """Delete split preset."""
     preset = await interface.get_split_preset_by_id(db, preset_id)
     if not preset or preset.group_id != group_id:
-        raise NotFoundError(
-            code="PRESET_NOT_FOUND", detail=f"Split preset {preset_id} not found"
-        )
+        raise NotFoundError(code="PRESET_NOT_FOUND", detail=f"Split preset {preset_id} not found")
     await interface.delete_split_preset(db, preset_id)

@@ -12,7 +12,6 @@ from mitlist.modules.plants import interface, schemas
 router = APIRouter(prefix="/plants", tags=["plants"])
 
 
-
 # ---------- Schedules (Top Level) ----------
 @router.patch("/schedules/{schedule_id}/done", response_model=schemas.PlantScheduleResponse)
 async def mark_schedule_completed(
@@ -35,6 +34,7 @@ async def mark_schedule_completed(
         quantity_unit=data.quantity_unit,
     )
     return schemas.PlantScheduleResponse.model_validate(updated)
+
 
 # ---------- Species ----------
 @router.get("/species", response_model=ListType[schemas.PlantSpeciesResponse])
@@ -150,12 +150,14 @@ async def get_plant_logs(
     return [schemas.PlantLogResponse.model_validate(l) for l in logs]
 
 
-@router.post("/{plant_id}/logs", response_model=schemas.PlantLogResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{plant_id}/logs", response_model=schemas.PlantLogResponse, status_code=status.HTTP_201_CREATED
+)
 async def post_plant_log(
     plant_id: int,
     data: schemas.PlantLogCreate,
     group_id: int = Depends(get_current_group_id),
-    user = Depends(get_current_user),
+    user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Log a care action."""
@@ -193,7 +195,11 @@ async def get_plant_schedules(
     return [schemas.PlantScheduleResponse.model_validate(s) for s in schedules]
 
 
-@router.post("/{plant_id}/schedules", response_model=schemas.PlantScheduleResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{plant_id}/schedules",
+    response_model=schemas.PlantScheduleResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_plant_schedule(
     plant_id: int,
     data: schemas.PlantScheduleCreate,
@@ -214,5 +220,3 @@ async def create_plant_schedule(
         assigned_to_id=data.assigned_to_id,
     )
     return schemas.PlantScheduleResponse.model_validate(sched)
-
-

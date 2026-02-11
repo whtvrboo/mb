@@ -42,7 +42,9 @@ class List(BaseModel, TimestampMixin):
     __mapper_args__ = {"version_id_col": version_id}
 
     # Relationships
-    items: Mapped[list["Item"]] = relationship("Item", back_populates="list", cascade="all, delete-orphan")
+    items: Mapped[list["Item"]] = relationship(
+        "Item", back_populates="list", cascade="all, delete-orphan"
+    )
 
 
 class ListShare(BaseModel, TimestampMixin):
@@ -63,7 +65,9 @@ class InventoryItem(BaseModel, TimestampMixin):
 
     group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False, index=True)
     location_id: Mapped[Optional[int]] = mapped_column(ForeignKey("locations.id"), nullable=True)
-    concept_id: Mapped[Optional[int]] = mapped_column(ForeignKey("common_item_concepts.id"), nullable=True)
+    concept_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("common_item_concepts.id"), nullable=True
+    )
     quantity_value: Mapped[Optional[float]] = mapped_column(nullable=True)
     quantity_unit: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     expiration_date: Mapped[Optional[datetime]] = mapped_column(nullable=True)
@@ -84,7 +88,9 @@ class Item(BaseModel, TimestampMixin, VersionMixin):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     quantity_value: Mapped[Optional[float]] = mapped_column(nullable=True)
     quantity_unit: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    concept_id: Mapped[Optional[int]] = mapped_column(ForeignKey("common_item_concepts.id"), nullable=True)
+    concept_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("common_item_concepts.id"), nullable=True
+    )
     is_checked: Mapped[bool] = mapped_column(default=False, nullable=False)
     checked_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
     price_estimate: Mapped[Optional[float]] = mapped_column(nullable=True)

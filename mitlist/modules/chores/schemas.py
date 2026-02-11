@@ -14,19 +14,13 @@ class ChoreBase(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=255)
     description: Optional[str] = None
-    frequency_type: str = Field(
-        ..., pattern="^(DAILY|WEEKLY|MONTHLY|CUSTOM|SEASONAL)$"
-    )
+    frequency_type: str = Field(..., pattern="^(DAILY|WEEKLY|MONTHLY|CUSTOM|SEASONAL)$")
     interval_value: int = Field(1, ge=1)
     effort_value: int = Field(..., ge=1, le=10)
     estimated_duration_minutes: Optional[int] = Field(None, ge=1)
-    category: Optional[str] = Field(
-        None, pattern="^(CLEANING|OUTDOOR|MAINTENANCE|ADMIN|OTHER)$"
-    )
+    category: Optional[str] = Field(None, pattern="^(CLEANING|OUTDOOR|MAINTENANCE|ADMIN|OTHER)$")
     is_rotating: bool = False
-    rotation_strategy: Optional[str] = Field(
-        None, pattern="^(ROUND_ROBIN|LEAST_BUSY|RANDOM)$"
-    )
+    rotation_strategy: Optional[str] = Field(None, pattern="^(ROUND_ROBIN|LEAST_BUSY|RANDOM)$")
 
 
 class ChoreCreate(ChoreBase):
@@ -41,19 +35,13 @@ class ChoreUpdate(BaseModel):
 
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     description: Optional[str] = None
-    frequency_type: Optional[str] = Field(
-        None, pattern="^(DAILY|WEEKLY|MONTHLY|CUSTOM|SEASONAL)$"
-    )
+    frequency_type: Optional[str] = Field(None, pattern="^(DAILY|WEEKLY|MONTHLY|CUSTOM|SEASONAL)$")
     interval_value: Optional[int] = Field(None, ge=1)
     effort_value: Optional[int] = Field(None, ge=1, le=10)
     estimated_duration_minutes: Optional[int] = Field(None, ge=1)
-    category: Optional[str] = Field(
-        None, pattern="^(CLEANING|OUTDOOR|MAINTENANCE|ADMIN|OTHER)$"
-    )
+    category: Optional[str] = Field(None, pattern="^(CLEANING|OUTDOOR|MAINTENANCE|ADMIN|OTHER)$")
     is_rotating: Optional[bool] = None
-    rotation_strategy: Optional[str] = Field(
-        None, pattern="^(ROUND_ROBIN|LEAST_BUSY|RANDOM)$"
-    )
+    rotation_strategy: Optional[str] = Field(None, pattern="^(ROUND_ROBIN|LEAST_BUSY|RANDOM)$")
     required_item_concept_id: Optional[int] = None
     is_active: Optional[bool] = None
 
@@ -93,9 +81,7 @@ class ChoreAssignmentUpdate(BaseModel):
     """Schema for updating a chore assignment."""
 
     due_date: Optional[datetime] = None
-    status: Optional[str] = Field(
-        None, pattern="^(PENDING|IN_PROGRESS|COMPLETED|SKIPPED)$"
-    )
+    status: Optional[str] = Field(None, pattern="^(PENDING|IN_PROGRESS|COMPLETED|SKIPPED)$")
     notes: Optional[str] = None
 
 
@@ -186,14 +172,10 @@ class ChoreTemplateBase(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=255)
     description: Optional[str] = None
-    frequency_type: str = Field(
-        ..., pattern="^(DAILY|WEEKLY|MONTHLY|CUSTOM|SEASONAL)$"
-    )
+    frequency_type: str = Field(..., pattern="^(DAILY|WEEKLY|MONTHLY|CUSTOM|SEASONAL)$")
     interval_value: int = Field(1, ge=1)
     effort_value: int = Field(..., ge=1, le=10)
-    category: Optional[str] = Field(
-        None, pattern="^(CLEANING|OUTDOOR|MAINTENANCE|ADMIN|OTHER)$"
-    )
+    category: Optional[str] = Field(None, pattern="^(CLEANING|OUTDOOR|MAINTENANCE|ADMIN|OTHER)$")
     is_public: bool = False
 
 
@@ -208,14 +190,10 @@ class ChoreTemplateUpdate(BaseModel):
 
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     description: Optional[str] = None
-    frequency_type: Optional[str] = Field(
-        None, pattern="^(DAILY|WEEKLY|MONTHLY|CUSTOM|SEASONAL)$"
-    )
+    frequency_type: Optional[str] = Field(None, pattern="^(DAILY|WEEKLY|MONTHLY|CUSTOM|SEASONAL)$")
     interval_value: Optional[int] = Field(None, ge=1)
     effort_value: Optional[int] = Field(None, ge=1, le=10)
-    category: Optional[str] = Field(
-        None, pattern="^(CLEANING|OUTDOOR|MAINTENANCE|ADMIN|OTHER)$"
-    )
+    category: Optional[str] = Field(None, pattern="^(CLEANING|OUTDOOR|MAINTENANCE|ADMIN|OTHER)$")
     is_public: Optional[bool] = None
 
 
@@ -237,9 +215,7 @@ class ChoreFromTemplateRequest(BaseModel):
     group_id: int
     # Override template defaults
     name: Optional[str] = Field(None, min_length=1, max_length=255)
-    frequency_type: Optional[str] = Field(
-        None, pattern="^(DAILY|WEEKLY|MONTHLY|CUSTOM|SEASONAL)$"
-    )
+    frequency_type: Optional[str] = Field(None, pattern="^(DAILY|WEEKLY|MONTHLY|CUSTOM|SEASONAL)$")
     interval_value: Optional[int] = Field(None, ge=1)
 
 

@@ -118,8 +118,12 @@ class Plant(BaseModel, TimestampMixin):
 
     # Relationships
     species: Mapped["PlantSpecies"] = relationship("PlantSpecies")
-    logs: Mapped[list["PlantLog"]] = relationship("PlantLog", back_populates="plant", cascade="all, delete-orphan")
-    schedules: Mapped[list["PlantSchedule"]] = relationship("PlantSchedule", back_populates="plant", cascade="all, delete-orphan")
+    logs: Mapped[list["PlantLog"]] = relationship(
+        "PlantLog", back_populates="plant", cascade="all, delete-orphan"
+    )
+    schedules: Mapped[list["PlantSchedule"]] = relationship(
+        "PlantSchedule", back_populates="plant", cascade="all, delete-orphan"
+    )
 
 
 class PlantLog(BaseModel, TimestampMixin):

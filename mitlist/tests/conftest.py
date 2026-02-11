@@ -30,10 +30,28 @@ from mitlist.modules.governance.models import Proposal, BallotOption, VoteRecord
 from mitlist.modules.audit.models import AuditLog, Tag, TagAssignment, ReportSnapshot  # noqa: F401
 from mitlist.modules.documents.models import Document, DocumentShare, SharedCredential  # noqa: F401
 from mitlist.modules.lists.models import List, Item, InventoryItem, ListShare  # noqa: F401
-from mitlist.modules.notifications.models import Comment, Mention, Notification, NotificationPreference, Reaction  # noqa: F401
+from mitlist.modules.notifications.models import (
+    Comment,
+    Mention,
+    Notification,
+    NotificationPreference,
+    Reaction,
+)  # noqa: F401
 from mitlist.modules.auth.models import CommonItemConcept  # noqa: F401
-from mitlist.modules.gamification.models import UserPoints, Achievement, UserAchievement, Streak, Leaderboard  # noqa: F401 UserPoints, Achievement, UserAchievement, Streak, Leaderboard  # noqa: F401
-from mitlist.modules.recipes.models import Recipe, RecipeIngredient, RecipeStep, MealPlan, MealPlanShoppingSync  # noqa: F401
+from mitlist.modules.gamification.models import (
+    UserPoints,
+    Achievement,
+    UserAchievement,
+    Streak,
+    Leaderboard,
+)  # noqa: F401 UserPoints, Achievement, UserAchievement, Streak, Leaderboard  # noqa: F401
+from mitlist.modules.recipes.models import (
+    Recipe,
+    RecipeIngredient,
+    RecipeStep,
+    MealPlan,
+    MealPlanShoppingSync,
+)  # noqa: F401
 from mitlist.modules.calendar.models import CalendarEvent, EventAttendee, Reminder  # noqa: F401
 from mitlist.api import deps
 from mitlist.modules.auth.models import User, UserGroup, Group, CommonItemConcept  # noqa: F401
@@ -46,7 +64,9 @@ engine = create_async_engine(
     connect_args={"check_same_thread": False},
     poolclass=StaticPool,
 )
-TestingSessionLocal = async_sessionmaker(autocommit=False, autoflush=False, expire_on_commit=False, bind=engine)
+TestingSessionLocal = async_sessionmaker(
+    autocommit=False, autoflush=False, expire_on_commit=False, bind=engine
+)
 
 
 @pytest.fixture(scope="function")
@@ -54,14 +74,15 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
     """Create a fresh database session for a test."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    
+
     async with TestingSessionLocal() as session:
         yield session
         # Cleanup
         await session.rollback()
-        
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+
 
 @pytest.fixture(scope="function")
 def app_instance() -> FastAPI:
@@ -87,21 +108,25 @@ def app_instance() -> FastAPI:
     app.include_router(lists_inventory_router)
     return app
 
+
 @pytest.fixture(scope="function")
-async def client(app_instance: FastAPI, db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
+async def client(
+    app_instance: FastAPI, db_session: AsyncSession
+) -> AsyncGenerator[AsyncClient, None]:
     """Get a TestClient with overridden dependencies."""
-    
+
     async def override_get_db():
         yield db_session
 
     app_instance.dependency_overrides[deps.get_db] = override_get_db
-    
+
     # We use http://test as base URL for httpx
     transport = ASGITransport(app=app_instance)
     async with AsyncClient(transport=transport, base_url="http://test") as c:
         yield c
-    
+
     app_instance.dependency_overrides.clear()
+
 
 @pytest.fixture
 async def test_user(db_session: AsyncSession) -> User:
@@ -117,43 +142,46 @@ async def test_user(db_session: AsyncSession) -> User:
     await db_session.refresh(user)
     return user
 
+
 @pytest.fixture
 async def test_group(db_session: AsyncSession, test_user: User) -> Group:
     """Create a test group and add test user as admin."""
-    group = Group(
-        name="Test Group",
-        created_by_id=test_user.id
-    )
+    group = Group(name="Test Group", created_by_id=test_user.id)
     db_session.add(group)
     await db_session.flush()
     await db_session.refresh(group)
-    
+
     membership = UserGroup(
-        user_id=test_user.id,
-        group_id=group.id,
-        role="ADMIN",
-        joined_at=datetime.now(timezone.utc)
+        user_id=test_user.id, group_id=group.id, role="ADMIN", joined_at=datetime.now(timezone.utc)
     )
     db_session.add(membership)
     await db_session.commit()
     return group
+
 
 @pytest.fixture
 def auth_headers(test_group: Group) -> dict:
     """Return headers for authenticated requests."""
     return {"Authorization": "Bearer test_token", "X-Group-ID": str(test_group.id)}
 
+
 @pytest.fixture(scope="function")
-async def authed_client(client: AsyncClient, app_instance: FastAPI, db_session: AsyncSession, test_user: User, test_group: Group) -> AsyncClient:
+async def authed_client(
+    client: AsyncClient,
+    app_instance: FastAPI,
+    db_session: AsyncSession,
+    test_user: User,
+    test_group: Group,
+) -> AsyncClient:
     """Client with overridden auth dependencies."""
-    
+
     async def override_get_current_user():
         return test_user
-        
+
     async def override_get_current_group_id():
         return test_group.id
-        
+
     app_instance.dependency_overrides[deps.get_current_user] = override_get_current_user
     app_instance.dependency_overrides[deps.get_current_group_id] = override_get_current_group_id
-    
+
     return client

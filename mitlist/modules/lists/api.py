@@ -60,7 +60,9 @@ async def create_list(
     Returns created list directly (no envelope) per API contract.
     """
     if data.group_id != group_id:
-        raise ValidationError(code="GROUP_MISMATCH", detail="group_id in body must match current group")
+        raise ValidationError(
+            code="GROUP_MISMATCH", detail="group_id in body must match current group"
+        )
     list_obj = await interface.create_list(db, group_id, data.name, data.type)
     return schemas.ListResponse.model_validate(list_obj)
 
@@ -225,7 +227,9 @@ async def patch_inventory_item(
     """Update quantity or mark out of stock."""
     inv = await interface.get_inventory_item_by_id(db, inventory_id)
     if not inv or inv.group_id != group_id:
-        raise NotFoundError(code="INVENTORY_ITEM_NOT_FOUND", detail=f"Inventory item {inventory_id} not found")
+        raise NotFoundError(
+            code="INVENTORY_ITEM_NOT_FOUND", detail=f"Inventory item {inventory_id} not found"
+        )
     inv = await interface.update_inventory_item(
         db,
         inventory_id=inventory_id,

@@ -26,9 +26,7 @@ class ProposalBase(BaseModel):
         ...,
         pattern="^(GENERAL|EXPENSE_REQUEST|POLICY_CHANGE|KICK_USER|CHORE_ASSIGNMENT|PET_ADOPTION)$",
     )
-    strategy: str = Field(
-        ..., pattern="^(SIMPLE_MAJORITY|UNANIMOUS|RANKED_CHOICE|WEIGHTED)$"
-    )
+    strategy: str = Field(..., pattern="^(SIMPLE_MAJORITY|UNANIMOUS|RANKED_CHOICE|WEIGHTED)$")
     deadline_at: Optional[datetime] = None
     min_quorum_percentage: Optional[int] = Field(None, ge=0, le=100)
 
@@ -55,9 +53,7 @@ class ProposalUpdate(BaseModel):
 class ProposalStatusUpdate(BaseModel):
     """Schema for updating proposal status."""
 
-    status: str = Field(
-        ..., pattern="^(DRAFT|OPEN|PASSED|REJECTED|EXECUTED|CANCELLED)$"
-    )
+    status: str = Field(..., pattern="^(DRAFT|OPEN|PASSED|REJECTED|EXECUTED|CANCELLED)$")
 
 
 class BallotOptionResponse(BaseModel):

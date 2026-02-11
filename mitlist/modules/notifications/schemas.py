@@ -164,9 +164,7 @@ class CommentWithReactionsResponse(CommentResponse):
 class ReactionBase(BaseModel):
     """Base reaction schema."""
 
-    target_type: str = Field(
-        ..., pattern="^(COMMENT|EXPENSE|CHORE_ASSIGNMENT)$"
-    )
+    target_type: str = Field(..., pattern="^(COMMENT|EXPENSE|CHORE_ASSIGNMENT)$")
     target_id: int
     emoji_code: str = Field(..., min_length=1, max_length=20)
 
@@ -192,9 +190,7 @@ class ReactionResponse(ReactionBase):
 class ReactionToggleRequest(BaseModel):
     """Schema for toggling a reaction (add if not exists, remove if exists)."""
 
-    target_type: str = Field(
-        ..., pattern="^(COMMENT|EXPENSE|CHORE_ASSIGNMENT)$"
-    )
+    target_type: str = Field(..., pattern="^(COMMENT|EXPENSE|CHORE_ASSIGNMENT)$")
     target_id: int
     emoji_code: str = Field(..., min_length=1, max_length=20)
 

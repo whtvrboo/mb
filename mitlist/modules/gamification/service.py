@@ -87,9 +87,7 @@ async def list_achievements(db: AsyncSession, category: Optional[str] = None) ->
 
 async def get_achievement_by_id(db: AsyncSession, achievement_id: int) -> Optional[Achievement]:
     """Get achievement by ID."""
-    result = await db.execute(
-        select(Achievement).where(Achievement.id == achievement_id)
-    )
+    result = await db.execute(select(Achievement).where(Achievement.id == achievement_id))
     return result.scalar_one_or_none()
 
 
@@ -335,14 +333,18 @@ async def get_leaderboard(
 
         entries = []
         for idx, (points, name, avatar_url) in enumerate(rows, start=1):
-            entries.append({
-                "rank": idx,
-                "user_id": points.user_id,
-                "user_name": name,
-                "avatar_url": avatar_url,
-                "value": points.monthly_points if period_type == "MONTHLY" else points.total_points,
-                "change_from_previous": None,
-            })
+            entries.append(
+                {
+                    "rank": idx,
+                    "user_id": points.user_id,
+                    "user_name": name,
+                    "avatar_url": avatar_url,
+                    "value": points.monthly_points
+                    if period_type == "MONTHLY"
+                    else points.total_points,
+                    "change_from_previous": None,
+                }
+            )
         return entries
 
     return []

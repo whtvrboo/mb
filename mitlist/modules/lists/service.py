@@ -30,9 +30,7 @@ async def list_lists(
     return list(result.scalars().all())
 
 
-async def get_list_by_id(
-    db: AsyncSession, list_id: int, load_items: bool = True
-) -> Optional[List]:
+async def get_list_by_id(db: AsyncSession, list_id: int, load_items: bool = True) -> Optional[List]:
     """Get a list by ID, optionally loading items."""
     q = select(List).where(List.id == list_id)
     if load_items:
@@ -67,9 +65,7 @@ async def update_list(
     Raises StaleDataError if version_id mismatch (concurrent modification).
     """
     # Use with_for_update() for critical path (though for lists, optimistic locking is usually sufficient)
-    result = await db.execute(
-        select(List).where(List.id == list_id).with_for_update()
-    )
+    result = await db.execute(select(List).where(List.id == list_id).with_for_update())
     list_obj = result.scalar_one_or_none()
 
     if not list_obj:
@@ -97,18 +93,14 @@ async def update_list(
         raise
 
 
-async def decrement_item_quantity(
-    db: AsyncSession, item_id: int, quantity: float
-) -> Item:
+async def decrement_item_quantity(db: AsyncSession, item_id: int, quantity: float) -> Item:
     """
     Decrement item quantity - example of critical path using with_for_update().
 
     This demonstrates pessimistic locking for inventory-style operations.
     """
     # REQUIRED: Use with_for_update() for inventory decrements
-    result = await db.execute(
-        select(Item).where(Item.id == item_id).with_for_update()
-    )
+    result = await db.execute(select(Item).where(Item.id == item_id).with_for_update())
     item = result.scalar_one_or_none()
 
     if not item:
@@ -271,7 +263,9 @@ async def update_inventory_item(
     )
     inv = result.scalar_one_or_none()
     if not inv:
-        raise NotFoundError(code="INVENTORY_ITEM_NOT_FOUND", detail=f"Inventory item {inventory_id} not found")
+        raise NotFoundError(
+            code="INVENTORY_ITEM_NOT_FOUND", detail=f"Inventory item {inventory_id} not found"
+        )
     if quantity_value is not None:
         inv.quantity_value = quantity_value
     if quantity_unit is not None:

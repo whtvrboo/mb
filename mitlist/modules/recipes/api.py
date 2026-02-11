@@ -126,7 +126,9 @@ async def get_meal_plans(
     )
 
 
-@router.post("/meal-plans", response_model=schemas.MealPlanResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/meal-plans", response_model=schemas.MealPlanResponse, status_code=status.HTTP_201_CREATED
+)
 async def post_meal_plans(
     data: schemas.MealPlanCreate,
     user: User = Depends(get_current_user),

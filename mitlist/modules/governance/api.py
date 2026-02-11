@@ -36,7 +36,9 @@ async def get_proposals(
     db: AsyncSession = Depends(get_db),
 ):
     """List proposals for the current group."""
-    proposals = await list_proposals(db, group_id, status_filter=status_filter, limit=limit, offset=offset)
+    proposals = await list_proposals(
+        db, group_id, status_filter=status_filter, limit=limit, offset=offset
+    )
     return proposals
 
 
@@ -49,7 +51,11 @@ async def post_proposals(
 ):
     """Create a new proposal."""
     ballot_options = [
-        {"text": opt.text, "display_order": opt.display_order, "option_metadata": opt.option_metadata}
+        {
+            "text": opt.text,
+            "display_order": opt.display_order,
+            "option_metadata": opt.option_metadata,
+        }
         for opt in data.ballot_options
     ]
     proposal = await create_proposal(

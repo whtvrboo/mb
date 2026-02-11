@@ -76,9 +76,7 @@ async def test_notifications_mark_all_read(
     authed_client: AsyncClient, auth_headers: dict, sample_notification
 ):
     """POST /notifications/clear marks all as read."""
-    response = await authed_client.post(
-        "/notifications/clear", json={}, headers=auth_headers
-    )
+    response = await authed_client.post("/notifications/clear", json={}, headers=auth_headers)
     assert response.status_code == 204
 
     response = await authed_client.get("/notifications", headers=auth_headers)
@@ -95,21 +93,15 @@ async def test_notifications_count(authed_client: AsyncClient, auth_headers: dic
 
 
 @pytest.mark.asyncio
-async def test_notifications_preferences_get_empty(
-    authed_client: AsyncClient, auth_headers: dict
-):
+async def test_notifications_preferences_get_empty(authed_client: AsyncClient, auth_headers: dict):
     """GET /notifications/preferences returns list (may be empty)."""
-    response = await authed_client.get(
-        "/notifications/preferences", headers=auth_headers
-    )
+    response = await authed_client.get("/notifications/preferences", headers=auth_headers)
     assert response.status_code == 200
     assert isinstance(response.json(), list)
 
 
 @pytest.mark.asyncio
-async def test_notifications_preferences_update(
-    authed_client: AsyncClient, auth_headers: dict
-):
+async def test_notifications_preferences_update(authed_client: AsyncClient, auth_headers: dict):
     """PATCH /notifications/preferences creates or updates a preference."""
     data = {
         "event_type": "TASK_DUE",
@@ -193,9 +185,7 @@ async def test_comments_create_list_update_delete(
     assert response.json()["content"] == "Updated comment"
 
     # Delete comment
-    response = await authed_client.delete(
-        f"/comments/{comment_id}", headers=auth_headers
-    )
+    response = await authed_client.delete(f"/comments/{comment_id}", headers=auth_headers)
     assert response.status_code == 204
 
 
@@ -242,9 +232,7 @@ async def test_reactions_toggle_and_list(
         "target_id": target_id,
         "emoji_code": "thumbs_up",
     }
-    response = await authed_client.post(
-        "/reactions/toggle", json=data, headers=auth_headers
-    )
+    response = await authed_client.post("/reactions/toggle", json=data, headers=auth_headers)
     assert response.status_code == 200
     body = response.json()
     assert body["action"] == "added"
@@ -262,9 +250,7 @@ async def test_reactions_toggle_and_list(
     assert any(r["emoji_code"] == "thumbs_up" for r in reactions)
 
     # Toggle again (remove)
-    response = await authed_client.post(
-        "/reactions/toggle", json=data, headers=auth_headers
-    )
+    response = await authed_client.post("/reactions/toggle", json=data, headers=auth_headers)
     assert response.status_code == 200
     assert response.json()["action"] == "removed"
 

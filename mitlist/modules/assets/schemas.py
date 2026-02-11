@@ -26,9 +26,7 @@ class HomeAssetBase(BaseModel):
     purchase_price: Optional[float] = Field(None, ge=0)
     purchase_store: Optional[str] = Field(None, max_length=255)
     warranty_end_date: Optional[datetime] = None
-    warranty_type: Optional[str] = Field(
-        None, pattern="^(MANUFACTURER|EXTENDED|NONE)$"
-    )
+    warranty_type: Optional[str] = Field(None, pattern="^(MANUFACTURER|EXTENDED|NONE)$")
     energy_rating: Optional[str] = Field(None, max_length=10)
     photo_url: Optional[str] = Field(None, max_length=500)
 
@@ -58,9 +56,7 @@ class HomeAssetUpdate(BaseModel):
     purchase_price: Optional[float] = Field(None, ge=0)
     purchase_store: Optional[str] = Field(None, max_length=255)
     warranty_end_date: Optional[datetime] = None
-    warranty_type: Optional[str] = Field(
-        None, pattern="^(MANUFACTURER|EXTENDED|NONE)$"
-    )
+    warranty_type: Optional[str] = Field(None, pattern="^(MANUFACTURER|EXTENDED|NONE)$")
     energy_rating: Optional[str] = Field(None, max_length=10)
     photo_url: Optional[str] = Field(None, max_length=500)
     manual_document_id: Optional[int] = None
@@ -99,9 +95,7 @@ class MaintenanceTaskBase(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=255)
     frequency_days: int = Field(..., ge=1)
-    priority: Optional[str] = Field(
-        None, pattern="^(LOW|MEDIUM|HIGH|CRITICAL)$"
-    )
+    priority: Optional[str] = Field(None, pattern="^(LOW|MEDIUM|HIGH|CRITICAL)$")
     instructions: Optional[str] = None
     estimated_duration_minutes: Optional[int] = Field(None, ge=1)
     estimated_cost: Optional[float] = Field(None, ge=0)
@@ -119,9 +113,7 @@ class MaintenanceTaskUpdate(BaseModel):
 
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     frequency_days: Optional[int] = Field(None, ge=1)
-    priority: Optional[str] = Field(
-        None, pattern="^(LOW|MEDIUM|HIGH|CRITICAL)$"
-    )
+    priority: Optional[str] = Field(None, pattern="^(LOW|MEDIUM|HIGH|CRITICAL)$")
     instructions: Optional[str] = None
     estimated_duration_minutes: Optional[int] = Field(None, ge=1)
     estimated_cost: Optional[float] = Field(None, ge=0)
@@ -195,9 +187,7 @@ class AssetInsuranceBase(BaseModel):
 
     policy_number: str = Field(..., min_length=1, max_length=100)
     provider_name: str = Field(..., min_length=1, max_length=255)
-    coverage_type: str = Field(
-        ..., pattern="^(RENTERS|HOMEOWNERS|VEHICLE|OTHER)$"
-    )
+    coverage_type: str = Field(..., pattern="^(RENTERS|HOMEOWNERS|VEHICLE|OTHER)$")
     premium_amount: float = Field(..., ge=0)
     premium_frequency: str = Field(..., pattern="^(MONTHLY|YEARLY)$")
     start_date: datetime
@@ -217,9 +207,7 @@ class AssetInsuranceUpdate(BaseModel):
 
     policy_number: Optional[str] = Field(None, min_length=1, max_length=100)
     provider_name: Optional[str] = Field(None, min_length=1, max_length=255)
-    coverage_type: Optional[str] = Field(
-        None, pattern="^(RENTERS|HOMEOWNERS|VEHICLE|OTHER)$"
-    )
+    coverage_type: Optional[str] = Field(None, pattern="^(RENTERS|HOMEOWNERS|VEHICLE|OTHER)$")
     premium_amount: Optional[float] = Field(None, ge=0)
     premium_frequency: Optional[str] = Field(None, pattern="^(MONTHLY|YEARLY)$")
     end_date: Optional[datetime] = None

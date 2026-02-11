@@ -83,10 +83,12 @@ class TestInvites:
         assert data["status"] == "PENDING"  # alias from model_dump
         assert "invite_code" in data  # alias from model_dump
 
-    async def test_list_invites(self, client: AsyncClient, test_group: Group, db: AsyncSession, test_user: User):
+    async def test_list_invites(
+        self, client: AsyncClient, test_group: Group, db: AsyncSession, test_user: User
+    ):
         """Test listing group invites."""
         from mitlist.modules.auth.service import create_invite
-        
+
         invite = await create_invite(
             db,
             group_id=test_group.id,
@@ -103,10 +105,12 @@ class TestInvites:
         assert len(data) >= 1
         assert any(i.get("email") == "invite@example.com" for i in data)
 
-    async def test_revoke_invite(self, client: AsyncClient, test_group: Group, db: AsyncSession, test_user: User):
+    async def test_revoke_invite(
+        self, client: AsyncClient, test_group: Group, db: AsyncSession, test_user: User
+    ):
         """Test revoking an invite."""
         from mitlist.modules.auth.service import create_invite
-        
+
         invite = await create_invite(
             db,
             group_id=test_group.id,

@@ -98,10 +98,15 @@ class UserAchievement(BaseModel, TimestampMixin):
     progress_percentage: Mapped[int] = mapped_column(default=0, nullable=False)
 
     # Relationships
-    achievement: Mapped["Achievement"] = relationship("Achievement", back_populates="user_achievements")
+    achievement: Mapped["Achievement"] = relationship(
+        "Achievement", back_populates="user_achievements"
+    )
 
     __table_args__ = (
-        CheckConstraint("progress_percentage >= 0 AND progress_percentage <= 100", name="ck_user_achievement_progress"),
+        CheckConstraint(
+            "progress_percentage >= 0 AND progress_percentage <= 100",
+            name="ck_user_achievement_progress",
+        ),
     )
 
 

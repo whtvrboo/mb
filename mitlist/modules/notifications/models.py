@@ -63,9 +63,7 @@ class Notification(BaseModel, TimestampMixin):
     """Notification - in-app notification."""
 
     __tablename__ = "notifications"
-    __table_args__ = (
-        Index("ix_notifications_user_lookup", "user_id", "created_at"),
-    )
+    __table_args__ = (Index("ix_notifications_user_lookup", "user_id", "created_at"),)
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     group_id: Mapped[Optional[int]] = mapped_column(ForeignKey("groups.id"), nullable=True)
@@ -83,9 +81,7 @@ class Comment(BaseModel, TimestampMixin):
     """Comment - comment on any entity."""
 
     __tablename__ = "comments"
-    __table_args__ = (
-        Index("ix_comments_parent_lookup", "parent_type", "parent_id", "created_at"),
-    )
+    __table_args__ = (Index("ix_comments_parent_lookup", "parent_type", "parent_id", "created_at"),)
 
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     parent_type: Mapped[str] = mapped_column(String(50), nullable=False)
@@ -96,17 +92,19 @@ class Comment(BaseModel, TimestampMixin):
     deleted_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
 
     # Relationships
-    reactions: Mapped[list["Reaction"]] = relationship("Reaction", back_populates="comment", cascade="all, delete-orphan")
-    mentions: Mapped[list["Mention"]] = relationship("Mention", back_populates="comment", cascade="all, delete-orphan")
+    reactions: Mapped[list["Reaction"]] = relationship(
+        "Reaction", back_populates="comment", cascade="all, delete-orphan"
+    )
+    mentions: Mapped[list["Mention"]] = relationship(
+        "Mention", back_populates="comment", cascade="all, delete-orphan"
+    )
 
 
 class Reaction(BaseModel, TimestampMixin):
     """Reaction - emoji reaction."""
 
     __tablename__ = "reactions"
-    __table_args__ = (
-        Index("ix_reactions_target_lookup", "target_type", "target_id"),
-    )
+    __table_args__ = (Index("ix_reactions_target_lookup", "target_type", "target_id"),)
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     target_type: Mapped[str] = mapped_column(String(50), nullable=False)

@@ -135,7 +135,9 @@ async def generate_report(
         result = await db.execute(
             select(
                 func.count(ChoreAssignment.id).label("total"),
-                func.sum(func.cast(ChoreAssignment.status == "COMPLETED", Integer)).label("completed"),  # noqa: F821
+                func.sum(func.cast(ChoreAssignment.status == "COMPLETED", Integer)).label(
+                    "completed"
+                ),  # noqa: F821
             ).where(
                 ChoreAssignment.due_date >= period_start_date,
                 ChoreAssignment.due_date <= period_end_date,
@@ -154,9 +156,7 @@ async def generate_report(
     elif report_type == "BUDGET_STATUS":
         from mitlist.modules.finance.models import Budget, Expense
 
-        budgets_result = await db.execute(
-            select(Budget).where(Budget.group_id == group_id)
-        )
+        budgets_result = await db.execute(select(Budget).where(Budget.group_id == group_id))
         budgets = budgets_result.scalars().all()
 
         # Optimize: Fetch all relevant expenses in one query
@@ -185,13 +185,15 @@ async def generate_report(
         budget_data = []
         for budget in budgets:
             spent = expense_map.get(budget.category_id, 0)
-            budget_data.append({
-                "budget_id": budget.id,
-                "category_id": budget.category_id,
-                "limit": float(budget.amount_limit),
-                "spent": float(spent),
-                "remaining": float(budget.amount_limit - spent),
-            })
+            budget_data.append(
+                {
+                    "budget_id": budget.id,
+                    "category_id": budget.category_id,
+                    "limit": float(budget.amount_limit),
+                    "spent": float(spent),
+                    "remaining": float(budget.amount_limit - spent),
+                }
+            )
         data_json = {"budgets": budget_data}
 
     report = ReportSnapshot(
@@ -225,18 +227,14 @@ async def list_reports(
 
 async def get_report_by_id(db: AsyncSession, report_id: int) -> Optional[ReportSnapshot]:
     """Get report by ID."""
-    result = await db.execute(
-        select(ReportSnapshot).where(ReportSnapshot.id == report_id)
-    )
+    result = await db.execute(select(ReportSnapshot).where(ReportSnapshot.id == report_id))
     return result.scalar_one_or_none()
 
 
 # ---------- Tags ----------
 async def list_tags(db: AsyncSession, group_id: int) -> list[Tag]:
     """List tags for a group."""
-    result = await db.execute(
-        select(Tag).where(Tag.group_id == group_id).order_by(Tag.name)
-    )
+    result = await db.execute(select(Tag).where(Tag.group_id == group_id).order_by(Tag.name))
     return list(result.scalars().all())
 
 
@@ -330,9 +328,7 @@ async def assign_tag(
 
 async def remove_tag_assignment(db: AsyncSession, assignment_id: int) -> None:
     """Remove a tag assignment."""
-    result = await db.execute(
-        select(TagAssignment).where(TagAssignment.id == assignment_id)
-    )
+    result = await db.execute(select(TagAssignment).where(TagAssignment.id == assignment_id))
     assignment = result.scalar_one_or_none()
     if assignment:
         await db.delete(assignment)
@@ -412,9 +408,7 @@ async def broadcast_notification(
     from mitlist.modules.auth.models import UserGroup
     from mitlist.modules.notifications.interface import create_notifications_bulk
 
-    result = await db.execute(
-        select(UserGroup.user_id).where(UserGroup.group_id == group_id)
-    )
+    result = await db.execute(select(UserGroup.user_id).where(UserGroup.group_id == group_id))
     user_ids = result.scalars().all()
 
     if not user_ids:

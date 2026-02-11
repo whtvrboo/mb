@@ -43,12 +43,18 @@ class CalendarEvent(BaseModel, TimestampMixin):
     end_time: Mapped[Optional[time]] = mapped_column(nullable=True)
     is_all_day: Mapped[bool] = mapped_column(default=False, nullable=False)
     category: Mapped[str] = mapped_column(String(50), nullable=False)
-    recurrence_rule: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)  # RRULE string
+    recurrence_rule: Mapped[Optional[str]] = mapped_column(
+        String(500), nullable=True
+    )  # RRULE string
     reminder_minutes_before: Mapped[Optional[int]] = mapped_column(nullable=True)
     location_text: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
-    linked_user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)  # for birthdays
+    linked_user_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )  # for birthdays
     linked_asset_id: Mapped[Optional[int]] = mapped_column(nullable=True)  # FK to home_assets
-    linked_pet_id: Mapped[Optional[int]] = mapped_column(ForeignKey("pets.id"), nullable=True)  # for vet appointments
+    linked_pet_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("pets.id"), nullable=True
+    )  # for vet appointments
     is_cancelled: Mapped[bool] = mapped_column(default=False, nullable=False)
 
     # Relationships
@@ -62,7 +68,9 @@ class EventAttendee(BaseModel, TimestampMixin):
 
     __tablename__ = "event_attendees"
 
-    event_id: Mapped[int] = mapped_column(ForeignKey("calendar_events.id"), nullable=False, index=True)
+    event_id: Mapped[int] = mapped_column(
+        ForeignKey("calendar_events.id"), nullable=False, index=True
+    )
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     rsvp_status: Mapped[str] = mapped_column(String(20), default="PENDING", nullable=False)
     rsvp_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
