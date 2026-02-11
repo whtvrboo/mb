@@ -2,7 +2,6 @@
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -14,26 +13,26 @@ class CategoryBase(BaseModel):
     """Base category schema."""
 
     name: str = Field(..., min_length=1, max_length=255)
-    icon_emoji: Optional[str] = Field(None, max_length=10)
-    color_hex: Optional[str] = Field(None, max_length=7, pattern="^#[0-9A-Fa-f]{6}$")
-    parent_category_id: Optional[int] = None
+    icon_emoji: str | None = Field(None, max_length=10)
+    color_hex: str | None = Field(None, max_length=7, pattern="^#[0-9A-Fa-f]{6}$")
+    parent_category_id: int | None = None
     is_income: bool = False
 
 
 class CategoryCreate(CategoryBase):
     """Schema for creating a category."""
 
-    group_id: Optional[int] = None  # null = global category
+    group_id: int | None = None  # null = global category
 
 
 class CategoryUpdate(BaseModel):
     """Schema for updating a category."""
 
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    icon_emoji: Optional[str] = Field(None, max_length=10)
-    color_hex: Optional[str] = Field(None, max_length=7, pattern="^#[0-9A-Fa-f]{6}$")
-    parent_category_id: Optional[int] = None
-    is_income: Optional[bool] = None
+    name: str | None = Field(None, min_length=1, max_length=255)
+    icon_emoji: str | None = Field(None, max_length=10)
+    color_hex: str | None = Field(None, max_length=7, pattern="^#[0-9A-Fa-f]{6}$")
+    parent_category_id: int | None = None
+    is_income: bool | None = None
 
 
 class CategoryResponse(CategoryBase):
@@ -42,7 +41,7 @@ class CategoryResponse(CategoryBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    group_id: Optional[int] = None
+    group_id: int | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -55,7 +54,7 @@ class ExpenseSplitInput(BaseModel):
 
     user_id: int
     owed_amount: Decimal = Field(..., ge=0)
-    manual_override: Optional[dict] = None
+    manual_override: dict | None = None
 
 
 class ExpenseBase(BaseModel):
@@ -66,11 +65,9 @@ class ExpenseBase(BaseModel):
     currency_code: str = Field("USD", max_length=3, pattern="^[A-Z]{3}$")
     category_id: int
     expense_date: datetime
-    payment_method: Optional[str] = Field(
-        None, pattern="^(CARD|CASH|TRANSFER|OTHER)$"
-    )
-    vendor_name: Optional[str] = Field(None, max_length=255)
-    receipt_img_url: Optional[str] = Field(None, max_length=500)
+    payment_method: str | None = Field(None, pattern="^(CARD|CASH|TRANSFER|OTHER)$")
+    vendor_name: str | None = Field(None, max_length=255)
+    receipt_img_url: str | None = Field(None, max_length=500)
     is_reimbursable: bool = False
 
 
@@ -79,38 +76,36 @@ class ExpenseCreate(ExpenseBase):
 
     group_id: int
     paid_by_user_id: int
-    exchange_rate: Optional[Decimal] = Field(None, gt=0)
+    exchange_rate: Decimal | None = Field(None, gt=0)
     splits: list[ExpenseSplitInput] = Field(default_factory=list, max_length=100)
-    linked_proposal_id: Optional[int] = None
-    linked_pet_medical_id: Optional[int] = None
-    linked_maintenance_log_id: Optional[int] = None
+    linked_proposal_id: int | None = None
+    linked_pet_medical_id: int | None = None
+    linked_maintenance_log_id: int | None = None
 
 
 class ExpenseCreateRequest(ExpenseBase):
     """Request schema for creating expense (omits group_id and paid_by_user_id)."""
 
-    exchange_rate: Optional[Decimal] = Field(None, gt=0)
+    exchange_rate: Decimal | None = Field(None, gt=0)
     splits: list[ExpenseSplitInput] = Field(default_factory=list, max_length=100)
-    linked_proposal_id: Optional[int] = None
-    linked_pet_medical_id: Optional[int] = None
-    linked_maintenance_log_id: Optional[int] = None
+    linked_proposal_id: int | None = None
+    linked_pet_medical_id: int | None = None
+    linked_maintenance_log_id: int | None = None
 
 
 class ExpenseUpdate(BaseModel):
     """Schema for updating an expense."""
 
-    description: Optional[str] = Field(None, min_length=1, max_length=500)
-    amount: Optional[Decimal] = Field(None, gt=0)
-    currency_code: Optional[str] = Field(None, max_length=3, pattern="^[A-Z]{3}$")
-    category_id: Optional[int] = None
-    expense_date: Optional[datetime] = None
-    payment_method: Optional[str] = Field(
-        None, pattern="^(CARD|CASH|TRANSFER|OTHER)$"
-    )
-    vendor_name: Optional[str] = Field(None, max_length=255)
-    receipt_img_url: Optional[str] = Field(None, max_length=500)
-    is_reimbursable: Optional[bool] = None
-    exchange_rate: Optional[Decimal] = Field(None, gt=0)
+    description: str | None = Field(None, min_length=1, max_length=500)
+    amount: Decimal | None = Field(None, gt=0)
+    currency_code: str | None = Field(None, max_length=3, pattern="^[A-Z]{3}$")
+    category_id: int | None = None
+    expense_date: datetime | None = None
+    payment_method: str | None = Field(None, pattern="^(CARD|CASH|TRANSFER|OTHER)$")
+    vendor_name: str | None = Field(None, max_length=255)
+    receipt_img_url: str | None = Field(None, max_length=500)
+    is_reimbursable: bool | None = None
+    exchange_rate: Decimal | None = Field(None, gt=0)
     version_id: int  # Required for optimistic locking
 
 
@@ -124,8 +119,8 @@ class ExpenseSplitResponse(BaseModel):
     user_id: int
     owed_amount: Decimal
     is_paid: bool
-    paid_at: Optional[datetime] = None
-    manual_override: Optional[dict] = None
+    paid_at: datetime | None = None
+    manual_override: dict | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -138,12 +133,12 @@ class ExpenseResponse(ExpenseBase):
     id: int
     group_id: int
     paid_by_user_id: int
-    exchange_rate: Optional[Decimal] = None
+    exchange_rate: Decimal | None = None
     is_recurring_generated: bool
-    linked_proposal_id: Optional[int] = None
-    linked_pet_medical_id: Optional[int] = None
-    linked_maintenance_log_id: Optional[int] = None
-    linked_recurring_expense_id: Optional[int] = None
+    linked_proposal_id: int | None = None
+    linked_pet_medical_id: int | None = None
+    linked_maintenance_log_id: int | None = None
+    linked_recurring_expense_id: int | None = None
     version_id: int
     created_at: datetime
     updated_at: datetime
@@ -163,7 +158,7 @@ class RecurringExpenseBase(BaseModel):
     frequency_type: str = Field(..., pattern="^(WEEKLY|MONTHLY|YEARLY|CUSTOM)$")
     interval_value: int = Field(1, ge=1)
     start_date: datetime
-    end_date: Optional[datetime] = None
+    end_date: datetime | None = None
     auto_create_expense: bool = True
 
 
@@ -172,30 +167,28 @@ class RecurringExpenseCreate(RecurringExpenseBase):
 
     group_id: int
     paid_by_user_id: int
-    split_preset_id: Optional[int] = None
+    split_preset_id: int | None = None
 
 
 class RecurringExpenseCreateRequest(RecurringExpenseBase):
     """Request schema for creating recurring expense (omits group_id and paid_by_user_id)."""
 
-    split_preset_id: Optional[int] = None
+    split_preset_id: int | None = None
 
 
 class RecurringExpenseUpdate(BaseModel):
     """Schema for updating a recurring expense."""
 
-    description: Optional[str] = Field(None, min_length=1, max_length=500)
-    amount: Optional[Decimal] = Field(None, gt=0)
-    currency_code: Optional[str] = Field(None, max_length=3, pattern="^[A-Z]{3}$")
-    category_id: Optional[int] = None
-    frequency_type: Optional[str] = Field(
-        None, pattern="^(WEEKLY|MONTHLY|YEARLY|CUSTOM)$"
-    )
-    interval_value: Optional[int] = Field(None, ge=1)
-    end_date: Optional[datetime] = None
-    auto_create_expense: Optional[bool] = None
-    split_preset_id: Optional[int] = None
-    is_active: Optional[bool] = None
+    description: str | None = Field(None, min_length=1, max_length=500)
+    amount: Decimal | None = Field(None, gt=0)
+    currency_code: str | None = Field(None, max_length=3, pattern="^[A-Z]{3}$")
+    category_id: int | None = None
+    frequency_type: str | None = Field(None, pattern="^(WEEKLY|MONTHLY|YEARLY|CUSTOM)$")
+    interval_value: int | None = Field(None, ge=1)
+    end_date: datetime | None = None
+    auto_create_expense: bool | None = None
+    split_preset_id: int | None = None
+    is_active: bool | None = None
 
 
 class RecurringExpenseResponse(RecurringExpenseBase):
@@ -206,8 +199,8 @@ class RecurringExpenseResponse(RecurringExpenseBase):
     id: int
     group_id: int
     paid_by_user_id: int
-    next_due_date: Optional[datetime] = None
-    split_preset_id: Optional[int] = None
+    next_due_date: datetime | None = None
+    split_preset_id: int | None = None
     is_active: bool
     created_at: datetime
     updated_at: datetime
@@ -223,8 +216,8 @@ class SettlementBase(BaseModel):
     currency_code: str = Field("USD", max_length=3, pattern="^[A-Z]{3}$")
     method: str = Field(..., pattern="^(CASH|VENMO|ZELLE|BANK_TRANSFER)$")
     settled_at: datetime
-    confirmation_code: Optional[str] = Field(None, max_length=100)
-    notes: Optional[str] = None
+    confirmation_code: str | None = Field(None, max_length=100)
+    notes: str | None = None
 
 
 class SettlementCreate(SettlementBase):
@@ -261,8 +254,8 @@ class SplitPresetMemberInput(BaseModel):
     """Input schema for split preset member."""
 
     user_id: int
-    percentage: Optional[Decimal] = Field(None, ge=0, le=100)
-    fixed_amount: Optional[Decimal] = Field(None, ge=0)
+    percentage: Decimal | None = Field(None, ge=0, le=100)
+    fixed_amount: Decimal | None = Field(None, ge=0)
 
 
 class SplitPresetBase(BaseModel):
@@ -270,9 +263,7 @@ class SplitPresetBase(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=255)
     is_default: bool = False
-    method: str = Field(
-        ..., pattern="^(EQUAL|PERCENTAGE|FIXED_AMOUNT|BY_INCOME)$"
-    )
+    method: str = Field(..., pattern="^(EQUAL|PERCENTAGE|FIXED_AMOUNT|BY_INCOME)$")
 
 
 class SplitPresetCreate(SplitPresetBase):
@@ -291,12 +282,10 @@ class SplitPresetCreateRequest(SplitPresetBase):
 class SplitPresetUpdate(BaseModel):
     """Schema for updating a split preset."""
 
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    is_default: Optional[bool] = None
-    method: Optional[str] = Field(
-        None, pattern="^(EQUAL|PERCENTAGE|FIXED_AMOUNT|BY_INCOME)$"
-    )
-    members: Optional[list[SplitPresetMemberInput]] = None
+    name: str | None = Field(None, min_length=1, max_length=255)
+    is_default: bool | None = None
+    method: str | None = Field(None, pattern="^(EQUAL|PERCENTAGE|FIXED_AMOUNT|BY_INCOME)$")
+    members: list[SplitPresetMemberInput] | None = None
 
 
 class SplitPresetMemberResponse(BaseModel):
@@ -307,8 +296,8 @@ class SplitPresetMemberResponse(BaseModel):
     id: int
     preset_id: int
     user_id: int
-    percentage: Optional[Decimal] = None
-    fixed_amount: Optional[Decimal] = None
+    percentage: Decimal | None = None
+    fixed_amount: Decimal | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -336,7 +325,7 @@ class BudgetBase(BaseModel):
     currency_code: str = Field("USD", max_length=3, pattern="^[A-Z]{3}$")
     period_type: str = Field(..., pattern="^(WEEKLY|MONTHLY|YEARLY)$")
     start_date: datetime
-    end_date: Optional[datetime] = None
+    end_date: datetime | None = None
     alert_threshold_percentage: int = Field(80, ge=0, le=100)
 
 
@@ -355,9 +344,9 @@ class BudgetCreateRequest(BudgetBase):
 class BudgetUpdate(BaseModel):
     """Schema for updating a budget."""
 
-    amount_limit: Optional[Decimal] = Field(None, gt=0)
-    end_date: Optional[datetime] = None
-    alert_threshold_percentage: Optional[int] = Field(None, ge=0, le=100)
+    amount_limit: Decimal | None = Field(None, gt=0)
+    end_date: datetime | None = None
+    alert_threshold_percentage: int | None = Field(None, ge=0, le=100)
 
 
 class BudgetResponse(BudgetBase):

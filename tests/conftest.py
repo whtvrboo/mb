@@ -1,13 +1,11 @@
 """Pytest fixtures for testing."""
 
 import asyncio
-from datetime import datetime, timedelta, timezone
-from decimal import Decimal
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
+from datetime import UTC, datetime
 
 import pytest
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -57,7 +55,7 @@ async def test_user(db: AsyncSession) -> User:
         name="Test User",
         is_active=True,
         preferences={},
-        last_login_at=datetime.now(timezone.utc),
+        last_login_at=datetime.now(UTC),
     )
     db.add(user)
     await db.flush()
@@ -74,7 +72,7 @@ async def test_user2(db: AsyncSession) -> User:
         name="Test User 2",
         is_active=True,
         preferences={},
-        last_login_at=datetime.now(timezone.utc),
+        last_login_at=datetime.now(UTC),
     )
     db.add(user)
     await db.flush()
@@ -98,7 +96,7 @@ async def test_group(db: AsyncSession, test_user: User) -> Group:
         user_id=test_user.id,
         group_id=group.id,
         role="ADMIN",
-        joined_at=datetime.now(timezone.utc),
+        joined_at=datetime.now(UTC),
     )
     db.add(membership)
     await db.flush()
@@ -122,7 +120,9 @@ async def test_category(db: AsyncSession, test_group: Group) -> Category:
 
 
 @pytest.fixture
-async def client(db: AsyncSession, test_user: User) -> AsyncGenerator[AsyncClient, None]:
+async def client(
+    db: AsyncSession, test_user: User, test_group: Group
+) -> AsyncGenerator[AsyncClient, None]:
     """Create test client with mocked authentication."""
 
     async def override_get_db():
@@ -139,7 +139,7 @@ async def client(db: AsyncSession, test_user: User) -> AsyncGenerator[AsyncClien
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://test",
-        headers={"X-Group-ID": "1"},
+        headers={"X-Group-ID": str(test_group.id)},
     ) as ac:
         yield ac
 

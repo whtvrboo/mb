@@ -1,7 +1,7 @@
 """Pets module Pydantic schemas for request/response models."""
 
 from datetime import datetime, time
-from typing import Any, Optional, Union
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -13,48 +13,46 @@ class PetBase(BaseModel):
     """Base pet schema."""
 
     name: str = Field(..., min_length=1, max_length=255)
-    species: str = Field(
-        ..., pattern="^(DOG|CAT|BIRD|REPTILE|FISH|RODENT|OTHER)$"
-    )
-    breed: Optional[str] = Field(None, max_length=255)
-    sex: Optional[str] = Field(None, pattern="^(MALE|FEMALE|UNKNOWN)$")
-    date_of_birth: Optional[datetime] = None
-    adoption_date: Optional[datetime] = None
-    chip_id: Optional[str] = Field(None, max_length=100)
-    weight_kg: Optional[float] = Field(None, gt=0)
-    color_markings: Optional[str] = Field(None, max_length=500)
-    photo_url: Optional[str] = Field(None, max_length=500)
-    diet_instructions: Optional[str] = None
-    special_needs: Optional[str] = None
+    species: str = Field(..., pattern="^(DOG|CAT|BIRD|REPTILE|FISH|RODENT|OTHER)$")
+    breed: str | None = Field(None, max_length=255)
+    sex: str | None = Field(None, pattern="^(MALE|FEMALE|UNKNOWN)$")
+    date_of_birth: datetime | None = None
+    adoption_date: datetime | None = None
+    chip_id: str | None = Field(None, max_length=100)
+    weight_kg: float | None = Field(None, gt=0)
+    color_markings: str | None = Field(None, max_length=500)
+    photo_url: str | None = Field(None, max_length=500)
+    diet_instructions: str | None = None
+    special_needs: str | None = None
 
 
 class PetCreate(PetBase):
     """Schema for creating a pet."""
 
     group_id: int
-    vet_contact_id: Optional[int] = None
-    insurance_policy_number: Optional[str] = Field(None, max_length=100)
-    insurance_provider: Optional[str] = Field(None, max_length=255)
-    medication_schedule: Optional[dict[str, Any]] = None
+    vet_contact_id: int | None = None
+    insurance_policy_number: str | None = Field(None, max_length=100)
+    insurance_provider: str | None = Field(None, max_length=255)
+    medication_schedule: dict[str, Any] | None = None
 
 
 class PetUpdate(BaseModel):
     """Schema for updating a pet."""
 
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    breed: Optional[str] = Field(None, max_length=255)
-    sex: Optional[str] = Field(None, pattern="^(MALE|FEMALE|UNKNOWN)$")
-    date_of_birth: Optional[datetime] = None
-    chip_id: Optional[str] = Field(None, max_length=100)
-    weight_kg: Optional[float] = Field(None, gt=0)
-    color_markings: Optional[str] = Field(None, max_length=500)
-    photo_url: Optional[str] = Field(None, max_length=500)
-    vet_contact_id: Optional[int] = None
-    insurance_policy_number: Optional[str] = Field(None, max_length=100)
-    insurance_provider: Optional[str] = Field(None, max_length=255)
-    diet_instructions: Optional[str] = None
-    medication_schedule: Optional[dict[str, Any]] = None
-    special_needs: Optional[str] = None
+    name: str | None = Field(None, min_length=1, max_length=255)
+    breed: str | None = Field(None, max_length=255)
+    sex: str | None = Field(None, pattern="^(MALE|FEMALE|UNKNOWN)$")
+    date_of_birth: datetime | None = None
+    chip_id: str | None = Field(None, max_length=100)
+    weight_kg: float | None = Field(None, gt=0)
+    color_markings: str | None = Field(None, max_length=500)
+    photo_url: str | None = Field(None, max_length=500)
+    vet_contact_id: int | None = None
+    insurance_policy_number: str | None = Field(None, max_length=100)
+    insurance_provider: str | None = Field(None, max_length=255)
+    diet_instructions: str | None = None
+    medication_schedule: dict[str, Any] | None = None
+    special_needs: str | None = None
 
 
 class PetMarkDeceasedRequest(BaseModel):
@@ -70,12 +68,12 @@ class PetResponse(PetBase):
 
     id: int
     group_id: int
-    vet_contact_id: Optional[int] = None
-    insurance_policy_number: Optional[str] = None
-    insurance_provider: Optional[str] = None
-    medication_schedule: Optional[dict[str, Any]] = None
+    vet_contact_id: int | None = None
+    insurance_policy_number: str | None = None
+    insurance_provider: str | None = None
+    medication_schedule: dict[str, Any] | None = None
     is_alive: bool
-    died_at: Optional[datetime] = None
+    died_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -86,35 +84,33 @@ class PetResponse(PetBase):
 class PetMedicalRecordBase(BaseModel):
     """Base pet medical record schema."""
 
-    type: str = Field(
-        ..., pattern="^(VACCINE|SURGERY|CHECKUP|MEDICATION|INJURY|ALLERGY)$"
-    )
+    type: str = Field(..., pattern="^(VACCINE|SURGERY|CHECKUP|MEDICATION|INJURY|ALLERGY)$")
     description: str = Field(..., min_length=1)
     performed_at: datetime
-    performed_by: Optional[str] = Field(None, max_length=255)
-    expires_at: Optional[datetime] = None
-    reminder_days_before: Optional[int] = Field(None, ge=1)
-    notes: Optional[str] = None
+    performed_by: str | None = Field(None, max_length=255)
+    expires_at: datetime | None = None
+    reminder_days_before: int | None = Field(None, ge=1)
+    notes: str | None = None
 
 
 class PetMedicalRecordCreate(PetMedicalRecordBase):
     """Schema for creating a pet medical record."""
 
     pet_id: int
-    cost_expense_id: Optional[int] = None
-    document_id: Optional[int] = None
+    cost_expense_id: int | None = None
+    document_id: int | None = None
 
 
 class PetMedicalRecordUpdate(BaseModel):
     """Schema for updating a pet medical record."""
 
-    description: Optional[str] = Field(None, min_length=1)
-    performed_by: Optional[str] = Field(None, max_length=255)
-    expires_at: Optional[datetime] = None
-    reminder_days_before: Optional[int] = Field(None, ge=1)
-    notes: Optional[str] = None
-    cost_expense_id: Optional[int] = None
-    document_id: Optional[int] = None
+    description: str | None = Field(None, min_length=1)
+    performed_by: str | None = Field(None, max_length=255)
+    expires_at: datetime | None = None
+    reminder_days_before: int | None = Field(None, ge=1)
+    notes: str | None = None
+    cost_expense_id: int | None = None
+    document_id: int | None = None
 
 
 class PetMedicalRecordResponse(PetMedicalRecordBase):
@@ -124,8 +120,8 @@ class PetMedicalRecordResponse(PetMedicalRecordBase):
 
     id: int
     pet_id: int
-    cost_expense_id: Optional[int] = None
-    document_id: Optional[int] = None
+    cost_expense_id: int | None = None
+    document_id: int | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -136,13 +132,11 @@ class PetMedicalRecordResponse(PetMedicalRecordBase):
 class PetLogBase(BaseModel):
     """Base pet log schema."""
 
-    action: str = Field(
-        ..., pattern="^(WALK|FEED|MEDICINE|GROOM|PLAY|VET_VISIT)$"
-    )
-    value_amount: Optional[float] = Field(None, ge=0)
-    value_unit: Optional[str] = Field(None, max_length=50)
-    notes: Optional[str] = None
-    photo_url: Optional[str] = Field(None, max_length=500)
+    action: str = Field(..., pattern="^(WALK|FEED|MEDICINE|GROOM|PLAY|VET_VISIT)$")
+    value_amount: float | None = Field(None, ge=0)
+    value_unit: str | None = Field(None, max_length=50)
+    notes: str | None = None
+    photo_url: str | None = Field(None, max_length=500)
     occurred_at: datetime
 
 
@@ -170,12 +164,10 @@ class PetLogResponse(PetLogBase):
 class PetScheduleBase(BaseModel):
     """Base pet schedule schema."""
 
-    action_type: str = Field(
-        ..., pattern="^(WALK|FEED|MEDICINE|GROOM|PLAY|VET_VISIT)$"
-    )
+    action_type: str = Field(..., pattern="^(WALK|FEED|MEDICINE|GROOM|PLAY|VET_VISIT)$")
     frequency_type: str = Field(..., pattern="^(DAILY|WEEKLY)$")
-    time_of_day: Optional[time] = None
-    assigned_to_id: Optional[int] = None
+    time_of_day: time | None = None
+    assigned_to_id: int | None = None
     is_rotating: bool = False
 
 
@@ -188,11 +180,11 @@ class PetScheduleCreate(PetScheduleBase):
 class PetScheduleUpdate(BaseModel):
     """Schema for updating a pet schedule."""
 
-    frequency_type: Optional[str] = Field(None, pattern="^(DAILY|WEEKLY)$")
-    time_of_day: Optional[time] = None
-    assigned_to_id: Optional[int] = None
-    is_rotating: Optional[bool] = None
-    is_active: Optional[bool] = None
+    frequency_type: str | None = Field(None, pattern="^(DAILY|WEEKLY)$")
+    time_of_day: time | None = None
+    assigned_to_id: int | None = None
+    is_rotating: bool | None = None
+    is_active: bool | None = None
 
 
 class PetScheduleResponse(PetScheduleBase):
@@ -208,7 +200,7 @@ class PetScheduleResponse(PetScheduleBase):
 
     @field_validator("time_of_day", mode="before")
     @classmethod
-    def time_of_day_from_datetime(cls, v: Optional[Union[time, datetime]]) -> Optional[time]:
+    def time_of_day_from_datetime(cls, v: time | datetime | None) -> time | None:
         """Accept datetime from DB (SQLite stores time as datetime) and normalize to time."""
         if v is None:
             return None
@@ -220,9 +212,9 @@ class PetScheduleResponse(PetScheduleBase):
 class PetScheduleMarkDoneRequest(BaseModel):
     """Schema for marking a scheduled action as done."""
 
-    notes: Optional[str] = None
-    value_amount: Optional[float] = Field(None, ge=0)
-    value_unit: Optional[str] = Field(None, max_length=50)
+    notes: str | None = None
+    value_amount: float | None = Field(None, ge=0)
+    value_unit: str | None = Field(None, max_length=50)
 
 
 # ====================
@@ -235,12 +227,12 @@ class PetCareStatusResponse(BaseModel):
     pet_name: str
     species: str
     is_alive: bool
-    age_years: Optional[float] = None
+    age_years: float | None = None
     overdue_actions: list[str]
     upcoming_vaccinations: list[dict]  # vaccine type, due_date
-    last_fed_at: Optional[datetime] = None
-    last_walked_at: Optional[datetime] = None
-    last_vet_visit_at: Optional[datetime] = None
+    last_fed_at: datetime | None = None
+    last_walked_at: datetime | None = None
+    last_vet_visit_at: datetime | None = None
 
 
 class GroupPetSummaryResponse(BaseModel):
@@ -261,7 +253,7 @@ class VaccineReminderResponse(BaseModel):
     pet_id: int
     pet_name: str
     vaccine_type: str
-    last_administered_at: Optional[datetime] = None
+    last_administered_at: datetime | None = None
     expires_at: datetime
     days_until_expiry: int
     is_expired: bool
@@ -284,6 +276,6 @@ class PetMedicationReminderResponse(BaseModel):
     pet_id: int
     pet_name: str
     medication_name: str
-    dosage: Optional[str] = None
-    next_dose_at: Optional[datetime] = None
+    dosage: str | None = None
+    next_dose_at: datetime | None = None
     frequency: str

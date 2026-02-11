@@ -3,13 +3,20 @@
 import asyncio
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+from alembic import context
 from mitlist.core.config import settings
 from mitlist.db.base import Base
+from mitlist.modules.assets.models import (  # noqa: F401
+    AssetInsurance,
+    HomeAsset,
+    MaintenanceLog,
+    MaintenanceTask,
+)
+from mitlist.modules.audit.models import AuditLog, ReportSnapshot, Tag, TagAssignment  # noqa: F401
 
 # Import all models so Alembic can detect them
 from mitlist.modules.auth.models import (  # noqa: F401
@@ -21,7 +28,14 @@ from mitlist.modules.auth.models import (  # noqa: F401
     User,
     UserGroup,
 )
-from mitlist.modules.lists.models import InventoryItem, Item, List, ListShare  # noqa: F401
+from mitlist.modules.calendar.models import CalendarEvent, EventAttendee, Reminder  # noqa: F401
+from mitlist.modules.chores.models import (  # noqa: F401
+    Chore,
+    ChoreAssignment,
+    ChoreDependency,
+    ChoreTemplate,
+)
+from mitlist.modules.documents.models import Document, DocumentShare, SharedCredential  # noqa: F401
 from mitlist.modules.finance.models import (  # noqa: F401
     BalanceSnapshot,
     Budget,
@@ -33,41 +47,6 @@ from mitlist.modules.finance.models import (  # noqa: F401
     SplitPreset,
     SplitPresetMember,
 )
-from mitlist.modules.chores.models import (  # noqa: F401
-    Chore,
-    ChoreAssignment,
-    ChoreDependency,
-    ChoreTemplate,
-)
-from mitlist.modules.governance.models import (  # noqa: F401
-    BallotOption,
-    Proposal,
-    VoteDelegation,
-    VoteRecord,
-)
-from mitlist.modules.plants.models import Plant, PlantLog, PlantSchedule, PlantSpecies  # noqa: F401
-from mitlist.modules.pets.models import Pet, PetLog, PetMedicalRecord, PetSchedule  # noqa: F401
-from mitlist.modules.assets.models import (  # noqa: F401
-    AssetInsurance,
-    HomeAsset,
-    MaintenanceLog,
-    MaintenanceTask,
-)
-from mitlist.modules.documents.models import Document, DocumentShare, SharedCredential  # noqa: F401
-from mitlist.modules.recipes.models import (  # noqa: F401
-    MealPlan,
-    MealPlanShoppingSync,
-    Recipe,
-    RecipeIngredient,
-    RecipeStep,
-)
-from mitlist.modules.notifications.models import (  # noqa: F401
-    Comment,
-    Mention,
-    Notification,
-    NotificationPreference,
-    Reaction,
-)
 from mitlist.modules.gamification.models import (  # noqa: F401
     Achievement,
     Leaderboard,
@@ -75,8 +54,29 @@ from mitlist.modules.gamification.models import (  # noqa: F401
     UserAchievement,
     UserPoints,
 )
-from mitlist.modules.calendar.models import CalendarEvent, EventAttendee, Reminder  # noqa: F401
-from mitlist.modules.audit.models import AuditLog, ReportSnapshot, Tag, TagAssignment  # noqa: F401
+from mitlist.modules.governance.models import (  # noqa: F401
+    BallotOption,
+    Proposal,
+    VoteDelegation,
+    VoteRecord,
+)
+from mitlist.modules.lists.models import InventoryItem, Item, List, ListShare  # noqa: F401
+from mitlist.modules.notifications.models import (  # noqa: F401
+    Comment,
+    Mention,
+    Notification,
+    NotificationPreference,
+    Reaction,
+)
+from mitlist.modules.pets.models import Pet, PetLog, PetMedicalRecord, PetSchedule  # noqa: F401
+from mitlist.modules.plants.models import Plant, PlantLog, PlantSchedule, PlantSpecies  # noqa: F401
+from mitlist.modules.recipes.models import (  # noqa: F401
+    MealPlan,
+    MealPlanShoppingSync,
+    Recipe,
+    RecipeIngredient,
+    RecipeStep,
+)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

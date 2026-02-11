@@ -1,9 +1,9 @@
 """Documents module Pydantic schemas for request/response models."""
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 # ====================
@@ -14,8 +14,8 @@ class DocumentBase(BaseModel):
 
     file_name: str = Field(..., min_length=1, max_length=255)
     mime_type: str = Field(..., max_length=100)
-    folder_path: Optional[str] = Field(None, max_length=500)
-    tags: Optional[dict[str, Any]] = None
+    folder_path: str | None = Field(None, max_length=500)
+    tags: dict[str, Any] | None = None
     is_encrypted: bool = False
 
 
@@ -30,9 +30,9 @@ class DocumentCreate(DocumentBase):
 class DocumentUpdate(BaseModel):
     """Schema for updating a document."""
 
-    file_name: Optional[str] = Field(None, min_length=1, max_length=255)
-    folder_path: Optional[str] = Field(None, max_length=500)
-    tags: Optional[dict[str, Any]] = None
+    file_name: str | None = Field(None, min_length=1, max_length=255)
+    folder_path: str | None = Field(None, max_length=500)
+    tags: dict[str, Any] | None = None
 
 
 class DocumentResponse(DocumentBase):
@@ -56,7 +56,7 @@ class DocumentUploadRequest(BaseModel):
     file_name: str = Field(..., min_length=1, max_length=255)
     mime_type: str = Field(..., max_length=100)
     file_size_bytes: int = Field(..., ge=0)
-    folder_path: Optional[str] = Field(None, max_length=500)
+    folder_path: str | None = Field(None, max_length=500)
 
 
 class DocumentUploadResponse(BaseModel):
@@ -81,7 +81,7 @@ class DocumentShareBase(BaseModel):
     """Base document share schema."""
 
     can_edit: bool = False
-    expires_at: Optional[datetime] = None
+    expires_at: datetime | None = None
 
 
 class DocumentShareCreate(DocumentShareBase):
@@ -94,8 +94,8 @@ class DocumentShareCreate(DocumentShareBase):
 class DocumentShareUpdate(BaseModel):
     """Schema for updating a document share."""
 
-    can_edit: Optional[bool] = None
-    expires_at: Optional[datetime] = None
+    can_edit: bool | None = None
+    expires_at: datetime | None = None
 
 
 class DocumentShareResponse(DocumentShareBase):
@@ -117,16 +117,12 @@ class SharedCredentialBase(BaseModel):
     """Base shared credential schema."""
 
     name: str = Field(..., min_length=1, max_length=255)
-    credential_type: str = Field(
-        ..., pattern="^(WIFI|STREAMING|BANK|UTILITY|OTHER)$"
-    )
-    username_identity: Optional[str] = Field(None, max_length=255)
-    access_level: str = Field(
-        ..., pattern="^(ADMIN_ONLY|MEMBER|GUEST)$"
-    )
-    url: Optional[str] = Field(None, max_length=500)
-    rotation_reminder_days: Optional[int] = Field(None, ge=1)
-    notes: Optional[str] = Field(None, max_length=1000)
+    credential_type: str = Field(..., pattern="^(WIFI|STREAMING|BANK|UTILITY|OTHER)$")
+    username_identity: str | None = Field(None, max_length=255)
+    access_level: str = Field(..., pattern="^(ADMIN_ONLY|MEMBER|GUEST)$")
+    url: str | None = Field(None, max_length=500)
+    rotation_reminder_days: int | None = Field(None, ge=1)
+    notes: str | None = Field(None, max_length=1000)
 
 
 class SharedCredentialCreate(SharedCredentialBase):
@@ -139,17 +135,13 @@ class SharedCredentialCreate(SharedCredentialBase):
 class SharedCredentialUpdate(BaseModel):
     """Schema for updating a shared credential."""
 
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    credential_type: Optional[str] = Field(
-        None, pattern="^(WIFI|STREAMING|BANK|UTILITY|OTHER)$"
-    )
-    username_identity: Optional[str] = Field(None, max_length=255)
-    access_level: Optional[str] = Field(
-        None, pattern="^(ADMIN_ONLY|MEMBER|GUEST)$"
-    )
-    url: Optional[str] = Field(None, max_length=500)
-    rotation_reminder_days: Optional[int] = Field(None, ge=1)
-    notes: Optional[str] = Field(None, max_length=1000)
+    name: str | None = Field(None, min_length=1, max_length=255)
+    credential_type: str | None = Field(None, pattern="^(WIFI|STREAMING|BANK|UTILITY|OTHER)$")
+    username_identity: str | None = Field(None, max_length=255)
+    access_level: str | None = Field(None, pattern="^(ADMIN_ONLY|MEMBER|GUEST)$")
+    url: str | None = Field(None, max_length=500)
+    rotation_reminder_days: int | None = Field(None, ge=1)
+    notes: str | None = Field(None, max_length=1000)
 
 
 class SharedCredentialPasswordUpdate(BaseModel):
@@ -165,7 +157,7 @@ class SharedCredentialResponse(SharedCredentialBase):
 
     id: int
     group_id: int
-    last_rotated_at: Optional[datetime] = None
+    last_rotated_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -192,13 +184,13 @@ class DocumentSearchRequest(BaseModel):
     """Schema for document search."""
 
     group_id: int
-    query: Optional[str] = Field(None, max_length=255)
-    folder_path: Optional[str] = Field(None, max_length=500)
-    mime_types: Optional[list[str]] = Field(None, max_length=20)
-    tags: Optional[dict[str, Any]] = None
-    uploaded_by_id: Optional[int] = None
-    created_after: Optional[datetime] = None
-    created_before: Optional[datetime] = None
+    query: str | None = Field(None, max_length=255)
+    folder_path: str | None = Field(None, max_length=500)
+    mime_types: list[str] | None = Field(None, max_length=20)
+    tags: dict[str, Any] | None = None
+    uploaded_by_id: int | None = None
+    created_after: datetime | None = None
+    created_before: datetime | None = None
 
 
 class CredentialRotationReminderResponse(BaseModel):
@@ -207,7 +199,7 @@ class CredentialRotationReminderResponse(BaseModel):
     credential_id: int
     credential_name: str
     credential_type: str
-    last_rotated_at: Optional[datetime] = None
+    last_rotated_at: datetime | None = None
     rotation_reminder_days: int
     days_since_rotation: int
     is_overdue: bool

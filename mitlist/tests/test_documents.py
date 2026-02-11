@@ -83,9 +83,7 @@ async def test_documents_download_url(
     )
     await db_session.commit()
 
-    response = await authed_client.get(
-        f"/documents/{doc.id}/download", headers=auth_headers
-    )
+    response = await authed_client.get(f"/documents/{doc.id}/download", headers=auth_headers)
     assert response.status_code == 200
     body = response.json()
     assert "download_url" in body
@@ -110,9 +108,7 @@ async def test_documents_delete(
     await db_session.commit()
     doc_id = doc.id
 
-    response = await authed_client.delete(
-        f"/documents/{doc_id}", headers=auth_headers
-    )
+    response = await authed_client.delete(f"/documents/{doc_id}", headers=auth_headers)
     assert response.status_code == 204
 
     # Document should be soft-deleted (get_document_by_id excludes deleted)

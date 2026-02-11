@@ -1,14 +1,13 @@
 """Finance module service layer - business logic. PRIVATE - other modules import from interface.py."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
-from typing import Optional
 
-from sqlalchemy import select, func, and_, or_
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from mitlist.core.errors import NotFoundError, StaleDataError, ValidationError
+from mitlist.core.errors import NotFoundError, StaleDataError
 from mitlist.modules.finance.models import (
     BalanceSnapshot,
     Budget,
@@ -25,10 +24,10 @@ from mitlist.modules.finance.models import (
 async def list_expenses(
     db: AsyncSession,
     group_id: int,
-    user_id: Optional[int] = None,
-    category_id: Optional[int] = None,
-    date_from: Optional[datetime] = None,
-    date_to: Optional[datetime] = None,
+    user_id: int | None = None,
+    category_id: int | None = None,
+    date_from: datetime | None = None,
+    date_to: datetime | None = None,
     limit: int = 100,
     offset: int = 0,
 ) -> list[Expense]:
@@ -51,7 +50,7 @@ async def list_expenses(
     return list(result.scalars().all())
 
 
-async def get_expense_by_id(db: AsyncSession, expense_id: int) -> Optional[Expense]:
+async def get_expense_by_id(db: AsyncSession, expense_id: int) -> Expense | None:
     """Get expense by ID with splits."""
     result = await db.execute(
         select(Expense)
@@ -70,15 +69,15 @@ async def create_expense(
     category_id: int,
     expense_date: datetime,
     currency_code: str = "USD",
-    exchange_rate: Optional[Decimal] = None,
-    payment_method: Optional[str] = None,
-    vendor_name: Optional[str] = None,
-    receipt_img_url: Optional[str] = None,
+    exchange_rate: Decimal | None = None,
+    payment_method: str | None = None,
+    vendor_name: str | None = None,
+    receipt_img_url: str | None = None,
     is_reimbursable: bool = False,
-    splits: Optional[list[dict]] = None,
-    linked_proposal_id: Optional[int] = None,
-    linked_pet_medical_id: Optional[int] = None,
-    linked_maintenance_log_id: Optional[int] = None,
+    splits: list[dict] | None = None,
+    linked_proposal_id: int | None = None,
+    linked_pet_medical_id: int | None = None,
+    linked_maintenance_log_id: int | None = None,
 ) -> Expense:
     """Create expense and optional splits (auto-split when splits empty can be added later)."""
     expense = Expense(
@@ -110,12 +109,10 @@ async def create_expense(
             )
             db.add(split)
         await db.flush()
-    
+
     # Reload expense with splits relationship loaded
     result = await db.execute(
-        select(Expense)
-        .options(selectinload(Expense.splits))
-        .where(Expense.id == expense.id)
+        select(Expense).options(selectinload(Expense.splits)).where(Expense.id == expense.id)
     )
     expense = result.scalar_one()
     return expense
@@ -125,16 +122,16 @@ async def update_expense(
     db: AsyncSession,
     expense_id: int,
     version_id: int,
-    description: Optional[str] = None,
-    amount: Optional[Decimal] = None,
-    currency_code: Optional[str] = None,
-    category_id: Optional[int] = None,
-    expense_date: Optional[datetime] = None,
-    payment_method: Optional[str] = None,
-    vendor_name: Optional[str] = None,
-    receipt_img_url: Optional[str] = None,
-    is_reimbursable: Optional[bool] = None,
-    exchange_rate: Optional[Decimal] = None,
+    description: str | None = None,
+    amount: Decimal | None = None,
+    currency_code: str | None = None,
+    category_id: int | None = None,
+    expense_date: datetime | None = None,
+    payment_method: str | None = None,
+    vendor_name: str | None = None,
+    receipt_img_url: str | None = None,
+    is_reimbursable: bool | None = None,
+    exchange_rate: Decimal | None = None,
 ) -> Expense:
     """Update expense (may trigger re-split later). Raises StaleDataError on version mismatch."""
     result = await db.execute(select(Expense).where(Expense.id == expense_id).with_for_update())
@@ -164,12 +161,10 @@ async def update_expense(
     if exchange_rate is not None:
         expense.exchange_rate = exchange_rate
     await db.flush()
-    
+
     # Reload expense with splits relationship loaded
     result = await db.execute(
-        select(Expense)
-        .options(selectinload(Expense.splits))
-        .where(Expense.id == expense.id)
+        select(Expense).options(selectinload(Expense.splits)).where(Expense.id == expense.id)
     )
     expense = result.scalar_one()
     return expense
@@ -181,13 +176,13 @@ async def delete_expense(db: AsyncSession, expense_id: int) -> None:
     expense = result.scalar_one_or_none()
     if not expense:
         raise NotFoundError(code="EXPENSE_NOT_FOUND", detail=f"Expense {expense_id} not found")
-    expense.deleted_at = datetime.now(timezone.utc)
+    expense.deleted_at = datetime.now(UTC)
     await db.flush()
 
 
 async def list_categories(
     db: AsyncSession,
-    group_id: Optional[int] = None,
+    group_id: int | None = None,
 ) -> list[Category]:
     """List categories."""
     q = select(Category)
@@ -201,7 +196,7 @@ async def list_categories(
     return list(result.scalars().all())
 
 
-async def get_category_by_id(db: AsyncSession, category_id: int) -> Optional[Category]:
+async def get_category_by_id(db: AsyncSession, category_id: int) -> Category | None:
     """Get category by ID."""
     result = await db.execute(select(Category).where(Category.id == category_id))
     return result.scalar_one_or_none()
@@ -210,10 +205,10 @@ async def get_category_by_id(db: AsyncSession, category_id: int) -> Optional[Cat
 async def create_category(
     db: AsyncSession,
     name: str,
-    group_id: Optional[int] = None,
-    icon_emoji: Optional[str] = None,
-    color_hex: Optional[str] = None,
-    parent_category_id: Optional[int] = None,
+    group_id: int | None = None,
+    icon_emoji: str | None = None,
+    color_hex: str | None = None,
+    parent_category_id: int | None = None,
     is_income: bool = False,
 ) -> Category:
     """Create category."""
@@ -234,11 +229,11 @@ async def create_category(
 async def update_category(
     db: AsyncSession,
     category_id: int,
-    name: Optional[str] = None,
-    icon_emoji: Optional[str] = None,
-    color_hex: Optional[str] = None,
-    parent_category_id: Optional[int] = None,
-    is_income: Optional[bool] = None,
+    name: str | None = None,
+    icon_emoji: str | None = None,
+    color_hex: str | None = None,
+    parent_category_id: int | None = None,
+    is_income: bool | None = None,
 ) -> Category:
     """Update category."""
     result = await db.execute(select(Category).where(Category.id == category_id))
@@ -285,9 +280,7 @@ async def calculate_group_balances(
     from mitlist.modules.auth.models import UserGroup
 
     members_result = await db.execute(
-        select(UserGroup.user_id).where(
-            UserGroup.group_id == group_id, UserGroup.left_at.is_(None)
-        )
+        select(UserGroup.user_id).where(UserGroup.group_id == group_id, UserGroup.left_at.is_(None))
     )
     member_ids = [row[0] for row in members_result.all()]
 
@@ -365,7 +358,7 @@ async def calculate_group_balances(
 async def list_balance_snapshots(
     db: AsyncSession,
     group_id: int,
-    user_id: Optional[int] = None,
+    user_id: int | None = None,
     limit: int = 100,
 ) -> list[BalanceSnapshot]:
     """List historical balance snapshots."""
@@ -418,7 +411,7 @@ async def list_settlements(
     return list(result.scalars().all())
 
 
-async def get_settlement_by_id(db: AsyncSession, settlement_id: int) -> Optional[Settlement]:
+async def get_settlement_by_id(db: AsyncSession, settlement_id: int) -> Settlement | None:
     """Get settlement by ID."""
     result = await db.execute(select(Settlement).where(Settlement.id == settlement_id))
     return result.scalar_one_or_none()
@@ -433,8 +426,8 @@ async def create_settlement(
     currency_code: str,
     method: str,
     settled_at: datetime,
-    confirmation_code: Optional[str] = None,
-    notes: Optional[str] = None,
+    confirmation_code: str | None = None,
+    notes: str | None = None,
 ) -> Settlement:
     """Create settlement record."""
     settlement = Settlement(
@@ -517,9 +510,7 @@ async def list_budgets_with_status(
 
         remaining = budget.amount_limit - current_spent
         percentage_used = (
-            float((current_spent / budget.amount_limit) * 100)
-            if budget.amount_limit > 0
-            else 0.0
+            float((current_spent / budget.amount_limit) * 100) if budget.amount_limit > 0 else 0.0
         )
         is_over_budget = current_spent > budget.amount_limit
         is_alert_threshold_reached = percentage_used >= budget.alert_threshold_percentage
@@ -547,7 +538,7 @@ async def list_budgets_with_status(
     return responses
 
 
-async def get_budget_by_id(db: AsyncSession, budget_id: int) -> Optional[Budget]:
+async def get_budget_by_id(db: AsyncSession, budget_id: int) -> Budget | None:
     """Get budget by ID."""
     result = await db.execute(select(Budget).where(Budget.id == budget_id))
     return result.scalar_one_or_none()
@@ -561,7 +552,7 @@ async def create_budget(
     currency_code: str,
     period_type: str,
     start_date: datetime,
-    end_date: Optional[datetime] = None,
+    end_date: datetime | None = None,
     alert_threshold_percentage: int = 80,
 ) -> Budget:
     """Create budget."""
@@ -584,9 +575,9 @@ async def create_budget(
 async def update_budget(
     db: AsyncSession,
     budget_id: int,
-    amount_limit: Optional[Decimal] = None,
-    end_date: Optional[datetime] = None,
-    alert_threshold_percentage: Optional[int] = None,
+    amount_limit: Decimal | None = None,
+    end_date: datetime | None = None,
+    alert_threshold_percentage: int | None = None,
 ) -> Budget:
     """Update budget."""
     result = await db.execute(select(Budget).where(Budget.id == budget_id))
@@ -692,7 +683,7 @@ async def list_recurring_expenses(
 async def get_recurring_expense_by_id(
     db: AsyncSession,
     recurring_expense_id: int,
-) -> Optional[RecurringExpense]:
+) -> RecurringExpense | None:
     """Get recurring expense by ID."""
     result = await db.execute(
         select(RecurringExpense).where(RecurringExpense.id == recurring_expense_id)
@@ -711,9 +702,9 @@ async def create_recurring_expense(
     frequency_type: str,
     interval_value: int,
     start_date: datetime,
-    end_date: Optional[datetime] = None,
+    end_date: datetime | None = None,
     auto_create_expense: bool = True,
-    split_preset_id: Optional[int] = None,
+    split_preset_id: int | None = None,
 ) -> RecurringExpense:
     """Create recurring expense."""
     next_due = _calculate_next_due_date(start_date, frequency_type, interval_value)
@@ -742,16 +733,16 @@ async def create_recurring_expense(
 async def update_recurring_expense(
     db: AsyncSession,
     recurring_expense_id: int,
-    description: Optional[str] = None,
-    amount: Optional[Decimal] = None,
-    currency_code: Optional[str] = None,
-    category_id: Optional[int] = None,
-    frequency_type: Optional[str] = None,
-    interval_value: Optional[int] = None,
-    end_date: Optional[datetime] = None,
-    auto_create_expense: Optional[bool] = None,
-    split_preset_id: Optional[int] = None,
-    is_active: Optional[bool] = None,
+    description: str | None = None,
+    amount: Decimal | None = None,
+    currency_code: str | None = None,
+    category_id: int | None = None,
+    frequency_type: str | None = None,
+    interval_value: int | None = None,
+    end_date: datetime | None = None,
+    auto_create_expense: bool | None = None,
+    split_preset_id: int | None = None,
+    is_active: bool | None = None,
 ) -> RecurringExpense:
     """Update recurring expense."""
     result = await db.execute(
@@ -827,7 +818,7 @@ async def generate_expense_from_recurring(
         description=recurring.description,
         amount=recurring.amount,
         category_id=recurring.category_id,
-        expense_date=datetime.now(timezone.utc),
+        expense_date=datetime.now(UTC),
         currency_code=recurring.currency_code,
     )
 
@@ -841,12 +832,10 @@ async def generate_expense_from_recurring(
     )
 
     await db.flush()
-    
+
     # Reload expense with splits relationship loaded
     result = await db.execute(
-        select(Expense)
-        .options(selectinload(Expense.splits))
-        .where(Expense.id == expense.id)
+        select(Expense).options(selectinload(Expense.splits)).where(Expense.id == expense.id)
     )
     expense = result.scalar_one()
     return expense
@@ -870,7 +859,7 @@ async def list_split_presets(
 async def get_split_preset_by_id(
     db: AsyncSession,
     preset_id: int,
-) -> Optional[SplitPreset]:
+) -> SplitPreset | None:
     """Get split preset by ID with members."""
     result = await db.execute(
         select(SplitPreset)
@@ -886,7 +875,7 @@ async def create_split_preset(
     name: str,
     method: str,
     is_default: bool = False,
-    members: Optional[list[dict]] = None,
+    members: list[dict] | None = None,
 ) -> SplitPreset:
     """Create split preset with members."""
     preset = SplitPreset(
@@ -924,10 +913,10 @@ async def create_split_preset(
 async def update_split_preset(
     db: AsyncSession,
     preset_id: int,
-    name: Optional[str] = None,
-    method: Optional[str] = None,
-    is_default: Optional[bool] = None,
-    members: Optional[list[dict]] = None,
+    name: str | None = None,
+    method: str | None = None,
+    is_default: bool | None = None,
+    members: list[dict] | None = None,
 ) -> SplitPreset:
     """Update split preset."""
     result = await db.execute(

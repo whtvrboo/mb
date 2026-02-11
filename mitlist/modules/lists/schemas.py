@@ -1,7 +1,6 @@
 """Lists module Pydantic schemas for request/response models."""
 
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -11,9 +10,9 @@ class ListBase(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=255)
     type: str = Field(..., pattern="^(SHOPPING|TODO)$")
-    deadline: Optional[datetime] = None
-    store_name: Optional[str] = Field(None, max_length=255)
-    estimated_total: Optional[float] = Field(None, ge=0)
+    deadline: datetime | None = None
+    store_name: str | None = Field(None, max_length=255)
+    estimated_total: float | None = Field(None, ge=0)
 
 
 class ListCreate(ListBase):
@@ -25,11 +24,11 @@ class ListCreate(ListBase):
 class ListUpdate(BaseModel):
     """Schema for updating a list."""
 
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    deadline: Optional[datetime] = None
-    store_name: Optional[str] = Field(None, max_length=255)
-    estimated_total: Optional[float] = Field(None, ge=0)
-    is_archived: Optional[bool] = None
+    name: str | None = Field(None, min_length=1, max_length=255)
+    deadline: datetime | None = None
+    store_name: str | None = Field(None, max_length=255)
+    estimated_total: float | None = Field(None, ge=0)
+    is_archived: bool | None = None
 
 
 class ListResponse(ListBase):
@@ -39,9 +38,9 @@ class ListResponse(ListBase):
 
     id: int
     group_id: int
-    created_by_id: Optional[int] = None
+    created_by_id: int | None = None
     is_archived: bool
-    archived_at: Optional[datetime] = None
+    archived_at: datetime | None = None
     version_id: int
     created_at: datetime
     updated_at: datetime
@@ -51,12 +50,12 @@ class ItemBase(BaseModel):
     """Base item schema."""
 
     name: str = Field(..., min_length=1, max_length=255)
-    quantity_value: Optional[float] = Field(None, ge=0)
-    quantity_unit: Optional[str] = Field(None, max_length=50)
+    quantity_value: float | None = Field(None, ge=0)
+    quantity_unit: str | None = Field(None, max_length=50)
     is_checked: bool = False
-    price_estimate: Optional[float] = Field(None, ge=0)
-    priority: Optional[str] = Field(None, pattern="^(HIGH|MEDIUM|LOW)$")
-    notes: Optional[str] = Field(None, max_length=1000)
+    price_estimate: float | None = Field(None, ge=0)
+    priority: str | None = Field(None, pattern="^(HIGH|MEDIUM|LOW)$")
+    notes: str | None = Field(None, max_length=1000)
 
 
 class ItemCreate(ItemBase):
@@ -68,14 +67,14 @@ class ItemCreate(ItemBase):
 class ItemUpdate(BaseModel):
     """Schema for updating an item."""
 
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    quantity_value: Optional[float] = Field(None, ge=0)
-    quantity_unit: Optional[str] = Field(None, max_length=50)
-    is_checked: Optional[bool] = None
-    checked_at: Optional[datetime] = None
-    price_estimate: Optional[float] = Field(None, ge=0)
-    priority: Optional[str] = Field(None, pattern="^(HIGH|MEDIUM|LOW)$")
-    notes: Optional[str] = Field(None, max_length=1000)
+    name: str | None = Field(None, min_length=1, max_length=255)
+    quantity_value: float | None = Field(None, ge=0)
+    quantity_unit: str | None = Field(None, max_length=50)
+    is_checked: bool | None = None
+    checked_at: datetime | None = None
+    price_estimate: float | None = Field(None, ge=0)
+    priority: str | None = Field(None, pattern="^(HIGH|MEDIUM|LOW)$")
+    notes: str | None = Field(None, max_length=1000)
 
 
 class ItemResponse(ItemBase):
@@ -85,9 +84,9 @@ class ItemResponse(ItemBase):
 
     id: int
     list_id: int
-    checked_at: Optional[datetime] = None
-    added_by_id: Optional[int] = None
-    assigned_to_id: Optional[int] = None
+    checked_at: datetime | None = None
+    added_by_id: int | None = None
+    assigned_to_id: int | None = None
     version_id: int
     created_at: datetime
     updated_at: datetime
@@ -111,29 +110,29 @@ class ItemBulkResponse(BaseModel):
 class InventoryItemBase(BaseModel):
     """Base inventory item schema."""
 
-    quantity_value: Optional[float] = Field(None, ge=0)
-    quantity_unit: Optional[str] = Field(None, max_length=50)
-    expiration_date: Optional[datetime] = None
-    opened_date: Optional[datetime] = None
-    restock_threshold: Optional[float] = Field(None, ge=0)
+    quantity_value: float | None = Field(None, ge=0)
+    quantity_unit: str | None = Field(None, max_length=50)
+    expiration_date: datetime | None = None
+    opened_date: datetime | None = None
+    restock_threshold: float | None = Field(None, ge=0)
 
 
 class InventoryItemCreate(InventoryItemBase):
     """Schema for creating an inventory item."""
 
     group_id: int
-    location_id: Optional[int] = None
-    concept_id: Optional[int] = None
+    location_id: int | None = None
+    concept_id: int | None = None
 
 
 class InventoryItemUpdate(BaseModel):
     """Schema for updating an inventory item (quantity, mark out of stock)."""
 
-    quantity_value: Optional[float] = Field(None, ge=0)
-    quantity_unit: Optional[str] = Field(None, max_length=50)
-    expiration_date: Optional[datetime] = None
-    opened_date: Optional[datetime] = None
-    restock_threshold: Optional[float] = Field(None, ge=0)
+    quantity_value: float | None = Field(None, ge=0)
+    quantity_unit: str | None = Field(None, max_length=50)
+    expiration_date: datetime | None = None
+    opened_date: datetime | None = None
+    restock_threshold: float | None = Field(None, ge=0)
 
 
 class InventoryItemResponse(InventoryItemBase):
@@ -143,7 +142,7 @@ class InventoryItemResponse(InventoryItemBase):
 
     id: int
     group_id: int
-    location_id: Optional[int] = None
-    concept_id: Optional[int] = None
+    location_id: int | None = None
+    concept_id: int | None = None
     created_at: datetime
     updated_at: datetime

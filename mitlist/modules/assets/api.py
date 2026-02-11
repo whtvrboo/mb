@@ -1,11 +1,12 @@
 """Assets module FastAPI router."""
 
-from typing import List as ListType
 
-from fastapi import APIRouter, Depends, status, Query
+from datetime import UTC
+
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from mitlist.api.deps import get_db, get_current_group_id, get_current_user
+from mitlist.api.deps import get_current_group_id, get_current_user, get_db
 from mitlist.core.errors import NotFoundError, ValidationError
 from mitlist.modules.assets import interface, schemas
 
@@ -13,7 +14,7 @@ router = APIRouter(prefix="/assets", tags=["assets"])
 
 
 # ---------- Assets ----------
-@router.get("", response_model=ListType[schemas.HomeAssetResponse])
+@router.get("", response_model=list[schemas.HomeAssetResponse])
 async def get_assets(
     group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
@@ -122,7 +123,7 @@ async def dispose_asset(
 
 
 # ---------- Maintenance Tasks ----------
-@router.get("/{asset_id}/tasks", response_model=ListType[schemas.MaintenanceTaskResponse])
+@router.get("/{asset_id}/tasks", response_model=list[schemas.MaintenanceTaskResponse])
 async def get_maintenance_tasks(
     asset_id: int,
     group_id: int = Depends(get_current_group_id),
@@ -137,7 +138,11 @@ async def get_maintenance_tasks(
     return [schemas.MaintenanceTaskResponse.model_validate(t) for t in tasks]
 
 
-@router.post("/{asset_id}/tasks", response_model=schemas.MaintenanceTaskResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{asset_id}/tasks",
+    response_model=schemas.MaintenanceTaskResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_maintenance_task(
     asset_id: int,
     data: schemas.MaintenanceTaskCreate,
@@ -148,7 +153,7 @@ async def create_maintenance_task(
     asset = await interface.get_asset(db, asset_id)
     if not asset or asset.group_id != group_id:
         raise NotFoundError(code="ASSET_NOT_FOUND", detail=f"Asset {asset_id} not found")
-        
+
     if data.asset_id != asset_id:
         raise ValidationError(code="ID_MISMATCH", detail="Body asset_id must match path")
 
@@ -193,7 +198,7 @@ async def update_maintenance_task(
 
 
 # ---------- Maintenance Logs ----------
-@router.get("/tasks/{task_id}/logs", response_model=ListType[schemas.MaintenanceLogResponse])
+@router.get("/tasks/{task_id}/logs", response_model=list[schemas.MaintenanceLogResponse])
 async def get_maintenance_logs(
     task_id: int,
     group_id: int = Depends(get_current_group_id),
@@ -207,7 +212,11 @@ async def get_maintenance_logs(
     return [schemas.MaintenanceLogResponse.model_validate(l) for l in logs]
 
 
-@router.post("/tasks/{task_id}/logs", response_model=schemas.MaintenanceLogResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/tasks/{task_id}/logs",
+    response_model=schemas.MaintenanceLogResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_maintenance_log(
     task_id: int,
     data: schemas.MaintenanceCompleteRequest,
@@ -223,13 +232,14 @@ async def create_maintenance_log(
         db,
         task_id=task_id,
         user_id=user.id,
-        completed_at=data.disposed_at if hasattr(data, 'disposed_at') else datetime.now(timezone.utc), # Wait, request schema doesn't have completed_at?
+        completed_at=data.disposed_at
+        if hasattr(data, "disposed_at")
+        else datetime.now(UTC),  # Wait, request schema doesn't have completed_at?
         # Check schemas.MaintenanceCompleteRequest (Step 173).
         # It has actual_duration_minutes, notes, photo_url, quality_rating, cost_expense_id.
         # It misses "completed_at".
         # I'll assume "now" if missing, or use default from model.
         # Service expects completed_at.
-        
         actual_duration_minutes=data.actual_duration_minutes,
         notes=data.notes,
         photo_url=data.photo_url,
@@ -238,13 +248,16 @@ async def create_maintenance_log(
     )
     return schemas.MaintenanceLogResponse.model_validate(log)
 
+
 # CORRECTION: datetime import needed inside function if used? I imported it at top level but need to check if user passed it.
-from datetime import datetime, timezone
+from datetime import datetime
+
 # Re-check MaintenanceCompleteRequest.
 # It does NOT have completed_at. So I use current time.
 
+
 # ---------- Insurance ----------
-@router.get("/insurance", response_model=ListType[schemas.AssetInsuranceResponse])
+@router.get("/insurance", response_model=list[schemas.AssetInsuranceResponse])
 async def get_insurances(
     group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
@@ -254,7 +267,9 @@ async def get_insurances(
     return [schemas.AssetInsuranceResponse.model_validate(i) for i in insurances]
 
 
-@router.post("/insurance", response_model=schemas.AssetInsuranceResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/insurance", response_model=schemas.AssetInsuranceResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_insurance(
     data: schemas.AssetInsuranceCreate,
     group_id: int = Depends(get_current_group_id),
@@ -290,7 +305,9 @@ async def update_insurance(
     """Update insurance policy."""
     ins = await interface.get_insurance_by_id(db, insurance_id)
     if not ins or ins.group_id != group_id:
-        raise NotFoundError(code="INSURANCE_NOT_FOUND", detail=f"Insurance {insurance_id} not found")
+        raise NotFoundError(
+            code="INSURANCE_NOT_FOUND", detail=f"Insurance {insurance_id} not found"
+        )
     updated = await interface.update_insurance(
         db,
         insurance_id=insurance_id,

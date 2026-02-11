@@ -1,7 +1,6 @@
 """OpenTelemetry instrumentation setup."""
 
 import logging
-from typing import Optional
 
 from opentelemetry import trace
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
@@ -14,7 +13,7 @@ from mitlist.core.config import settings
 logger = logging.getLogger(__name__)
 
 
-def setup_otel() -> Optional[FastAPIInstrumentor]:
+def setup_otel() -> FastAPIInstrumentor | None:
     """
     Initialize OpenTelemetry instrumentation.
 
@@ -33,7 +32,9 @@ def setup_otel() -> Optional[FastAPIInstrumentor]:
         # For now, just set up the provider
         provider = TracerProvider()
         trace.set_tracer_provider(provider)
-        logger.info(f"OpenTelemetry configured with OTLP endpoint: {settings.OTEL_EXPORTER_OTLP_ENDPOINT}")
+        logger.info(
+            f"OpenTelemetry configured with OTLP endpoint: {settings.OTEL_EXPORTER_OTLP_ENDPOINT}"
+        )
     else:
         logger.info("OpenTelemetry not configured")
         return None

@@ -3,9 +3,7 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from mitlist.api.deps import get_db
-from mitlist.api.deps import get_current_user
-from mitlist.api.deps import require_introspection_user
+from mitlist.api.deps import get_current_user, get_db, require_introspection_user
 from mitlist.core.errors import GoneError, NotFoundError
 from mitlist.modules.auth import interface, schemas
 
@@ -182,11 +180,17 @@ async def patch_group_member(
     user=Depends(get_current_user),
 ) -> schemas.UserGroupResponse:
     await interface.require_admin(db, group_id, user.id)
-    ug = await interface.update_member(db, group_id, user_id, role=data.role, nickname=data.nickname)
+    ug = await interface.update_member(
+        db, group_id, user_id, role=data.role, nickname=data.nickname
+    )
     return schemas.UserGroupResponse.model_validate(ug)
 
 
-@router.post("/groups/{group_id}/members", response_model=schemas.UserGroupResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/groups/{group_id}/members",
+    response_model=schemas.UserGroupResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def post_group_member(
     group_id: int,
     data: schemas.UserGroupCreate,
@@ -256,7 +260,11 @@ async def post_invites_join(
     return schemas.UserGroupResponse.model_validate(ug)
 
 
-@router.post("/groups/{group_id}/invites", response_model=schemas.InviteResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/groups/{group_id}/invites",
+    response_model=schemas.InviteResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def post_group_invites(
     group_id: int,
     data: schemas.InviteCreateRequest,
@@ -316,7 +324,9 @@ async def get_locations(
     return [schemas.LocationResponse.model_validate(loc) for loc in locations]
 
 
-@router.post("/locations", response_model=schemas.LocationResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/locations", response_model=schemas.LocationResponse, status_code=status.HTTP_201_CREATED
+)
 async def post_locations(
     data: schemas.LocationCreate,
     db: AsyncSession = Depends(get_db),
@@ -403,7 +413,11 @@ async def get_service_contacts(
     return [schemas.ServiceContactResponse.model_validate(c) for c in contacts]
 
 
-@router.post("/service-contacts", response_model=schemas.ServiceContactResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/service-contacts",
+    response_model=schemas.ServiceContactResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def post_service_contacts(
     data: schemas.ServiceContactCreate,
     db: AsyncSession = Depends(get_db),
@@ -436,7 +450,9 @@ async def get_service_contact(
     """Get a service contact by ID."""
     contact = await interface.get_service_contact_by_id(db, contact_id)
     if not contact:
-        raise NotFoundError(code="SERVICE_CONTACT_NOT_FOUND", detail=f"Service contact {contact_id} not found")
+        raise NotFoundError(
+            code="SERVICE_CONTACT_NOT_FOUND", detail=f"Service contact {contact_id} not found"
+        )
     await interface.require_member(db, contact.group_id, user.id)
     return schemas.ServiceContactResponse.model_validate(contact)
 
@@ -451,7 +467,9 @@ async def patch_service_contact(
     """Update a service contact."""
     contact = await interface.get_service_contact_by_id(db, contact_id)
     if not contact:
-        raise NotFoundError(code="SERVICE_CONTACT_NOT_FOUND", detail=f"Service contact {contact_id} not found")
+        raise NotFoundError(
+            code="SERVICE_CONTACT_NOT_FOUND", detail=f"Service contact {contact_id} not found"
+        )
     await interface.require_member(db, contact.group_id, user.id)
     contact = await interface.update_service_contact(
         db,
@@ -478,6 +496,8 @@ async def delete_service_contact(
     """Delete a service contact."""
     contact = await interface.get_service_contact_by_id(db, contact_id)
     if not contact:
-        raise NotFoundError(code="SERVICE_CONTACT_NOT_FOUND", detail=f"Service contact {contact_id} not found")
+        raise NotFoundError(
+            code="SERVICE_CONTACT_NOT_FOUND", detail=f"Service contact {contact_id} not found"
+        )
     await interface.require_admin(db, contact.group_id, user.id)
     await interface.delete_service_contact(db, contact_id)

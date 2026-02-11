@@ -1,12 +1,11 @@
 """Gamification module ORM models."""
 
 from datetime import datetime
-from typing import Optional
 
-from sqlalchemy import CheckConstraint, ForeignKey, Integer, Numeric, String
+from sqlalchemy import CheckConstraint, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from mitlist.db.base import Base, BaseModel, TimestampMixin
+from mitlist.db.base import BaseModel, TimestampMixin
 
 
 class AchievementCategory(str):
@@ -59,8 +58,8 @@ class UserPoints(BaseModel, TimestampMixin):
     group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False, index=True)
     total_points: Mapped[int] = mapped_column(default=0, nullable=False)
     monthly_points: Mapped[int] = mapped_column(default=0, nullable=False)
-    last_reset_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
-    rank_position: Mapped[Optional[int]] = mapped_column(nullable=True)
+    last_reset_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    rank_position: Mapped[int | None] = mapped_column(nullable=True)
 
     __table_args__ = (
         CheckConstraint("total_points >= 0", name="ck_user_points_total_non_negative"),
@@ -75,7 +74,7 @@ class Achievement(BaseModel, TimestampMixin):
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(String(500), nullable=False)
-    badge_icon_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    badge_icon_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     category: Mapped[str] = mapped_column(String(50), nullable=False)
     requirement_type: Mapped[str] = mapped_column(String(20), nullable=False)
     requirement_value: Mapped[int] = mapped_column(nullable=False)
@@ -98,10 +97,15 @@ class UserAchievement(BaseModel, TimestampMixin):
     progress_percentage: Mapped[int] = mapped_column(default=0, nullable=False)
 
     # Relationships
-    achievement: Mapped["Achievement"] = relationship("Achievement", back_populates="user_achievements")
+    achievement: Mapped["Achievement"] = relationship(
+        "Achievement", back_populates="user_achievements"
+    )
 
     __table_args__ = (
-        CheckConstraint("progress_percentage >= 0 AND progress_percentage <= 100", name="ck_user_achievement_progress"),
+        CheckConstraint(
+            "progress_percentage >= 0 AND progress_percentage <= 100",
+            name="ck_user_achievement_progress",
+        ),
     )
 
 
@@ -115,7 +119,7 @@ class Streak(BaseModel, TimestampMixin):
     activity_type: Mapped[str] = mapped_column(String(50), nullable=False)
     current_streak_days: Mapped[int] = mapped_column(default=0, nullable=False)
     longest_streak_days: Mapped[int] = mapped_column(default=0, nullable=False)
-    last_activity_date: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    last_activity_date: Mapped[datetime | None] = mapped_column(nullable=True)
 
     __table_args__ = (
         CheckConstraint("current_streak_days >= 0", name="ck_streak_current_non_negative"),
@@ -132,4 +136,4 @@ class Leaderboard(BaseModel, TimestampMixin):
     period_type: Mapped[str] = mapped_column(String(20), nullable=False)
     metric: Mapped[str] = mapped_column(String(50), nullable=False)
     period_start_date: Mapped[datetime] = mapped_column(nullable=False)
-    period_end_date: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    period_end_date: Mapped[datetime | None] = mapped_column(nullable=True)

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 from jose import jwk, jwt
@@ -23,11 +23,11 @@ class VerifiedToken:
     claims: dict[str, Any]
 
     @property
-    def sub(self) -> Optional[str]:
+    def sub(self) -> str | None:
         return self.claims.get("sub")
 
     @property
-    def email(self) -> Optional[str]:
+    def email(self) -> str | None:
         return self.claims.get("email")
 
 
@@ -172,4 +172,3 @@ async def require_active_token(token: str) -> dict[str, Any]:
     if not data.get("active"):
         raise ZitadelTokenError("Token is not active (revoked or expired).")
     return data
-

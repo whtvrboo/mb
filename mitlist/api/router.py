@@ -40,8 +40,12 @@ api_router.include_router(governance_api.router, dependencies=[Depends(get_curre
 api_router.include_router(lists_api.router, dependencies=[Depends(get_current_user)])
 api_router.include_router(lists_api.inventory_router, dependencies=[Depends(get_current_user)])
 api_router.include_router(notifications_api.router, dependencies=[Depends(get_current_user)])
-api_router.include_router(notifications_api.comments_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(notifications_api.reactions_router, dependencies=[Depends(get_current_user)])
+api_router.include_router(
+    notifications_api.comments_router, dependencies=[Depends(get_current_user)]
+)
+api_router.include_router(
+    notifications_api.reactions_router, dependencies=[Depends(get_current_user)]
+)
 api_router.include_router(pets_api.router, dependencies=[Depends(get_current_user)])
 api_router.include_router(plants_api.router, dependencies=[Depends(get_current_user)])
 api_router.include_router(recipes_api.router, dependencies=[Depends(get_current_user)])

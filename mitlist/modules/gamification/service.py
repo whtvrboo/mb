@@ -1,16 +1,13 @@
 """Gamification module service layer. PRIVATE - other modules import from interface.py."""
 
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from mitlist.core.errors import NotFoundError
 from mitlist.modules.gamification.models import (
     Achievement,
-    Leaderboard,
     Streak,
     UserAchievement,
     UserPoints,
@@ -18,7 +15,7 @@ from mitlist.modules.gamification.models import (
 
 
 # ---------- Points ----------
-async def get_user_points(db: AsyncSession, user_id: int, group_id: int) -> Optional[UserPoints]:
+async def get_user_points(db: AsyncSession, user_id: int, group_id: int) -> UserPoints | None:
     """Get user points for a group."""
     result = await db.execute(
         select(UserPoints).where(
@@ -68,14 +65,14 @@ async def reset_monthly_points(db: AsyncSession, group_id: int) -> int:
     result = await db.execute(
         update(UserPoints)
         .where(UserPoints.group_id == group_id)
-        .values(monthly_points=0, last_reset_at=datetime.now(timezone.utc))
+        .values(monthly_points=0, last_reset_at=datetime.now(UTC))
     )
     await db.flush()
     return result.rowcount
 
 
 # ---------- Achievements ----------
-async def list_achievements(db: AsyncSession, category: Optional[str] = None) -> list[Achievement]:
+async def list_achievements(db: AsyncSession, category: str | None = None) -> list[Achievement]:
     """List all achievements, optionally filtered by category."""
     q = select(Achievement).where(Achievement.is_active == True)  # noqa: E712
     if category:
@@ -85,11 +82,9 @@ async def list_achievements(db: AsyncSession, category: Optional[str] = None) ->
     return list(result.scalars().all())
 
 
-async def get_achievement_by_id(db: AsyncSession, achievement_id: int) -> Optional[Achievement]:
+async def get_achievement_by_id(db: AsyncSession, achievement_id: int) -> Achievement | None:
     """Get achievement by ID."""
-    result = await db.execute(
-        select(Achievement).where(Achievement.id == achievement_id)
-    )
+    result = await db.execute(select(Achievement).where(Achievement.id == achievement_id))
     return result.scalar_one_or_none()
 
 
@@ -124,7 +119,7 @@ async def award_achievement(
     user_achievement = UserAchievement(
         user_id=user_id,
         achievement_id=achievement_id,
-        earned_at=datetime.now(timezone.utc),
+        earned_at=datetime.now(UTC),
         progress_percentage=100,
     )
     db.add(user_achievement)
@@ -243,7 +238,7 @@ async def get_streak(
     user_id: int,
     group_id: int,
     activity_type: str,
-) -> Optional[Streak]:
+) -> Streak | None:
     """Get a specific streak."""
     result = await db.execute(
         select(Streak).where(
@@ -263,7 +258,7 @@ async def record_activity(
 ) -> tuple[Streak, bool, bool]:
     """Record activity for streak tracking. Returns (streak, extended, is_new_record)."""
     streak = await get_streak(db, user_id, group_id, activity_type)
-    today = datetime.now(timezone.utc).date()
+    today = datetime.now(UTC).date()
 
     if not streak:
         # Create new streak
@@ -273,7 +268,7 @@ async def record_activity(
             activity_type=activity_type,
             current_streak_days=1,
             longest_streak_days=1,
-            last_activity_date=datetime.now(timezone.utc),
+            last_activity_date=datetime.now(UTC),
         )
         db.add(streak)
         await db.flush()
@@ -301,7 +296,7 @@ async def record_activity(
         streak.current_streak_days = 1
         extended = True  # New streak started
 
-    streak.last_activity_date = datetime.now(timezone.utc)
+    streak.last_activity_date = datetime.now(UTC)
     await db.flush()
     await db.refresh(streak)
     return streak, extended, is_new_record
@@ -335,14 +330,18 @@ async def get_leaderboard(
 
         entries = []
         for idx, (points, name, avatar_url) in enumerate(rows, start=1):
-            entries.append({
-                "rank": idx,
-                "user_id": points.user_id,
-                "user_name": name,
-                "avatar_url": avatar_url,
-                "value": points.monthly_points if period_type == "MONTHLY" else points.total_points,
-                "change_from_previous": None,
-            })
+            entries.append(
+                {
+                    "rank": idx,
+                    "user_id": points.user_id,
+                    "user_name": name,
+                    "avatar_url": avatar_url,
+                    "value": points.monthly_points
+                    if period_type == "MONTHLY"
+                    else points.total_points,
+                    "change_from_previous": None,
+                }
+            )
         return entries
 
     return []

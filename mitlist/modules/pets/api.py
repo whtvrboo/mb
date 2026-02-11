@@ -1,16 +1,14 @@
 """Pets module FastAPI router."""
 
-from typing import List as ListType
 
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from mitlist.api.deps import get_db, get_current_group_id, get_current_user
+from mitlist.api.deps import get_current_group_id, get_current_user, get_db
 from mitlist.core.errors import NotFoundError, ValidationError
 from mitlist.modules.pets import interface, schemas
 
 router = APIRouter(prefix="/pets", tags=["pets"])
-
 
 
 # ---------- Schedules (Top Level) ----------
@@ -36,8 +34,9 @@ async def mark_schedule_completed(
     )
     return schemas.PetScheduleResponse.model_validate(updated)
 
+
 # ---------- Pets ----------
-@router.get("", response_model=ListType[schemas.PetResponse])
+@router.get("", response_model=list[schemas.PetResponse])
 async def get_pets(
     group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
@@ -80,8 +79,7 @@ async def create_pet(
     return schemas.PetResponse.model_validate(pet)
 
 
-
-@router.get("/vaccines/expiring", response_model=ListType[schemas.PetMedicalRecordResponse])
+@router.get("/vaccines/expiring", response_model=list[schemas.PetMedicalRecordResponse])
 async def get_expiring_vaccines(
     days_ahead: int = Query(30, ge=1, le=365),
     group_id: int = Depends(get_current_group_id),
@@ -90,6 +88,7 @@ async def get_expiring_vaccines(
     """Get expiring vaccines for the group."""
     records = await interface.get_expiring_vaccines(db, group_id, days_ahead)
     return [schemas.PetMedicalRecordResponse.model_validate(r) for r in records]
+
 
 @router.get("/{pet_id}", response_model=schemas.PetResponse)
 async def get_pet(
@@ -154,7 +153,7 @@ async def mark_pet_deceased(
 
 
 # ---------- Medical Records ----------
-@router.get("/{pet_id}/medical", response_model=ListType[schemas.PetMedicalRecordResponse])
+@router.get("/{pet_id}/medical", response_model=list[schemas.PetMedicalRecordResponse])
 async def get_pet_medical_records(
     pet_id: int,
     group_id: int = Depends(get_current_group_id),
@@ -169,7 +168,11 @@ async def get_pet_medical_records(
     return [schemas.PetMedicalRecordResponse.model_validate(r) for r in records]
 
 
-@router.post("/{pet_id}/medical", response_model=schemas.PetMedicalRecordResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{pet_id}/medical",
+    response_model=schemas.PetMedicalRecordResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_pet_medical_record(
     pet_id: int,
     data: schemas.PetMedicalRecordCreate,
@@ -180,9 +183,9 @@ async def create_pet_medical_record(
     pet = await interface.get_pet_by_id(db, pet_id)
     if not pet or pet.group_id != group_id:
         raise NotFoundError(code="PET_NOT_FOUND", detail=f"Pet {pet_id} not found")
-        
+
     if data.pet_id != pet_id:
-         raise ValidationError(code="ID_MISMATCH", detail="Body pet_id must match path")
+        raise ValidationError(code="ID_MISMATCH", detail="Body pet_id must match path")
 
     record = await interface.create_medical_record(
         db,
@@ -200,15 +203,13 @@ async def create_pet_medical_record(
     # Re-reading "performed_by=data.performed_at" -> BUG: I assigned datetime to string field.
     # Should be performed_by=data.performed_by.
     # I'll enable edit in review self.
-    
+
     # Correcting below:
     return schemas.PetMedicalRecordResponse.model_validate(record)
 
 
-
-
 # ---------- Logs ----------
-@router.get("/{pet_id}/logs", response_model=ListType[schemas.PetLogResponse])
+@router.get("/{pet_id}/logs", response_model=list[schemas.PetLogResponse])
 async def get_pet_logs(
     pet_id: int,
     group_id: int = Depends(get_current_group_id),
@@ -223,12 +224,14 @@ async def get_pet_logs(
     return [schemas.PetLogResponse.model_validate(l) for l in logs]
 
 
-@router.post("/{pet_id}/logs", response_model=schemas.PetLogResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{pet_id}/logs", response_model=schemas.PetLogResponse, status_code=status.HTTP_201_CREATED
+)
 async def post_pet_log(
     pet_id: int,
     data: schemas.PetLogCreate,
     group_id: int = Depends(get_current_group_id),
-    user = Depends(get_current_user),
+    user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Log an activity."""
@@ -251,7 +254,7 @@ async def post_pet_log(
 
 
 # ---------- Schedules ----------
-@router.get("/{pet_id}/schedules", response_model=ListType[schemas.PetScheduleResponse])
+@router.get("/{pet_id}/schedules", response_model=list[schemas.PetScheduleResponse])
 async def get_pet_schedules(
     pet_id: int,
     group_id: int = Depends(get_current_group_id),
@@ -266,7 +269,11 @@ async def get_pet_schedules(
     return [schemas.PetScheduleResponse.model_validate(s) for s in schedules]
 
 
-@router.post("/{pet_id}/schedules", response_model=schemas.PetScheduleResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{pet_id}/schedules",
+    response_model=schemas.PetScheduleResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_pet_schedule(
     pet_id: int,
     data: schemas.PetScheduleCreate,
@@ -288,6 +295,3 @@ async def create_pet_schedule(
         is_rotating=data.is_rotating,
     )
     return schemas.PetScheduleResponse.model_validate(sched)
-
-
-

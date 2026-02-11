@@ -1,6 +1,6 @@
 """FastAPI dependencies for database and authentication."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import Depends, Request
@@ -8,11 +8,11 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from mitlist.db.engine import get_db as get_db_session
 from mitlist.core.auth.zitadel import ZitadelTokenError, require_active_token, verify_access_token
 from mitlist.core.config import settings
 from mitlist.core.errors import ForbiddenError, UnauthorizedError, ValidationError
 from mitlist.core.request_context import set_group_id, set_user_id
+from mitlist.db.engine import get_db as get_db_session
 from mitlist.modules.auth.models import User, UserGroup
 
 # Re-export for convenience
@@ -100,18 +100,29 @@ async def get_current_user(
             avatar_url=claims.get("picture"),
             is_active=True,
             preferences={"zitadel_sub": sub},
-            last_login_at=datetime.now(timezone.utc),
+            last_login_at=datetime.now(UTC),
         )
         db.add(user)
         await db.flush()
         await db.refresh(user)
     else:
         # update last_login and ensure we remember sub
-        user.last_login_at = datetime.now(timezone.utc)
-        prefs = user.preferences or {}
-        if prefs.get("zitadel_sub") != sub:
+        user.last_login_at = datetime.now(UTC)
+        prefs = dict(user.preferences or {})
+        stored_sub = prefs.get("zitadel_sub")
+
+        # Enforce strict subject binding if already established
+        if stored_sub and stored_sub != sub:
+            raise UnauthorizedError(
+                code="TOKEN_SUBJECT_MISMATCH",
+                detail="Token subject mismatch",
+            )
+
+        # Bind identity on first use (or if not yet bound)
+        if not stored_sub:
             prefs["zitadel_sub"] = sub
             user.preferences = prefs
+
         await db.flush()
         await db.refresh(user)
 

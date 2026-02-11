@@ -1,11 +1,11 @@
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from unittest.mock import MagicMock, AsyncMock
-from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # Import the service module to test
 from mitlist.modules.documents import service
+
 
 @pytest.mark.asyncio
 async def test_delete_document_success():

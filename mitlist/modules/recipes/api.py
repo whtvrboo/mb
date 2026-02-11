@@ -1,7 +1,6 @@
 """Recipes & Meal Planning module FastAPI router."""
 
 from datetime import date, timedelta
-from typing import List as ListType
 
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,7 +14,7 @@ from mitlist.modules.recipes import schemas, service
 router = APIRouter(tags=["recipes", "content"])
 
 
-@router.get("/recipes", response_model=ListType[schemas.RecipeResponse])
+@router.get("/recipes", response_model=list[schemas.RecipeResponse])
 async def get_recipes(
     group_id: int = Depends(get_current_group_id),
     user: User = Depends(get_current_user),
@@ -126,7 +125,9 @@ async def get_meal_plans(
     )
 
 
-@router.post("/meal-plans", response_model=schemas.MealPlanResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/meal-plans", response_model=schemas.MealPlanResponse, status_code=status.HTTP_201_CREATED
+)
 async def post_meal_plans(
     data: schemas.MealPlanCreate,
     user: User = Depends(get_current_user),

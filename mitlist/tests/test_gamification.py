@@ -23,7 +23,9 @@ async def test_gamification_points_and_summary(authed_client: AsyncClient, auth_
 
 
 @pytest.mark.asyncio
-async def test_gamification_award_points_admin(authed_client: AsyncClient, auth_headers: dict, test_user, test_group):
+async def test_gamification_award_points_admin(
+    authed_client: AsyncClient, auth_headers: dict, test_user, test_group
+):
     """Admin can award points to a user."""
     award_data = {
         "user_id": test_user.id,
@@ -31,7 +33,9 @@ async def test_gamification_award_points_admin(authed_client: AsyncClient, auth_
         "points": 10,
         "reason": "Test award",
     }
-    response = await authed_client.post("/gamification/points/award", json=award_data, headers=auth_headers)
+    response = await authed_client.post(
+        "/gamification/points/award", json=award_data, headers=auth_headers
+    )
     assert response.status_code == 200
     data = response.json()
     assert data["points_awarded"] == 10
@@ -45,7 +49,9 @@ async def test_gamification_award_points_admin(authed_client: AsyncClient, auth_
 
 
 @pytest.mark.asyncio
-async def test_gamification_achievements_list_and_me(authed_client: AsyncClient, auth_headers: dict):
+async def test_gamification_achievements_list_and_me(
+    authed_client: AsyncClient, auth_headers: dict
+):
     """List all achievements and current user's earned achievements."""
     response = await authed_client.get("/gamification/achievements", headers=auth_headers)
     assert response.status_code == 200
@@ -74,7 +80,9 @@ async def test_gamification_streaks_record_and_list(authed_client: AsyncClient, 
         "activity_type": "CHORES",
         "group_id": int(auth_headers["X-Group-ID"]),
     }
-    response = await authed_client.post("/gamification/streaks/record", json=record_data, headers=auth_headers)
+    response = await authed_client.post(
+        "/gamification/streaks/record", json=record_data, headers=auth_headers
+    )
     assert response.status_code == 200
     data = response.json()
     assert "streak" in data

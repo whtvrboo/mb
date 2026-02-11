@@ -1,6 +1,6 @@
 """System & ops routes: /system/info."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,6 +18,6 @@ async def get_system_info(db: AsyncSession = Depends(get_db)):
         "app_name": settings.PROJECT_NAME,
         "version": "0.1.0",
         "environment": settings.ENVIRONMENT,
-        "server_time": datetime.now(timezone.utc).isoformat(),
+        "server_time": datetime.now(UTC).isoformat(),
         "api_version": "v1",
     }

@@ -1,7 +1,7 @@
 """Calendar module FastAPI router."""
 
 from datetime import date
-from typing import Any, List as ListType
+from typing import Any
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,7 +14,7 @@ from mitlist.modules.calendar import service
 router = APIRouter(prefix="/calendar", tags=["calendar"])
 
 
-@router.get("/feed", response_model=ListType[dict[str, Any]])
+@router.get("/feed", response_model=list[dict[str, Any]])
 async def get_calendar_feed(
     group_id: int = Depends(get_current_group_id),
     user: User = Depends(get_current_user),

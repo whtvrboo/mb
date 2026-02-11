@@ -1,6 +1,5 @@
 """Application error handling with RFC 7807 Problem Details."""
 
-from typing import Optional
 
 from fastapi import Request, status
 from fastapi.responses import JSONResponse

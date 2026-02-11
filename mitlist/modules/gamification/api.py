@@ -1,8 +1,8 @@
 """Gamification & Social module FastAPI router."""
 
-from typing import List as ListType
+from datetime import UTC
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mitlist.api.deps import get_current_group_id, get_current_user, get_db, require_group_admin
@@ -14,7 +14,6 @@ from mitlist.modules.gamification.interface import (
     get_leaderboard,
     get_user_achievements,
     get_user_gamification_summary,
-    get_user_points,
     get_user_streaks,
     list_achievements,
     record_activity,
@@ -53,7 +52,7 @@ async def post_award_points(
     )
 
 
-@router.get("/achievements", response_model=ListType[schemas.AchievementResponse])
+@router.get("/achievements", response_model=list[schemas.AchievementResponse])
 async def get_all_achievements(
     category: str | None = None,
     db: AsyncSession = Depends(get_db),
@@ -63,7 +62,7 @@ async def get_all_achievements(
     return achievements
 
 
-@router.get("/achievements/me", response_model=ListType[schemas.UserAchievementWithDetailsResponse])
+@router.get("/achievements/me", response_model=list[schemas.UserAchievementWithDetailsResponse])
 async def get_my_achievements(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -73,7 +72,7 @@ async def get_my_achievements(
     return achievements
 
 
-@router.post("/achievements/check", response_model=ListType[schemas.AchievementResponse])
+@router.post("/achievements/check", response_model=list[schemas.AchievementResponse])
 async def post_check_achievements(
     group_id: int = Depends(get_current_group_id),
     user: User = Depends(get_current_user),
@@ -84,7 +83,7 @@ async def post_check_achievements(
     return newly_awarded
 
 
-@router.get("/streaks", response_model=ListType[schemas.StreakResponse])
+@router.get("/streaks", response_model=list[schemas.StreakResponse])
 async def get_streaks(
     group_id: int = Depends(get_current_group_id),
     user: User = Depends(get_current_user),
@@ -137,10 +136,10 @@ async def get_leaderboard_endpoint(
         group_id=group_id,
         period_type=period_type,
         metric=metric,
-        period_start_date=datetime.now(timezone.utc),
+        period_start_date=datetime.now(UTC),
         period_end_date=None,
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
         entries=[
             schemas.LeaderboardEntryResponse(
                 rank=e["rank"],

@@ -45,7 +45,9 @@ async def test_lists_lifecycle(authed_client: AsyncClient, auth_headers: dict):
 
     # 5. Update list
     update_data = {"name": "Monthly groceries", "is_archived": False}
-    response = await authed_client.patch(f"/lists/{list_id}", json=update_data, headers=auth_headers)
+    response = await authed_client.patch(
+        f"/lists/{list_id}", json=update_data, headers=auth_headers
+    )
     assert response.status_code == 200
     assert response.json()["name"] == "Monthly groceries"
 
@@ -57,7 +59,9 @@ async def test_lists_lifecycle(authed_client: AsyncClient, auth_headers: dict):
         "quantity_unit": "L",
         "is_checked": False,
     }
-    response = await authed_client.post(f"/lists/{list_id}/items", json=item_data, headers=auth_headers)
+    response = await authed_client.post(
+        f"/lists/{list_id}/items", json=item_data, headers=auth_headers
+    )
     assert response.status_code == 201
     item_id = response.json()["id"]
     assert response.json()["name"] == "Milk"
@@ -86,14 +90,18 @@ async def test_lists_lifecycle(authed_client: AsyncClient, auth_headers: dict):
             {"name": "Eggs", "quantity_value": 12, "quantity_unit": "pcs"},
         ]
     }
-    response = await authed_client.post(f"/lists/{list_id}/items/bulk", json=bulk_data, headers=auth_headers)
+    response = await authed_client.post(
+        f"/lists/{list_id}/items/bulk", json=bulk_data, headers=auth_headers
+    )
     assert response.status_code == 201
     created = response.json()["items"]
     assert len(created) == 2
 
     # 10. Delete one item
     bread_id = next(i["id"] for i in created if i["name"] == "Bread")
-    response = await authed_client.delete(f"/lists/{list_id}/items/{bread_id}", headers=auth_headers)
+    response = await authed_client.delete(
+        f"/lists/{list_id}/items/{bread_id}", headers=auth_headers
+    )
     assert response.status_code == 204
 
     response = await authed_client.get(f"/lists/{list_id}/items", headers=auth_headers)

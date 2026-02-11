@@ -1,6 +1,5 @@
 """Governance (voting) module FastAPI router."""
 
-from typing import List as ListType
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,7 +26,7 @@ from mitlist.modules.governance.interface import (
 router = APIRouter(prefix="/proposals", tags=["governance"])
 
 
-@router.get("", response_model=ListType[schemas.ProposalResponse])
+@router.get("", response_model=list[schemas.ProposalResponse])
 async def get_proposals(
     status_filter: str | None = None,
     limit: int = 100,
@@ -36,7 +35,9 @@ async def get_proposals(
     db: AsyncSession = Depends(get_db),
 ):
     """List proposals for the current group."""
-    proposals = await list_proposals(db, group_id, status_filter=status_filter, limit=limit, offset=offset)
+    proposals = await list_proposals(
+        db, group_id, status_filter=status_filter, limit=limit, offset=offset
+    )
     return proposals
 
 
@@ -49,7 +50,11 @@ async def post_proposals(
 ):
     """Create a new proposal."""
     ballot_options = [
-        {"text": opt.text, "display_order": opt.display_order, "option_metadata": opt.option_metadata}
+        {
+            "text": opt.text,
+            "display_order": opt.display_order,
+            "option_metadata": opt.option_metadata,
+        }
         for opt in data.ballot_options
     ]
     proposal = await create_proposal(
@@ -126,7 +131,7 @@ async def post_proposal_open(
     return proposal
 
 
-@router.get("/{proposal_id}/options", response_model=ListType[schemas.BallotOptionResponse])
+@router.get("/{proposal_id}/options", response_model=list[schemas.BallotOptionResponse])
 async def get_proposal_options(
     proposal_id: int,
     user: User = Depends(get_current_user),
@@ -159,7 +164,7 @@ async def post_proposal_vote(
     return vote
 
 
-@router.post("/{proposal_id}/vote/ranked", response_model=ListType[schemas.VoteResponse])
+@router.post("/{proposal_id}/vote/ranked", response_model=list[schemas.VoteResponse])
 async def post_proposal_vote_ranked(
     proposal_id: int,
     data: schemas.RankedVoteCreate,

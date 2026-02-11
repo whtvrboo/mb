@@ -1,7 +1,6 @@
 """Recipes module service layer. PRIVATE - other modules import from interface.py."""
 
-from datetime import date, datetime, timedelta
-from typing import Optional
+from datetime import date, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,7 +9,6 @@ from sqlalchemy.orm import selectinload
 from mitlist.core.errors import NotFoundError
 from mitlist.modules.recipes.models import (
     MealPlan,
-    MealPlanShoppingSync,
     Recipe,
     RecipeIngredient,
     RecipeStep,
@@ -21,9 +19,9 @@ from mitlist.modules.recipes.models import (
 async def list_recipes(
     db: AsyncSession,
     group_id: int,
-    cuisine_type: Optional[str] = None,
-    difficulty: Optional[str] = None,
-    is_favorite: Optional[bool] = None,
+    cuisine_type: str | None = None,
+    difficulty: str | None = None,
+    is_favorite: bool | None = None,
 ) -> list[Recipe]:
     """List recipes for a group with optional filters."""
     q = (
@@ -42,7 +40,7 @@ async def list_recipes(
     return list(result.scalars().all())
 
 
-async def get_recipe_by_id(db: AsyncSession, recipe_id: int) -> Optional[Recipe]:
+async def get_recipe_by_id(db: AsyncSession, recipe_id: int) -> Recipe | None:
     """Get a recipe by ID with ingredients and steps."""
     result = await db.execute(
         select(Recipe)
@@ -60,14 +58,14 @@ async def create_recipe(
     prep_time_minutes: int,
     cook_time_minutes: int,
     servings: int,
-    description: Optional[str] = None,
-    cuisine_type: Optional[str] = None,
-    difficulty: Optional[str] = None,
-    calories_per_serving: Optional[int] = None,
-    photo_url: Optional[str] = None,
-    source_url: Optional[str] = None,
-    ingredients: Optional[list[dict]] = None,
-    steps: Optional[list[dict]] = None,
+    description: str | None = None,
+    cuisine_type: str | None = None,
+    difficulty: str | None = None,
+    calories_per_serving: int | None = None,
+    photo_url: str | None = None,
+    source_url: str | None = None,
+    ingredients: list[dict] | None = None,
+    steps: list[dict] | None = None,
 ) -> Recipe:
     """Create a new recipe with ingredients and steps."""
     recipe = Recipe(
@@ -122,17 +120,17 @@ async def create_recipe(
 async def update_recipe(
     db: AsyncSession,
     recipe_id: int,
-    title: Optional[str] = None,
-    description: Optional[str] = None,
-    cuisine_type: Optional[str] = None,
-    difficulty: Optional[str] = None,
-    prep_time_minutes: Optional[int] = None,
-    cook_time_minutes: Optional[int] = None,
-    servings: Optional[int] = None,
-    calories_per_serving: Optional[int] = None,
-    photo_url: Optional[str] = None,
-    source_url: Optional[str] = None,
-    is_favorite: Optional[bool] = None,
+    title: str | None = None,
+    description: str | None = None,
+    cuisine_type: str | None = None,
+    difficulty: str | None = None,
+    prep_time_minutes: int | None = None,
+    cook_time_minutes: int | None = None,
+    servings: int | None = None,
+    calories_per_serving: int | None = None,
+    photo_url: str | None = None,
+    source_url: str | None = None,
+    is_favorite: bool | None = None,
 ) -> Recipe:
     """Update a recipe."""
     recipe = await get_recipe_by_id(db, recipe_id)
@@ -191,7 +189,7 @@ async def record_cooked(db: AsyncSession, recipe_id: int) -> Recipe:
 async def list_meal_plans(
     db: AsyncSession,
     group_id: int,
-    week_start: Optional[date] = None,
+    week_start: date | None = None,
 ) -> list[MealPlan]:
     """List meal plans for a group, optionally for a specific week."""
     q = select(MealPlan).where(MealPlan.group_id == group_id)
@@ -203,7 +201,7 @@ async def list_meal_plans(
     return list(result.scalars().all())
 
 
-async def get_meal_plan_by_id(db: AsyncSession, meal_plan_id: int) -> Optional[MealPlan]:
+async def get_meal_plan_by_id(db: AsyncSession, meal_plan_id: int) -> MealPlan | None:
     """Get a meal plan by ID."""
     result = await db.execute(select(MealPlan).where(MealPlan.id == meal_plan_id))
     return result.scalar_one_or_none()
@@ -214,10 +212,10 @@ async def create_meal_plan(
     group_id: int,
     plan_date: date,
     meal_type: str,
-    recipe_id: Optional[int] = None,
-    assigned_cook_id: Optional[int] = None,
-    servings_planned: Optional[int] = None,
-    notes: Optional[str] = None,
+    recipe_id: int | None = None,
+    assigned_cook_id: int | None = None,
+    servings_planned: int | None = None,
+    notes: str | None = None,
 ) -> MealPlan:
     """Create a new meal plan."""
     meal_plan = MealPlan(
@@ -238,18 +236,20 @@ async def create_meal_plan(
 async def update_meal_plan(
     db: AsyncSession,
     meal_plan_id: int,
-    plan_date: Optional[date] = None,
-    meal_type: Optional[str] = None,
-    recipe_id: Optional[int] = None,
-    assigned_cook_id: Optional[int] = None,
-    servings_planned: Optional[int] = None,
-    notes: Optional[str] = None,
-    is_completed: Optional[bool] = None,
+    plan_date: date | None = None,
+    meal_type: str | None = None,
+    recipe_id: int | None = None,
+    assigned_cook_id: int | None = None,
+    servings_planned: int | None = None,
+    notes: str | None = None,
+    is_completed: bool | None = None,
 ) -> MealPlan:
     """Update a meal plan."""
     meal_plan = await get_meal_plan_by_id(db, meal_plan_id)
     if not meal_plan:
-        raise NotFoundError(code="MEAL_PLAN_NOT_FOUND", detail=f"Meal plan {meal_plan_id} not found")
+        raise NotFoundError(
+            code="MEAL_PLAN_NOT_FOUND", detail=f"Meal plan {meal_plan_id} not found"
+        )
 
     if plan_date is not None:
         meal_plan.plan_date = plan_date
@@ -275,7 +275,9 @@ async def delete_meal_plan(db: AsyncSession, meal_plan_id: int) -> None:
     """Delete a meal plan."""
     meal_plan = await get_meal_plan_by_id(db, meal_plan_id)
     if not meal_plan:
-        raise NotFoundError(code="MEAL_PLAN_NOT_FOUND", detail=f"Meal plan {meal_plan_id} not found")
+        raise NotFoundError(
+            code="MEAL_PLAN_NOT_FOUND", detail=f"Meal plan {meal_plan_id} not found"
+        )
     await db.delete(meal_plan)
     await db.flush()
 
@@ -304,12 +306,14 @@ async def sync_recipe_to_list(
     # Prepare items from ingredients
     items_to_add = []
     for ing in recipe.ingredients:
-        items_to_add.append({
-            "name": ing.name,
-            "quantity_value": ing.quantity_value,
-            "quantity_unit": ing.quantity_unit,
-            "notes": ing.preparation_note,
-        })
+        items_to_add.append(
+            {
+                "name": ing.name,
+                "quantity_value": ing.quantity_value,
+                "quantity_unit": ing.quantity_unit,
+                "notes": ing.preparation_note,
+            }
+        )
 
     # Add items to list
     created_items = await bulk_add_items(db, list_id, items_to_add)
