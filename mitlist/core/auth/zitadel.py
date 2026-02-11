@@ -172,4 +172,3 @@ async def require_active_token(token: str) -> dict[str, Any]:
     if not data.get("active"):
         raise ZitadelTokenError("Token is not active (revoked or expired).")
     return data
-

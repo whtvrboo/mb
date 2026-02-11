@@ -206,7 +206,9 @@ async def cancel_proposal(db: AsyncSession, proposal_id: int, user_id: int) -> P
 async def get_user_vote(db: AsyncSession, proposal_id: int, user_id: int) -> Optional[VoteRecord]:
     """Get a user's vote for a proposal."""
     result = await db.execute(
-        select(VoteRecord).where(VoteRecord.proposal_id == proposal_id, VoteRecord.user_id == user_id)
+        select(VoteRecord).where(
+            VoteRecord.proposal_id == proposal_id, VoteRecord.user_id == user_id
+        )
     )
     return result.scalar_one_or_none()
 
@@ -226,7 +228,8 @@ async def cast_vote(
 
     if proposal.status != ProposalStatus.OPEN:
         raise ConflictError(
-            code="PROPOSAL_NOT_OPEN", detail=f"Cannot vote on proposal with status {proposal.status}"
+            code="PROPOSAL_NOT_OPEN",
+            detail=f"Cannot vote on proposal with status {proposal.status}",
         )
 
     # Check deadline
@@ -314,7 +317,8 @@ async def cast_ranked_votes(
 
     if proposal.status != ProposalStatus.OPEN:
         raise ConflictError(
-            code="PROPOSAL_NOT_OPEN", detail=f"Cannot vote on proposal with status {proposal.status}"
+            code="PROPOSAL_NOT_OPEN",
+            detail=f"Cannot vote on proposal with status {proposal.status}",
         )
 
     if proposal.deadline_at and proposal.deadline_at < datetime.now(timezone.utc):
@@ -338,7 +342,9 @@ async def cast_ranked_votes(
 
     # Check for existing votes and delete them
     existing_votes_result = await db.execute(
-        select(VoteRecord).where(VoteRecord.proposal_id == proposal_id, VoteRecord.user_id == user_id)
+        select(VoteRecord).where(
+            VoteRecord.proposal_id == proposal_id, VoteRecord.user_id == user_id
+        )
     )
     existing_votes = existing_votes_result.scalars().all()
     for vote in existing_votes:
@@ -584,7 +590,9 @@ async def close_proposal(db: AsyncSession, proposal_id: int, closed_by_id: int) 
             )
             final_status = ProposalStatus(status_str)
         elif proposal.strategy == VotingStrategy.WEIGHTED:
-            winner_option_id, status_str = await _tally_weighted(db, proposal, total_votes, group_size)
+            winner_option_id, status_str = await _tally_weighted(
+                db, proposal, total_votes, group_size
+            )
             final_status = ProposalStatus(status_str)
 
     # Get winner option text
@@ -640,6 +648,7 @@ async def execute_proposal(db: AsyncSession, proposal_id: int, executed_by_id: i
         # For expense requests, mark the linked expense as approved/executed
         if proposal.linked_expense_id:
             from mitlist.modules.finance.models import Expense
+
             expense_result = await db.execute(
                 select(Expense).where(Expense.id == proposal.linked_expense_id)
             )
@@ -651,8 +660,10 @@ async def execute_proposal(db: AsyncSession, proposal_id: int, executed_by_id: i
         # For chore assignments, mark the assignment as approved
         if proposal.linked_chore_id:
             from mitlist.modules.chores.models import ChoreAssignment
+
             assignment_result = await db.execute(
-                select(ChoreAssignment).where(ChoreAssignment.chore_id == proposal.linked_chore_id)
+                select(ChoreAssignment)
+                .where(ChoreAssignment.chore_id == proposal.linked_chore_id)
                 .order_by(ChoreAssignment.created_at.desc())
                 .limit(1)
             )
@@ -669,6 +680,7 @@ async def execute_proposal(db: AsyncSession, proposal_id: int, executed_by_id: i
         if winner_opt and winner_opt.option_metadata and "user_id" in winner_opt.option_metadata:
             user_to_kick = winner_opt.option_metadata["user_id"]
             from mitlist.modules.auth.interface import remove_member
+
             await remove_member(db, proposal.group_id, user_to_kick)
             execution_result["user_kicked"] = user_to_kick
 

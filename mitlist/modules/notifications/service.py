@@ -84,9 +84,7 @@ async def create_notifications_bulk(
 
 async def get_notification_by_id(db: AsyncSession, notification_id: int) -> Optional[Notification]:
     """Get notification by ID."""
-    result = await db.execute(
-        select(Notification).where(Notification.id == notification_id)
-    )
+    result = await db.execute(select(Notification).where(Notification.id == notification_id))
     return result.scalar_one_or_none()
 
 
@@ -94,10 +92,14 @@ async def mark_read(db: AsyncSession, notification_id: int, user_id: int) -> Not
     """Mark a notification as read."""
     notification = await get_notification_by_id(db, notification_id)
     if not notification:
-        raise NotFoundError(code="NOTIFICATION_NOT_FOUND", detail=f"Notification {notification_id} not found")
+        raise NotFoundError(
+            code="NOTIFICATION_NOT_FOUND", detail=f"Notification {notification_id} not found"
+        )
     if notification.user_id != user_id:
-        raise ForbiddenError(code="NOT_OWNER", detail="Cannot mark another user's notification as read")
-    
+        raise ForbiddenError(
+            code="NOT_OWNER", detail="Cannot mark another user's notification as read"
+        )
+
     notification.is_read = True
     notification.read_at = datetime.now(timezone.utc)
     await db.flush()
@@ -114,7 +116,7 @@ async def mark_all_read(db: AsyncSession, user_id: int, group_id: Optional[int] 
     )
     if group_id is not None:
         q = q.where(Notification.group_id == group_id)
-    
+
     result = await db.execute(q)
     await db.flush()
     return result.rowcount
@@ -164,7 +166,7 @@ async def update_preference(
 ) -> NotificationPreference:
     """Update or create a notification preference."""
     pref = await get_preference(db, user_id, event_type, channel)
-    
+
     if pref is None:
         # Create new preference
         pref = NotificationPreference(
@@ -180,7 +182,7 @@ async def update_preference(
             pref.enabled = enabled
         if advance_notice_hours is not None:
             pref.advance_notice_hours = advance_notice_hours
-    
+
     await db.flush()
     await db.refresh(pref)
     return pref
@@ -237,7 +239,7 @@ async def create_comment(
     )
     db.add(comment)
     await db.flush()
-    
+
     # Create mentions
     if mentioned_user_ids:
         for user_id in mentioned_user_ids:
@@ -248,7 +250,7 @@ async def create_comment(
             )
             db.add(mention)
         await db.flush()
-    
+
     await db.refresh(comment)
     return comment
 
@@ -260,7 +262,7 @@ async def update_comment(db: AsyncSession, comment_id: int, user_id: int, conten
         raise NotFoundError(code="COMMENT_NOT_FOUND", detail=f"Comment {comment_id} not found")
     if comment.author_id != user_id:
         raise ForbiddenError(code="NOT_AUTHOR", detail="Only the author can edit this comment")
-    
+
     comment.content = content
     comment.is_edited = True
     comment.edited_at = datetime.now(timezone.utc)
@@ -276,7 +278,7 @@ async def delete_comment(db: AsyncSession, comment_id: int, user_id: int) -> Non
         raise NotFoundError(code="COMMENT_NOT_FOUND", detail=f"Comment {comment_id} not found")
     if comment.author_id != user_id:
         raise ForbiddenError(code="NOT_AUTHOR", detail="Only the author can delete this comment")
-    
+
     comment.deleted_at = datetime.now(timezone.utc)
     await db.flush()
 
@@ -310,12 +312,12 @@ async def toggle_reaction(
 ) -> tuple[str, Optional[Reaction]]:
     """Toggle a reaction (add if not exists, remove if exists). Returns (action, reaction)."""
     existing = await get_reaction(db, user_id, target_type, target_id, emoji_code)
-    
+
     if existing:
         await db.delete(existing)
         await db.flush()
         return ("removed", None)
-    
+
     # Create new reaction
     comment_id = target_id if target_type == "COMMENT" else None
     reaction = Reaction(

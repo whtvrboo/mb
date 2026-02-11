@@ -33,7 +33,9 @@ def setup_otel() -> Optional[FastAPIInstrumentor]:
         # For now, just set up the provider
         provider = TracerProvider()
         trace.set_tracer_provider(provider)
-        logger.info(f"OpenTelemetry configured with OTLP endpoint: {settings.OTEL_EXPORTER_OTLP_ENDPOINT}")
+        logger.info(
+            f"OpenTelemetry configured with OTLP endpoint: {settings.OTEL_EXPORTER_OTLP_ENDPOINT}"
+        )
     else:
         logger.info("OpenTelemetry not configured")
         return None

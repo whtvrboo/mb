@@ -66,9 +66,7 @@ class ExpenseBase(BaseModel):
     currency_code: str = Field("USD", max_length=3, pattern="^[A-Z]{3}$")
     category_id: int
     expense_date: datetime
-    payment_method: Optional[str] = Field(
-        None, pattern="^(CARD|CASH|TRANSFER|OTHER)$"
-    )
+    payment_method: Optional[str] = Field(None, pattern="^(CARD|CASH|TRANSFER|OTHER)$")
     vendor_name: Optional[str] = Field(None, max_length=255)
     receipt_img_url: Optional[str] = Field(None, max_length=500)
     is_reimbursable: bool = False
@@ -104,9 +102,7 @@ class ExpenseUpdate(BaseModel):
     currency_code: Optional[str] = Field(None, max_length=3, pattern="^[A-Z]{3}$")
     category_id: Optional[int] = None
     expense_date: Optional[datetime] = None
-    payment_method: Optional[str] = Field(
-        None, pattern="^(CARD|CASH|TRANSFER|OTHER)$"
-    )
+    payment_method: Optional[str] = Field(None, pattern="^(CARD|CASH|TRANSFER|OTHER)$")
     vendor_name: Optional[str] = Field(None, max_length=255)
     receipt_img_url: Optional[str] = Field(None, max_length=500)
     is_reimbursable: Optional[bool] = None
@@ -188,9 +184,7 @@ class RecurringExpenseUpdate(BaseModel):
     amount: Optional[Decimal] = Field(None, gt=0)
     currency_code: Optional[str] = Field(None, max_length=3, pattern="^[A-Z]{3}$")
     category_id: Optional[int] = None
-    frequency_type: Optional[str] = Field(
-        None, pattern="^(WEEKLY|MONTHLY|YEARLY|CUSTOM)$"
-    )
+    frequency_type: Optional[str] = Field(None, pattern="^(WEEKLY|MONTHLY|YEARLY|CUSTOM)$")
     interval_value: Optional[int] = Field(None, ge=1)
     end_date: Optional[datetime] = None
     auto_create_expense: Optional[bool] = None
@@ -270,9 +264,7 @@ class SplitPresetBase(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=255)
     is_default: bool = False
-    method: str = Field(
-        ..., pattern="^(EQUAL|PERCENTAGE|FIXED_AMOUNT|BY_INCOME)$"
-    )
+    method: str = Field(..., pattern="^(EQUAL|PERCENTAGE|FIXED_AMOUNT|BY_INCOME)$")
 
 
 class SplitPresetCreate(SplitPresetBase):
@@ -293,9 +285,7 @@ class SplitPresetUpdate(BaseModel):
 
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     is_default: Optional[bool] = None
-    method: Optional[str] = Field(
-        None, pattern="^(EQUAL|PERCENTAGE|FIXED_AMOUNT|BY_INCOME)$"
-    )
+    method: Optional[str] = Field(None, pattern="^(EQUAL|PERCENTAGE|FIXED_AMOUNT|BY_INCOME)$")
     members: Optional[list[SplitPresetMemberInput]] = None
 
 

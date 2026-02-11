@@ -14,24 +14,16 @@ class PlantSpeciesBase(BaseModel):
 
     scientific_name: str = Field(..., min_length=1, max_length=255)
     common_name: Optional[str] = Field(None, max_length=255)
-    toxicity: str = Field(
-        ..., pattern="^(SAFE|TOXIC_CATS|TOXIC_DOGS|TOXIC_ALL)$"
-    )
+    toxicity: str = Field(..., pattern="^(SAFE|TOXIC_CATS|TOXIC_DOGS|TOXIC_ALL)$")
     light_needs: str = Field(..., pattern="^(LOW|INDIRECT|DIRECT)$")
     water_interval_summer: Optional[int] = Field(None, ge=1)  # days
     water_interval_winter: Optional[int] = Field(None, ge=1)  # days
-    humidity_preference: Optional[str] = Field(
-        None, pattern="^(LOW|MEDIUM|HIGH)$"
-    )
+    humidity_preference: Optional[str] = Field(None, pattern="^(LOW|MEDIUM|HIGH)$")
     fertilize_frequency_weeks: Optional[int] = Field(None, ge=1)
     growth_rate: Optional[str] = Field(None, pattern="^(SLOW|MEDIUM|FAST)$")
     mature_height_cm: Optional[int] = Field(None, ge=1)
-    propagation_method: Optional[str] = Field(
-        None, pattern="^(SEED|CUTTING|DIVISION)$"
-    )
-    care_difficulty: Optional[str] = Field(
-        None, pattern="^(EASY|MODERATE|HARD)$"
-    )
+    propagation_method: Optional[str] = Field(None, pattern="^(SEED|CUTTING|DIVISION)$")
+    care_difficulty: Optional[str] = Field(None, pattern="^(EASY|MODERATE|HARD)$")
 
 
 class PlantSpeciesCreate(PlantSpeciesBase):
@@ -45,24 +37,16 @@ class PlantSpeciesUpdate(BaseModel):
 
     scientific_name: Optional[str] = Field(None, min_length=1, max_length=255)
     common_name: Optional[str] = Field(None, max_length=255)
-    toxicity: Optional[str] = Field(
-        None, pattern="^(SAFE|TOXIC_CATS|TOXIC_DOGS|TOXIC_ALL)$"
-    )
+    toxicity: Optional[str] = Field(None, pattern="^(SAFE|TOXIC_CATS|TOXIC_DOGS|TOXIC_ALL)$")
     light_needs: Optional[str] = Field(None, pattern="^(LOW|INDIRECT|DIRECT)$")
     water_interval_summer: Optional[int] = Field(None, ge=1)
     water_interval_winter: Optional[int] = Field(None, ge=1)
-    humidity_preference: Optional[str] = Field(
-        None, pattern="^(LOW|MEDIUM|HIGH)$"
-    )
+    humidity_preference: Optional[str] = Field(None, pattern="^(LOW|MEDIUM|HIGH)$")
     fertilize_frequency_weeks: Optional[int] = Field(None, ge=1)
     growth_rate: Optional[str] = Field(None, pattern="^(SLOW|MEDIUM|FAST)$")
     mature_height_cm: Optional[int] = Field(None, ge=1)
-    propagation_method: Optional[str] = Field(
-        None, pattern="^(SEED|CUTTING|DIVISION)$"
-    )
-    care_difficulty: Optional[str] = Field(
-        None, pattern="^(EASY|MODERATE|HARD)$"
-    )
+    propagation_method: Optional[str] = Field(None, pattern="^(SEED|CUTTING|DIVISION)$")
+    care_difficulty: Optional[str] = Field(None, pattern="^(EASY|MODERATE|HARD)$")
 
 
 class PlantSpeciesResponse(PlantSpeciesBase):
@@ -85,9 +69,7 @@ class PlantBase(BaseModel):
     location_id: Optional[int] = None
     nickname: Optional[str] = Field(None, max_length=255)
     acquired_at: Optional[datetime] = None
-    acquired_from: Optional[str] = Field(
-        None, pattern="^(STORE|GIFT|PROPAGATION)$"
-    )
+    acquired_from: Optional[str] = Field(None, pattern="^(STORE|GIFT|PROPAGATION)$")
     pot_size_cm: Optional[int] = Field(None, ge=1)
     photo_url: Optional[str] = Field(None, max_length=500)
     notes: Optional[str] = None

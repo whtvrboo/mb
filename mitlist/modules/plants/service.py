@@ -80,9 +80,7 @@ async def list_plants(db: AsyncSession, group_id: int) -> list[Plant]:
 async def get_plant_by_id(db: AsyncSession, plant_id: int) -> Optional[Plant]:
     """Get plant by ID."""
     result = await db.execute(
-        select(Plant)
-        .where(Plant.id == plant_id)
-        .options(selectinload(Plant.species))
+        select(Plant).where(Plant.id == plant_id).options(selectinload(Plant.species))
     )
     return result.scalar_one_or_none()
 
@@ -139,7 +137,7 @@ async def update_plant(
     plant = await get_plant_by_id(db, plant_id)
     if not plant:
         raise NotFoundError(code="PLANT_NOT_FOUND", detail=f"Plant {plant_id} not found")
-    
+
     if location_id is not None:
         plant.location_id = location_id
     if nickname is not None:
@@ -150,7 +148,7 @@ async def update_plant(
         plant.photo_url = photo_url
     if notes is not None:
         plant.notes = notes
-        
+
     await db.flush()
     await db.refresh(plant)
     return plant
@@ -165,11 +163,11 @@ async def mark_plant_dead(
     plant = await get_plant_by_id(db, plant_id)
     if not plant:
         raise NotFoundError(code="PLANT_NOT_FOUND", detail=f"Plant {plant_id} not found")
-        
+
     plant.is_alive = False
     plant.died_at = datetime.now(timezone.utc)
     plant.death_reason = death_reason
-    
+
     await db.flush()
     await db.refresh(plant)
     return plant
@@ -217,7 +215,7 @@ async def create_plant_log(
     db.add(log)
     await db.flush()
     await db.refresh(log)
-    
+
     # Update active schedules for this action_type
     schedules = await list_plant_schedules(db, plant_id)
     for sched in schedules:
@@ -225,7 +223,7 @@ async def create_plant_log(
             # Update next due date to occurred_at + frequency
             sched.next_due_date = occurred_at + timedelta(days=sched.frequency_days)
             await db.flush()
-            
+
     return log
 
 
@@ -242,9 +240,7 @@ async def get_schedule_by_id(db: AsyncSession, schedule_id: int) -> Optional[Pla
 
 async def list_plant_schedules(db: AsyncSession, plant_id: int) -> list[PlantSchedule]:
     """List schedules for a plant."""
-    result = await db.execute(
-        select(PlantSchedule).where(PlantSchedule.plant_id == plant_id)
-    )
+    result = await db.execute(select(PlantSchedule).where(PlantSchedule.plant_id == plant_id))
     return list(result.scalars().all())
 
 

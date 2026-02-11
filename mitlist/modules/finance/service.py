@@ -110,12 +110,10 @@ async def create_expense(
             )
             db.add(split)
         await db.flush()
-    
+
     # Reload expense with splits relationship loaded
     result = await db.execute(
-        select(Expense)
-        .options(selectinload(Expense.splits))
-        .where(Expense.id == expense.id)
+        select(Expense).options(selectinload(Expense.splits)).where(Expense.id == expense.id)
     )
     expense = result.scalar_one()
     return expense
@@ -164,12 +162,10 @@ async def update_expense(
     if exchange_rate is not None:
         expense.exchange_rate = exchange_rate
     await db.flush()
-    
+
     # Reload expense with splits relationship loaded
     result = await db.execute(
-        select(Expense)
-        .options(selectinload(Expense.splits))
-        .where(Expense.id == expense.id)
+        select(Expense).options(selectinload(Expense.splits)).where(Expense.id == expense.id)
     )
     expense = result.scalar_one()
     return expense
@@ -285,9 +281,7 @@ async def calculate_group_balances(
     from mitlist.modules.auth.models import UserGroup
 
     members_result = await db.execute(
-        select(UserGroup.user_id).where(
-            UserGroup.group_id == group_id, UserGroup.left_at.is_(None)
-        )
+        select(UserGroup.user_id).where(UserGroup.group_id == group_id, UserGroup.left_at.is_(None))
     )
     member_ids = [row[0] for row in members_result.all()]
 
@@ -517,9 +511,7 @@ async def list_budgets_with_status(
 
         remaining = budget.amount_limit - current_spent
         percentage_used = (
-            float((current_spent / budget.amount_limit) * 100)
-            if budget.amount_limit > 0
-            else 0.0
+            float((current_spent / budget.amount_limit) * 100) if budget.amount_limit > 0 else 0.0
         )
         is_over_budget = current_spent > budget.amount_limit
         is_alert_threshold_reached = percentage_used >= budget.alert_threshold_percentage
@@ -841,12 +833,10 @@ async def generate_expense_from_recurring(
     )
 
     await db.flush()
-    
+
     # Reload expense with splits relationship loaded
     result = await db.execute(
-        select(Expense)
-        .options(selectinload(Expense.splits))
-        .where(Expense.id == expense.id)
+        select(Expense).options(selectinload(Expense.splits)).where(Expense.id == expense.id)
     )
     expense = result.scalar_one()
     return expense

@@ -21,9 +21,7 @@ def _now() -> datetime:
 # ---------- Users ----------
 async def get_user_by_id(db: AsyncSession, user_id: int) -> Optional[User]:
     """Get user by ID."""
-    result = await db.execute(
-        select(User).where(User.id == user_id, User.deleted_at.is_(None))
-    )
+    result = await db.execute(select(User).where(User.id == user_id, User.deleted_at.is_(None)))
     return result.scalar_one_or_none()
 
 
@@ -287,7 +285,9 @@ async def create_invite(
             await db.refresh(invite)
             return invite
 
-    raise ValidationError(code="INVITE_CODE_GENERATION_FAILED", detail="Could not generate invite code")
+    raise ValidationError(
+        code="INVITE_CODE_GENERATION_FAILED", detail="Could not generate invite code"
+    )
 
 
 def _invite_is_valid(invite: Invite) -> bool:
@@ -315,9 +315,7 @@ async def get_invite_by_id(db: AsyncSession, invite_id: int) -> Optional[Invite]
     return result.scalar_one_or_none()
 
 
-async def require_valid_invite(
-    db: AsyncSession, code: str, for_update: bool = False
-) -> Invite:
+async def require_valid_invite(db: AsyncSession, code: str, for_update: bool = False) -> Invite:
     invite = await get_invite_by_code(db, code, for_update=for_update)
     if not invite or not _invite_is_valid(invite):
         raise NotFoundError(code="INVITE_INVALID", detail="Invite code is invalid or expired")
@@ -365,9 +363,7 @@ async def revoke_invite(db: AsyncSession, invite_id: int) -> Invite:
 async def list_invites_for_group(db: AsyncSession, group_id: int) -> list[Invite]:
     """List invites for a group."""
     result = await db.execute(
-        select(Invite)
-        .where(Invite.group_id == group_id)
-        .order_by(Invite.created_at.desc())
+        select(Invite).where(Invite.group_id == group_id).order_by(Invite.created_at.desc())
     )
     return list(result.scalars().all())
 
@@ -382,8 +378,10 @@ async def add_member(
     # Check if already a member
     existing = await get_membership(db, group_id, user_id)
     if existing:
-        raise ValidationError(code="ALREADY_MEMBER", detail="User is already a member of this group")
-    
+        raise ValidationError(
+            code="ALREADY_MEMBER", detail="User is already a member of this group"
+        )
+
     ug = UserGroup(
         user_id=user_id,
         group_id=group_id,
@@ -485,7 +483,9 @@ async def delete_location(db: AsyncSession, location_id: int) -> None:
 async def list_service_contacts(db: AsyncSession, group_id: int) -> list[ServiceContact]:
     """List service contacts for a group."""
     result = await db.execute(
-        select(ServiceContact).where(ServiceContact.group_id == group_id).order_by(ServiceContact.name)
+        select(ServiceContact)
+        .where(ServiceContact.group_id == group_id)
+        .order_by(ServiceContact.name)
     )
     return list(result.scalars().all())
 
@@ -544,7 +544,9 @@ async def update_service_contact(
     """Update a service contact."""
     contact = await get_service_contact_by_id(db, contact_id)
     if not contact:
-        raise NotFoundError(code="SERVICE_CONTACT_NOT_FOUND", detail=f"Service contact {contact_id} not found")
+        raise NotFoundError(
+            code="SERVICE_CONTACT_NOT_FOUND", detail=f"Service contact {contact_id} not found"
+        )
 
     if name is not None:
         contact.name = name
@@ -574,6 +576,8 @@ async def delete_service_contact(db: AsyncSession, contact_id: int) -> None:
     """Delete a service contact."""
     contact = await get_service_contact_by_id(db, contact_id)
     if not contact:
-        raise NotFoundError(code="SERVICE_CONTACT_NOT_FOUND", detail=f"Service contact {contact_id} not found")
+        raise NotFoundError(
+            code="SERVICE_CONTACT_NOT_FOUND", detail=f"Service contact {contact_id} not found"
+        )
     await db.delete(contact)
     await db.flush()

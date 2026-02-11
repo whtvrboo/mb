@@ -134,9 +134,7 @@ class TagBase(BaseModel):
     """Base tag schema."""
 
     name: str = Field(..., min_length=1, max_length=100)
-    color_hex: Optional[str] = Field(
-        None, max_length=7, pattern="^#[0-9A-Fa-f]{6}$"
-    )
+    color_hex: Optional[str] = Field(None, max_length=7, pattern="^#[0-9A-Fa-f]{6}$")
 
 
 class TagCreate(TagBase):
@@ -149,9 +147,7 @@ class TagUpdate(BaseModel):
     """Schema for updating a tag."""
 
     name: Optional[str] = Field(None, min_length=1, max_length=100)
-    color_hex: Optional[str] = Field(
-        None, max_length=7, pattern="^#[0-9A-Fa-f]{6}$"
-    )
+    color_hex: Optional[str] = Field(None, max_length=7, pattern="^#[0-9A-Fa-f]{6}$")
 
 
 class TagResponse(TagBase):

@@ -185,9 +185,7 @@ class MealPlanUpdate(BaseModel):
     """Schema for updating a meal plan."""
 
     plan_date: Optional[date] = None
-    meal_type: Optional[str] = Field(
-        None, pattern="^(BREAKFAST|LUNCH|DINNER|SNACK)$"
-    )
+    meal_type: Optional[str] = Field(None, pattern="^(BREAKFAST|LUNCH|DINNER|SNACK)$")
     recipe_id: Optional[int] = None
     assigned_cook_id: Optional[int] = None
     servings_planned: Optional[int] = Field(None, ge=1)

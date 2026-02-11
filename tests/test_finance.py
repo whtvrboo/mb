@@ -103,7 +103,9 @@ class TestExpenses:
         assert Decimal(data["amount"]) == Decimal("125.50")
         assert data["paid_by_user_id"] == test_user.id
 
-    async def test_list_expenses(self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group):
+    async def test_list_expenses(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group
+    ):
         """Test listing expenses."""
         expense = Expense(
             group_id=test_group.id,
@@ -123,7 +125,9 @@ class TestExpenses:
         assert len(data) >= 1
         assert any(e["description"] == "Test expense" for e in data)
 
-    async def test_get_expense(self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group):
+    async def test_get_expense(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group
+    ):
         """Test getting an expense."""
         expense = Expense(
             group_id=test_group.id,
@@ -144,7 +148,9 @@ class TestExpenses:
         assert data["id"] == expense.id
         assert data["description"] == "Get me"
 
-    async def test_update_expense(self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group):
+    async def test_update_expense(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group
+    ):
         """Test updating an expense."""
         expense = Expense(
             group_id=test_group.id,
@@ -173,7 +179,9 @@ class TestExpenses:
         assert data["description"] == "Updated expense"
         assert Decimal(data["amount"]) == Decimal("150.00")
 
-    async def test_delete_expense(self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group):
+    async def test_delete_expense(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group
+    ):
         """Test deleting an expense."""
         expense = Expense(
             group_id=test_group.id,
@@ -195,7 +203,15 @@ class TestExpenses:
 class TestBalances:
     """Test balance endpoints."""
 
-    async def test_get_balances(self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_user2, test_group):
+    async def test_get_balances(
+        self,
+        client: AsyncClient,
+        db: AsyncSession,
+        test_category,
+        test_user,
+        test_user2,
+        test_group,
+    ):
         """Test calculating group balances."""
         from mitlist.modules.auth.models import UserGroup
 
@@ -250,7 +266,9 @@ class TestBalances:
 class TestSettlements:
     """Test settlement endpoints."""
 
-    async def test_create_settlement(self, client: AsyncClient, test_user, test_user2, test_group, db: AsyncSession):
+    async def test_create_settlement(
+        self, client: AsyncClient, test_user, test_user2, test_group, db: AsyncSession
+    ):
         """Test creating a settlement."""
         from mitlist.modules.auth.models import UserGroup
 
@@ -280,7 +298,9 @@ class TestSettlements:
         assert data["payer_id"] == test_user.id
         assert data["payee_id"] == test_user2.id
 
-    async def test_list_settlements(self, client: AsyncClient, db: AsyncSession, test_user, test_user2, test_group):
+    async def test_list_settlements(
+        self, client: AsyncClient, db: AsyncSession, test_user, test_user2, test_group
+    ):
         """Test listing settlements."""
         settlement = Settlement(
             group_id=test_group.id,
@@ -299,7 +319,9 @@ class TestSettlements:
         data = response.json()
         assert len(data) >= 1
 
-    async def test_get_settlement(self, client: AsyncClient, db: AsyncSession, test_user, test_user2, test_group):
+    async def test_get_settlement(
+        self, client: AsyncClient, db: AsyncSession, test_user, test_user2, test_group
+    ):
         """Test getting a settlement."""
         settlement = Settlement(
             group_id=test_group.id,
@@ -319,7 +341,9 @@ class TestSettlements:
         data = response.json()
         assert data["id"] == settlement.id
 
-    async def test_delete_settlement(self, client: AsyncClient, db: AsyncSession, test_user, test_user2, test_group):
+    async def test_delete_settlement(
+        self, client: AsyncClient, db: AsyncSession, test_user, test_user2, test_group
+    ):
         """Test deleting a settlement."""
         settlement = Settlement(
             group_id=test_group.id,
@@ -359,7 +383,9 @@ class TestBudgets:
         assert Decimal(data["amount_limit"]) == Decimal("500.00")
         assert data["period_type"] == "MONTHLY"
 
-    async def test_list_budgets(self, client: AsyncClient, db: AsyncSession, test_category, test_group):
+    async def test_list_budgets(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_group
+    ):
         """Test listing budgets."""
         budget = Budget(
             group_id=test_group.id,
@@ -378,7 +404,9 @@ class TestBudgets:
         data = response.json()
         assert len(data) >= 1
 
-    async def test_get_budget(self, client: AsyncClient, db: AsyncSession, test_category, test_group):
+    async def test_get_budget(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_group
+    ):
         """Test getting a budget with status."""
         budget = Budget(
             group_id=test_group.id,
@@ -400,7 +428,9 @@ class TestBudgets:
         assert "current_spent" in data
         assert "percentage_used" in data
 
-    async def test_update_budget(self, client: AsyncClient, db: AsyncSession, test_category, test_group):
+    async def test_update_budget(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_group
+    ):
         """Test updating a budget."""
         budget = Budget(
             group_id=test_group.id,
@@ -423,7 +453,9 @@ class TestBudgets:
         data = response.json()
         assert Decimal(data["amount_limit"]) == Decimal("600.00")
 
-    async def test_delete_budget(self, client: AsyncClient, db: AsyncSession, test_category, test_group):
+    async def test_delete_budget(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_group
+    ):
         """Test deleting a budget."""
         budget = Budget(
             group_id=test_group.id,
@@ -466,7 +498,9 @@ class TestRecurringExpenses:
         assert Decimal(data["amount"]) == Decimal("1200.00")
         assert data["frequency_type"] == "MONTHLY"
 
-    async def test_list_recurring_expenses(self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group):
+    async def test_list_recurring_expenses(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group
+    ):
         """Test listing recurring expenses."""
         recurring = RecurringExpense(
             group_id=test_group.id,
@@ -490,7 +524,9 @@ class TestRecurringExpenses:
         data = response.json()
         assert len(data) >= 1
 
-    async def test_get_recurring_expense(self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group):
+    async def test_get_recurring_expense(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group
+    ):
         """Test getting a recurring expense."""
         recurring = RecurringExpense(
             group_id=test_group.id,
@@ -515,7 +551,9 @@ class TestRecurringExpenses:
         data = response.json()
         assert data["id"] == recurring.id
 
-    async def test_update_recurring_expense(self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group):
+    async def test_update_recurring_expense(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group
+    ):
         """Test updating a recurring expense."""
         recurring = RecurringExpense(
             group_id=test_group.id,
@@ -543,7 +581,9 @@ class TestRecurringExpenses:
         data = response.json()
         assert Decimal(data["amount"]) == Decimal("75.00")
 
-    async def test_delete_recurring_expense(self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group):
+    async def test_delete_recurring_expense(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group
+    ):
         """Test deactivating a recurring expense."""
         recurring = RecurringExpense(
             group_id=test_group.id,
@@ -566,7 +606,9 @@ class TestRecurringExpenses:
         response = await client.delete(f"/api/v1/recurring-expenses/{recurring.id}")
         assert response.status_code == 204
 
-    async def test_generate_expense_from_recurring(self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group):
+    async def test_generate_expense_from_recurring(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group
+    ):
         """Test generating an expense from recurring template."""
         recurring = RecurringExpense(
             group_id=test_group.id,
@@ -597,7 +639,9 @@ class TestRecurringExpenses:
 class TestSplitPresets:
     """Test split preset endpoints."""
 
-    async def test_create_split_preset(self, client: AsyncClient, test_user, test_user2, test_group):
+    async def test_create_split_preset(
+        self, client: AsyncClient, test_user, test_user2, test_group
+    ):
         """Test creating a split preset."""
         response = await client.post(
             "/api/v1/split-presets",
@@ -618,7 +662,9 @@ class TestSplitPresets:
         assert data["method"] == "EQUAL"
         assert len(data["members"]) == 2
 
-    async def test_list_split_presets(self, client: AsyncClient, db: AsyncSession, test_user, test_group):
+    async def test_list_split_presets(
+        self, client: AsyncClient, db: AsyncSession, test_user, test_group
+    ):
         """Test listing split presets."""
         preset = SplitPreset(
             group_id=test_group.id,

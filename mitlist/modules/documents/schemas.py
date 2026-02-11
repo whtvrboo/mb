@@ -117,13 +117,9 @@ class SharedCredentialBase(BaseModel):
     """Base shared credential schema."""
 
     name: str = Field(..., min_length=1, max_length=255)
-    credential_type: str = Field(
-        ..., pattern="^(WIFI|STREAMING|BANK|UTILITY|OTHER)$"
-    )
+    credential_type: str = Field(..., pattern="^(WIFI|STREAMING|BANK|UTILITY|OTHER)$")
     username_identity: Optional[str] = Field(None, max_length=255)
-    access_level: str = Field(
-        ..., pattern="^(ADMIN_ONLY|MEMBER|GUEST)$"
-    )
+    access_level: str = Field(..., pattern="^(ADMIN_ONLY|MEMBER|GUEST)$")
     url: Optional[str] = Field(None, max_length=500)
     rotation_reminder_days: Optional[int] = Field(None, ge=1)
     notes: Optional[str] = Field(None, max_length=1000)
@@ -140,13 +136,9 @@ class SharedCredentialUpdate(BaseModel):
     """Schema for updating a shared credential."""
 
     name: Optional[str] = Field(None, min_length=1, max_length=255)
-    credential_type: Optional[str] = Field(
-        None, pattern="^(WIFI|STREAMING|BANK|UTILITY|OTHER)$"
-    )
+    credential_type: Optional[str] = Field(None, pattern="^(WIFI|STREAMING|BANK|UTILITY|OTHER)$")
     username_identity: Optional[str] = Field(None, max_length=255)
-    access_level: Optional[str] = Field(
-        None, pattern="^(ADMIN_ONLY|MEMBER|GUEST)$"
-    )
+    access_level: Optional[str] = Field(None, pattern="^(ADMIN_ONLY|MEMBER|GUEST)$")
     url: Optional[str] = Field(None, max_length=500)
     rotation_reminder_days: Optional[int] = Field(None, ge=1)
     notes: Optional[str] = Field(None, max_length=1000)

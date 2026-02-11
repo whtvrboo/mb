@@ -249,7 +249,9 @@ async def update_meal_plan(
     """Update a meal plan."""
     meal_plan = await get_meal_plan_by_id(db, meal_plan_id)
     if not meal_plan:
-        raise NotFoundError(code="MEAL_PLAN_NOT_FOUND", detail=f"Meal plan {meal_plan_id} not found")
+        raise NotFoundError(
+            code="MEAL_PLAN_NOT_FOUND", detail=f"Meal plan {meal_plan_id} not found"
+        )
 
     if plan_date is not None:
         meal_plan.plan_date = plan_date
@@ -275,7 +277,9 @@ async def delete_meal_plan(db: AsyncSession, meal_plan_id: int) -> None:
     """Delete a meal plan."""
     meal_plan = await get_meal_plan_by_id(db, meal_plan_id)
     if not meal_plan:
-        raise NotFoundError(code="MEAL_PLAN_NOT_FOUND", detail=f"Meal plan {meal_plan_id} not found")
+        raise NotFoundError(
+            code="MEAL_PLAN_NOT_FOUND", detail=f"Meal plan {meal_plan_id} not found"
+        )
     await db.delete(meal_plan)
     await db.flush()
 
@@ -304,12 +308,14 @@ async def sync_recipe_to_list(
     # Prepare items from ingredients
     items_to_add = []
     for ing in recipe.ingredients:
-        items_to_add.append({
-            "name": ing.name,
-            "quantity_value": ing.quantity_value,
-            "quantity_unit": ing.quantity_unit,
-            "notes": ing.preparation_note,
-        })
+        items_to_add.append(
+            {
+                "name": ing.name,
+                "quantity_value": ing.quantity_value,
+                "quantity_unit": ing.quantity_unit,
+                "notes": ing.preparation_note,
+            }
+        )
 
     # Add items to list
     created_items = await bulk_add_items(db, list_id, items_to_add)

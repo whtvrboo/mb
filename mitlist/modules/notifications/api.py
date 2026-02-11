@@ -36,9 +36,11 @@ async def get_notifications(
     db: AsyncSession = Depends(get_db),
 ):
     """List notifications for the current user."""
-    notifications = await list_notifications(db, user.id, unread_only=unread_only, limit=limit, offset=offset)
+    notifications = await list_notifications(
+        db, user.id, unread_only=unread_only, limit=limit, offset=offset
+    )
     unread = await get_unread_count(db, user.id)
-    
+
     return schemas.NotificationListResponse(
         notifications=notifications,
         total_count=len(notifications),
@@ -121,14 +123,14 @@ async def get_comments_list(
 ):
     """List comments for an entity."""
     comments = await list_comments(db, parent_type, parent_id, limit=limit, offset=offset)
-    
+
     # Build response with reaction counts
     result = []
     for comment in comments:
         reaction_counts: dict[str, int] = {}
         for reaction in comment.reactions:
             reaction_counts[reaction.emoji_code] = reaction_counts.get(reaction.emoji_code, 0) + 1
-        
+
         result.append(
             schemas.CommentWithReactionsResponse(
                 id=comment.id,
@@ -171,7 +173,9 @@ async def get_comments_list(
     return result
 
 
-@comments_router.post("", response_model=schemas.CommentResponse, status_code=status.HTTP_201_CREATED)
+@comments_router.post(
+    "", response_model=schemas.CommentResponse, status_code=status.HTTP_201_CREATED
+)
 async def post_comment(
     data: schemas.CommentCreate,
     user: User = Depends(get_current_user),

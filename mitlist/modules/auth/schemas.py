@@ -211,19 +211,19 @@ class InviteResponse(InviteBase):
     is_active: bool
     created_at: datetime
     updated_at: datetime
-    
+
     @computed_field
     @property
     def email(self) -> Optional[str]:
         """Alias for email_hint."""
         return self.email_hint
-    
+
     @computed_field
-    @property  
+    @property
     def invite_code(self) -> str:
         """Alias for code."""
         return self.code
-    
+
     @computed_field
     @property
     def status(self) -> str:

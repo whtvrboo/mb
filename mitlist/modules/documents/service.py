@@ -131,9 +131,7 @@ async def list_credentials(db: AsyncSession, group_id: int) -> list[SharedCreden
 
 async def get_credential_by_id(db: AsyncSession, credential_id: int) -> SharedCredential | None:
     """Get a credential by ID."""
-    result = await db.execute(
-        select(SharedCredential).where(SharedCredential.id == credential_id)
-    )
+    result = await db.execute(select(SharedCredential).where(SharedCredential.id == credential_id))
     return result.scalar_one_or_none()
 
 

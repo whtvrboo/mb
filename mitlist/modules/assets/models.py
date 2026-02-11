@@ -75,7 +75,9 @@ class HomeAsset(BaseModel, TimestampMixin):
     photo_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     manual_document_id: Mapped[Optional[int]] = mapped_column(nullable=True)  # FK to documents
     receipt_document_id: Mapped[Optional[int]] = mapped_column(nullable=True)  # FK to documents
-    service_contact_id: Mapped[Optional[int]] = mapped_column(ForeignKey("service_contacts.id"), nullable=True)
+    service_contact_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("service_contacts.id"), nullable=True
+    )
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
     disposed_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
 
@@ -116,7 +118,9 @@ class MaintenanceLog(BaseModel, TimestampMixin):
 
     __tablename__ = "maintenance_logs"
 
-    task_id: Mapped[int] = mapped_column(ForeignKey("maintenance_tasks.id"), nullable=False, index=True)
+    task_id: Mapped[int] = mapped_column(
+        ForeignKey("maintenance_tasks.id"), nullable=False, index=True
+    )
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     completed_at: Mapped[datetime] = mapped_column(nullable=False)
     actual_duration_minutes: Mapped[Optional[int]] = mapped_column(nullable=True)
@@ -129,7 +133,10 @@ class MaintenanceLog(BaseModel, TimestampMixin):
     task: Mapped["MaintenanceTask"] = relationship("MaintenanceTask", back_populates="logs")
 
     __table_args__ = (
-        CheckConstraint("quality_rating IS NULL OR (quality_rating >= 1 AND quality_rating <= 5)", name="ck_maintenance_rating"),
+        CheckConstraint(
+            "quality_rating IS NULL OR (quality_rating >= 1 AND quality_rating <= 5)",
+            name="ck_maintenance_rating",
+        ),
     )
 
 

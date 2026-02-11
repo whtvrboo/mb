@@ -74,7 +74,9 @@ class Pet(BaseModel, TimestampMixin):
     weight_kg: Mapped[Optional[float]] = mapped_column(nullable=True)
     color_markings: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     photo_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
-    vet_contact_id: Mapped[Optional[int]] = mapped_column(ForeignKey("service_contacts.id"), nullable=True)
+    vet_contact_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("service_contacts.id"), nullable=True
+    )
     insurance_policy_number: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     insurance_provider: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     diet_instructions: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -87,8 +89,12 @@ class Pet(BaseModel, TimestampMixin):
     medical_records: Mapped[list["PetMedicalRecord"]] = relationship(
         "PetMedicalRecord", back_populates="pet", cascade="all, delete-orphan"
     )
-    logs: Mapped[list["PetLog"]] = relationship("PetLog", back_populates="pet", cascade="all, delete-orphan")
-    schedules: Mapped[list["PetSchedule"]] = relationship("PetSchedule", back_populates="pet", cascade="all, delete-orphan")
+    logs: Mapped[list["PetLog"]] = relationship(
+        "PetLog", back_populates="pet", cascade="all, delete-orphan"
+    )
+    schedules: Mapped[list["PetSchedule"]] = relationship(
+        "PetSchedule", back_populates="pet", cascade="all, delete-orphan"
+    )
 
 
 class PetMedicalRecord(BaseModel, TimestampMixin):

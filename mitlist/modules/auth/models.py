@@ -49,7 +49,9 @@ class Group(BaseModel, TimestampMixin):
     address: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     lease_start_date: Mapped[Optional[datetime]] = mapped_column(nullable=True)
     lease_end_date: Mapped[Optional[datetime]] = mapped_column(nullable=True)
-    landlord_contact_id: Mapped[Optional[int]] = mapped_column(nullable=True)  # FK to service_contacts
+    landlord_contact_id: Mapped[Optional[int]] = mapped_column(
+        nullable=True
+    )  # FK to service_contacts
     deleted_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
 
 
@@ -102,8 +104,12 @@ class Location(BaseModel, TimestampMixin):
     group_id: Mapped[int] = mapped_column(nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     floor_level: Mapped[Optional[int]] = mapped_column(nullable=True)
-    sunlight_direction: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)  # NORTH, SOUTH, etc.
-    humidity_level: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)  # LOW, MEDIUM, HIGH
+    sunlight_direction: Mapped[Optional[str]] = mapped_column(
+        String(20), nullable=True
+    )  # NORTH, SOUTH, etc.
+    humidity_level: Mapped[Optional[str]] = mapped_column(
+        String(20), nullable=True
+    )  # LOW, MEDIUM, HIGH
     temperature_avg_celsius: Mapped[Optional[float]] = mapped_column(nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
@@ -115,7 +121,9 @@ class ServiceContact(BaseModel, TimestampMixin):
 
     group_id: Mapped[int] = mapped_column(nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    job_title: Mapped[str] = mapped_column(String(50), nullable=False)  # VET, PLUMBER, LANDLORD, etc.
+    job_title: Mapped[str] = mapped_column(
+        String(50), nullable=False
+    )  # VET, PLUMBER, LANDLORD, etc.
     company_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)

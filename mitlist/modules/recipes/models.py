@@ -70,7 +70,9 @@ class RecipeIngredient(BaseModel, TimestampMixin):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     quantity_value: Mapped[Optional[float]] = mapped_column(nullable=True)
     quantity_unit: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    item_concept_id: Mapped[Optional[int]] = mapped_column(ForeignKey("common_item_concepts.id"), nullable=True)
+    item_concept_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("common_item_concepts.id"), nullable=True
+    )
     is_optional: Mapped[bool] = mapped_column(default=False, nullable=False)
     preparation_note: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
 
@@ -116,6 +118,8 @@ class MealPlanShoppingSync(BaseModel, TimestampMixin):
 
     __tablename__ = "meal_plan_shopping_syncs"
 
-    meal_plan_id: Mapped[int] = mapped_column(ForeignKey("meal_plans.id"), nullable=False, index=True)
+    meal_plan_id: Mapped[int] = mapped_column(
+        ForeignKey("meal_plans.id"), nullable=False, index=True
+    )
     list_id: Mapped[int] = mapped_column(ForeignKey("lists.id"), nullable=False, index=True)
     synced_at: Mapped[datetime] = mapped_column(nullable=False)

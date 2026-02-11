@@ -33,7 +33,9 @@ class AuditLog(BaseModel, TimestampMixin):
 
     __tablename__ = "audit_logs"
 
-    group_id: Mapped[Optional[int]] = mapped_column(ForeignKey("groups.id"), nullable=True, index=True)
+    group_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("groups.id"), nullable=True, index=True
+    )
     user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
     action: Mapped[str] = mapped_column(String(50), nullable=False)
     entity_type: Mapped[str] = mapped_column(String(50), nullable=False)

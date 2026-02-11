@@ -4,6 +4,7 @@ from decimal import Decimal
 from mitlist.modules.finance.models import Category, Budget, Expense
 from mitlist.modules.audit.service import generate_report
 
+
 @pytest.mark.asyncio
 async def test_generate_budget_report_performance(db, test_group, test_user):
     """Test generating budget status report with multiple budgets and expenses."""
@@ -15,11 +16,7 @@ async def test_generate_budget_report_performance(db, test_group, test_user):
     end_date = datetime.utcnow()
 
     for i in range(num_categories):
-        cat = Category(
-            group_id=test_group.id,
-            name=f"Report Category {i}",
-            is_income=False
-        )
+        cat = Category(group_id=test_group.id, name=f"Report Category {i}", is_income=False)
         db.add(cat)
         await db.flush()
 

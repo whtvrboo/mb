@@ -97,6 +97,7 @@ async def delete_document(
     # Only uploader or admin can delete
     if doc.uploaded_by_id != user.id:
         from mitlist.modules.auth.interface import require_admin
+
         await require_admin(db, doc.group_id, user.id)
 
     await service.delete_document(db, document_id)
@@ -114,7 +115,11 @@ async def get_credentials(
     return [schemas.SharedCredentialResponse.model_validate(c) for c in creds]
 
 
-@router.post("/credentials", response_model=schemas.SharedCredentialResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/credentials",
+    response_model=schemas.SharedCredentialResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def post_credentials(
     data: schemas.SharedCredentialCreate,
     user: User = Depends(get_current_user),
@@ -137,7 +142,10 @@ async def post_credentials(
     return schemas.SharedCredentialResponse.model_validate(cred)
 
 
-@router.get("/credentials/{credential_id}/reveal", response_model=schemas.SharedCredentialWithPasswordResponse)
+@router.get(
+    "/credentials/{credential_id}/reveal",
+    response_model=schemas.SharedCredentialWithPasswordResponse,
+)
 async def get_credentials_reveal(
     credential_id: int,
     db: AsyncSession = Depends(get_db),
@@ -146,10 +154,13 @@ async def get_credentials_reveal(
     """Reveal a credential's password. Requires re-authentication."""
     cred = await service.get_credential_by_id(db, credential_id)
     if not cred:
-        raise NotFoundError(code="CREDENTIAL_NOT_FOUND", detail=f"Credential {credential_id} not found")
+        raise NotFoundError(
+            code="CREDENTIAL_NOT_FOUND", detail=f"Credential {credential_id} not found"
+        )
 
     # Get user's role in the group
     from mitlist.modules.auth.interface import require_member
+
     membership = await require_member(db, cred.group_id, user.id)
 
     cred, decrypted = await service.reveal_credential(

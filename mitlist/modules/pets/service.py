@@ -26,8 +26,7 @@ async def list_pets(db: AsyncSession, group_id: int) -> list[Pet]:
 async def get_pet_by_id(db: AsyncSession, pet_id: int) -> Optional[Pet]:
     """Get pet by ID."""
     result = await db.execute(
-        select(Pet)
-        .where(Pet.id == pet_id)
+        select(Pet).where(Pet.id == pet_id)
         # .options(selectinload(Pet.medical_records)) # Maybe too heavy?
     )
     return result.scalar_one_or_none()
@@ -103,21 +102,35 @@ async def update_pet(
     if not pet:
         raise NotFoundError(code="PET_NOT_FOUND", detail=f"Pet {pet_id} not found")
 
-    if name is not None: pet.name = name
-    if breed is not None: pet.breed = breed
-    if sex is not None: pet.sex = sex
-    if date_of_birth is not None: pet.date_of_birth = date_of_birth
-    if chip_id is not None: pet.chip_id = chip_id
-    if weight_kg is not None: pet.weight_kg = weight_kg
-    if color_markings is not None: pet.color_markings = color_markings
-    if photo_url is not None: pet.photo_url = photo_url
-    if vet_contact_id is not None: pet.vet_contact_id = vet_contact_id
-    if insurance_policy_number is not None: pet.insurance_policy_number = insurance_policy_number
-    if insurance_provider is not None: pet.insurance_provider = insurance_provider
-    if diet_instructions is not None: pet.diet_instructions = diet_instructions
-    if medication_schedule is not None: pet.medication_schedule = medication_schedule
-    if special_needs is not None: pet.special_needs = special_needs
-    
+    if name is not None:
+        pet.name = name
+    if breed is not None:
+        pet.breed = breed
+    if sex is not None:
+        pet.sex = sex
+    if date_of_birth is not None:
+        pet.date_of_birth = date_of_birth
+    if chip_id is not None:
+        pet.chip_id = chip_id
+    if weight_kg is not None:
+        pet.weight_kg = weight_kg
+    if color_markings is not None:
+        pet.color_markings = color_markings
+    if photo_url is not None:
+        pet.photo_url = photo_url
+    if vet_contact_id is not None:
+        pet.vet_contact_id = vet_contact_id
+    if insurance_policy_number is not None:
+        pet.insurance_policy_number = insurance_policy_number
+    if insurance_provider is not None:
+        pet.insurance_provider = insurance_provider
+    if diet_instructions is not None:
+        pet.diet_instructions = diet_instructions
+    if medication_schedule is not None:
+        pet.medication_schedule = medication_schedule
+    if special_needs is not None:
+        pet.special_needs = special_needs
+
     await db.flush()
     await db.refresh(pet)
     return pet
@@ -132,10 +145,10 @@ async def mark_pet_deceased(
     pet = await get_pet_by_id(db, pet_id)
     if not pet:
         raise NotFoundError(code="PET_NOT_FOUND", detail=f"Pet {pet_id} not found")
-        
+
     pet.is_alive = False
     pet.died_at = died_at
-    
+
     await db.flush()
     await db.refresh(pet)
     return pet
@@ -173,7 +186,7 @@ async def create_medical_record(
     # Force conversion if needed (SQLite fix)
     if isinstance(performed_at, str):
         performed_at = datetime.fromisoformat(performed_at)
-        
+
     record = PetMedicalRecord(
         pet_id=pet_id,
         type=type,
@@ -192,11 +205,13 @@ async def create_medical_record(
     return record
 
 
-async def get_expiring_vaccines(db: AsyncSession, group_id: int, days_ahead: int = 30) -> list[PetMedicalRecord]:
+async def get_expiring_vaccines(
+    db: AsyncSession, group_id: int, days_ahead: int = 30
+) -> list[PetMedicalRecord]:
     """Get vaccines expiring soon."""
     now = datetime.now(timezone.utc)
     target_date = now + timedelta(days=days_ahead)
-    
+
     result = await db.execute(
         select(PetMedicalRecord)
         .join(Pet)
@@ -258,7 +273,7 @@ async def create_pet_log(
     db.add(log)
     await db.flush()
     await db.refresh(log)
-    
+
     return log
 
 
@@ -275,9 +290,7 @@ async def get_schedule_by_id(db: AsyncSession, schedule_id: int) -> Optional[Pet
 
 async def list_pet_schedules(db: AsyncSession, pet_id: int) -> list[PetSchedule]:
     """List schedules."""
-    result = await db.execute(
-        select(PetSchedule).where(PetSchedule.pet_id == pet_id)
-    )
+    result = await db.execute(select(PetSchedule).where(PetSchedule.pet_id == pet_id))
     return list(result.scalars().all())
 
 
@@ -286,13 +299,13 @@ async def create_pet_schedule(
     pet_id: int,
     action_type: str,
     frequency_type: str,
-    time_of_day: Optional[Any] = None, # datetime.time
+    time_of_day: Optional[Any] = None,  # datetime.time
     assigned_to_id: Optional[int] = None,
     is_rotating: bool = False,
 ) -> PetSchedule:
     """Create a schedule."""
     from datetime import time as time_type
-    
+
     pet = await get_pet_by_id(db, pet_id)
     if not pet:
         raise NotFoundError(code="PET_NOT_FOUND", detail=f"Pet {pet_id} not found")
@@ -305,6 +318,7 @@ async def create_pet_schedule(
         if isinstance(time_of_day, time_type):
             # Convert time to datetime for SQLite compatibility
             from datetime import datetime, date
+
             time_value = datetime.combine(date.today(), time_of_day)
         else:
             time_value = time_of_day
@@ -337,7 +351,7 @@ async def mark_schedule_done(
     sched = result.scalar_one_or_none()
     if not sched:
         raise NotFoundError(code="SCHEDULE_NOT_FOUND", detail=f"Schedule {schedule_id} not found")
-        
+
     # Log it
     await create_pet_log(
         db,
@@ -349,7 +363,7 @@ async def mark_schedule_done(
         value_amount=value_amount,
         value_unit=value_unit,
     )
-    
+
     # Refresh schedule to ensure it's in a valid state
     await db.refresh(sched)
     return sched

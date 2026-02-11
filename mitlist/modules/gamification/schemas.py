@@ -90,9 +90,7 @@ class AchievementUpdate(BaseModel):
     description: Optional[str] = Field(None, min_length=1, max_length=500)
     badge_icon_url: Optional[str] = Field(None, max_length=500)
     category: Optional[str] = Field(None, pattern="^(CHORES|FINANCE|PLANTS|PETS)$")
-    requirement_type: Optional[str] = Field(
-        None, pattern="^(POINTS|COUNT|STREAK)$"
-    )
+    requirement_type: Optional[str] = Field(None, pattern="^(POINTS|COUNT|STREAK)$")
     requirement_value: Optional[int] = Field(None, ge=1)
     is_active: Optional[bool] = None
 
@@ -161,9 +159,7 @@ class AchievementProgressResponse(BaseModel):
 class StreakBase(BaseModel):
     """Base streak schema."""
 
-    activity_type: str = Field(
-        ..., pattern="^(CHORES|PLANT_CARE|PET_CARE)$"
-    )
+    activity_type: str = Field(..., pattern="^(CHORES|PLANT_CARE|PET_CARE)$")
     current_streak_days: int = Field(0, ge=0)
     longest_streak_days: int = Field(0, ge=0)
 
@@ -198,9 +194,7 @@ class StreakResponse(StreakBase):
 class StreakRecordActivityRequest(BaseModel):
     """Schema for recording activity to update streak."""
 
-    activity_type: str = Field(
-        ..., pattern="^(CHORES|PLANT_CARE|PET_CARE)$"
-    )
+    activity_type: str = Field(..., pattern="^(CHORES|PLANT_CARE|PET_CARE)$")
     group_id: int
 
 
@@ -219,9 +213,7 @@ class LeaderboardBase(BaseModel):
     """Base leaderboard schema."""
 
     period_type: str = Field(..., pattern="^(WEEKLY|MONTHLY|ALL_TIME)$")
-    metric: str = Field(
-        ..., pattern="^(POINTS|CHORES_COMPLETED|EXPENSES_ADDED)$"
-    )
+    metric: str = Field(..., pattern="^(POINTS|CHORES_COMPLETED|EXPENSES_ADDED)$")
     period_start_date: datetime
     period_end_date: Optional[datetime] = None
 

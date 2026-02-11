@@ -71,7 +71,9 @@ class Chore(BaseModel, TimestampMixin):
     )
     is_rotating: Mapped[bool] = mapped_column(default=False, nullable=False)
     rotation_strategy: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
-    last_assigned_to_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    last_assigned_to_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
 
     # Relationships
@@ -102,7 +104,10 @@ class ChoreAssignment(BaseModel, TimestampMixin):
     chore: Mapped["Chore"] = relationship("Chore", back_populates="assignments")
 
     __table_args__ = (
-        CheckConstraint("quality_rating IS NULL OR (quality_rating >= 1 AND quality_rating <= 5)", name="ck_chore_rating"),
+        CheckConstraint(
+            "quality_rating IS NULL OR (quality_rating >= 1 AND quality_rating <= 5)",
+            name="ck_chore_rating",
+        ),
     )
 
 
