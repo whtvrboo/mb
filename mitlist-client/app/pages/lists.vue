@@ -27,7 +27,7 @@ const fetchData = async () => {
     }
 
     // 2. Fetch Lists
-    lists.value = await listLists()
+    lists.value = await listLists({ is_archived: false })
 
     // 3. Select first list or create default if none
     if (lists.value.length === 0 && groupId.value) {
