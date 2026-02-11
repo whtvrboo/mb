@@ -1,6 +1,5 @@
 """Finance & Settlements module FastAPI router."""
 
-from typing import List as ListType
 
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,7 +11,7 @@ from mitlist.modules.finance import interface, schemas
 router = APIRouter(tags=["finance"])
 
 
-@router.get("/expenses", response_model=ListType[schemas.ExpenseResponse])
+@router.get("/expenses", response_model=list[schemas.ExpenseResponse])
 async def get_expenses(
     group_id: int = Depends(get_current_group_id),
     user_id: int | None = Query(None),
@@ -22,7 +21,7 @@ async def get_expenses(
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
-) -> ListType[schemas.ExpenseResponse]:
+) -> list[schemas.ExpenseResponse]:
     """List group expenses (filter by date, user, category)."""
     from datetime import datetime
 
@@ -51,7 +50,9 @@ async def get_expenses(
     return [schemas.ExpenseResponse.model_validate(e) for e in expenses]
 
 
-@router.post("/expenses", response_model=schemas.ExpenseResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/expenses", response_model=schemas.ExpenseResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_expense(
     data: schemas.ExpenseCreateRequest,
     group_id: int = Depends(get_current_group_id),
@@ -163,13 +164,13 @@ async def get_balances(
     )
 
 
-@router.get("/balances/history", response_model=ListType[schemas.BalanceSnapshotResponse])
+@router.get("/balances/history", response_model=list[schemas.BalanceSnapshotResponse])
 async def get_balance_history(
     group_id: int = Depends(get_current_group_id),
     user_id: int | None = Query(None),
     limit: int = Query(100, ge=1, le=500),
     db: AsyncSession = Depends(get_db),
-) -> ListType[schemas.BalanceSnapshotResponse]:
+) -> list[schemas.BalanceSnapshotResponse]:
     """Get historical balance snapshots."""
     snapshots = await interface.list_balance_snapshots(
         db, group_id=group_id, user_id=user_id, limit=limit
@@ -177,17 +178,19 @@ async def get_balance_history(
     return [schemas.BalanceSnapshotResponse.model_validate(s) for s in snapshots]
 
 
-@router.get("/categories", response_model=ListType[schemas.CategoryResponse])
+@router.get("/categories", response_model=list[schemas.CategoryResponse])
 async def get_categories(
     group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
-) -> ListType[schemas.CategoryResponse]:
+) -> list[schemas.CategoryResponse]:
     """List categories."""
     categories = await interface.list_categories(db, group_id=group_id)
     return [schemas.CategoryResponse.model_validate(c) for c in categories]
 
 
-@router.post("/categories", response_model=schemas.CategoryResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/categories", response_model=schemas.CategoryResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_category(
     data: schemas.CategoryCreate,
     group_id: int = Depends(get_current_group_id),
@@ -195,7 +198,9 @@ async def create_category(
 ) -> schemas.CategoryResponse:
     """Create category."""
     if data.group_id is not None and data.group_id != group_id:
-        raise ValidationError(code="GROUP_MISMATCH", detail="group_id in body must match current group")
+        raise ValidationError(
+            code="GROUP_MISMATCH", detail="group_id in body must match current group"
+        )
 
     category = await interface.create_category(
         db,
@@ -249,13 +254,13 @@ async def delete_category(
     await interface.delete_category(db, category_id)
 
 
-@router.get("/settlements", response_model=ListType[schemas.SettlementResponse])
+@router.get("/settlements", response_model=list[schemas.SettlementResponse])
 async def get_settlements(
     group_id: int = Depends(get_current_group_id),
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
-) -> ListType[schemas.SettlementResponse]:
+) -> list[schemas.SettlementResponse]:
     """List group settlements."""
     settlements = await interface.list_settlements(
         db, group_id=group_id, limit=limit, offset=offset
@@ -263,7 +268,9 @@ async def get_settlements(
     return [schemas.SettlementResponse.model_validate(s) for s in settlements]
 
 
-@router.post("/settlements", response_model=schemas.SettlementResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/settlements", response_model=schemas.SettlementResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_settlement(
     data: schemas.SettlementCreateRequest,
     group_id: int = Depends(get_current_group_id),
@@ -316,17 +323,15 @@ async def delete_settlement(
     await interface.delete_settlement(db, settlement_id)
 
 
-@router.get("/budgets", response_model=ListType[schemas.BudgetStatusResponse])
+@router.get("/budgets", response_model=list[schemas.BudgetStatusResponse])
 async def get_budgets(
     group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
-) -> ListType[schemas.BudgetStatusResponse]:
+) -> list[schemas.BudgetStatusResponse]:
     """List budgets with current spending status."""
     budgets_data = await interface.list_budgets_with_status(db, group_id=group_id)
 
-    responses = [
-        schemas.BudgetStatusResponse.model_validate(b) for b in budgets_data
-    ]
+    responses = [schemas.BudgetStatusResponse.model_validate(b) for b in budgets_data]
 
     return responses
 
@@ -416,12 +421,12 @@ async def delete_budget(
     await interface.delete_budget(db, budget_id)
 
 
-@router.get("/recurring-expenses", response_model=ListType[schemas.RecurringExpenseResponse])
+@router.get("/recurring-expenses", response_model=list[schemas.RecurringExpenseResponse])
 async def get_recurring_expenses(
     group_id: int = Depends(get_current_group_id),
     active_only: bool = Query(True),
     db: AsyncSession = Depends(get_db),
-) -> ListType[schemas.RecurringExpenseResponse]:
+) -> list[schemas.RecurringExpenseResponse]:
     """List recurring expenses."""
     recurring = await interface.list_recurring_expenses(
         db, group_id=group_id, active_only=active_only
@@ -429,7 +434,11 @@ async def get_recurring_expenses(
     return [schemas.RecurringExpenseResponse.model_validate(r) for r in recurring]
 
 
-@router.post("/recurring-expenses", response_model=schemas.RecurringExpenseResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/recurring-expenses",
+    response_model=schemas.RecurringExpenseResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_recurring_expense(
     data: schemas.RecurringExpenseCreateRequest,
     group_id: int = Depends(get_current_group_id),
@@ -537,17 +546,21 @@ async def generate_recurring_expense(
     return schemas.ExpenseResponse.model_validate(expense)
 
 
-@router.get("/split-presets", response_model=ListType[schemas.SplitPresetResponse])
+@router.get("/split-presets", response_model=list[schemas.SplitPresetResponse])
 async def get_split_presets(
     group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
-) -> ListType[schemas.SplitPresetResponse]:
+) -> list[schemas.SplitPresetResponse]:
     """List split presets for group."""
     presets = await interface.list_split_presets(db, group_id=group_id)
     return [schemas.SplitPresetResponse.model_validate(p) for p in presets]
 
 
-@router.post("/split-presets", response_model=schemas.SplitPresetResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/split-presets",
+    response_model=schemas.SplitPresetResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_split_preset(
     data: schemas.SplitPresetCreateRequest,
     group_id: int = Depends(get_current_group_id),
@@ -583,9 +596,7 @@ async def get_split_preset(
     """Get split preset by ID."""
     preset = await interface.get_split_preset_by_id(db, preset_id)
     if not preset or preset.group_id != group_id:
-        raise NotFoundError(
-            code="PRESET_NOT_FOUND", detail=f"Split preset {preset_id} not found"
-        )
+        raise NotFoundError(code="PRESET_NOT_FOUND", detail=f"Split preset {preset_id} not found")
     return schemas.SplitPresetResponse.model_validate(preset)
 
 
@@ -599,9 +610,7 @@ async def update_split_preset(
     """Update split preset."""
     existing = await interface.get_split_preset_by_id(db, preset_id)
     if not existing or existing.group_id != group_id:
-        raise NotFoundError(
-            code="PRESET_NOT_FOUND", detail=f"Split preset {preset_id} not found"
-        )
+        raise NotFoundError(code="PRESET_NOT_FOUND", detail=f"Split preset {preset_id} not found")
 
     members_data = None
     if data.members is not None:
@@ -634,7 +643,5 @@ async def delete_split_preset(
     """Delete split preset."""
     preset = await interface.get_split_preset_by_id(db, preset_id)
     if not preset or preset.group_id != group_id:
-        raise NotFoundError(
-            code="PRESET_NOT_FOUND", detail=f"Split preset {preset_id} not found"
-        )
+        raise NotFoundError(code="PRESET_NOT_FOUND", detail=f"Split preset {preset_id} not found")
     await interface.delete_split_preset(db, preset_id)

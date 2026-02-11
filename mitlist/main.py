@@ -8,7 +8,6 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
 from mitlist.api.router import api_router, health_router
 from mitlist.core.config import settings

@@ -1,7 +1,6 @@
 """Calendar module Pydantic schemas for request/response models."""
 
 from datetime import datetime, time
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -13,49 +12,49 @@ class CalendarEventBase(BaseModel):
     """Base calendar event schema."""
 
     title: str = Field(..., min_length=1, max_length=255)
-    description: Optional[str] = None
+    description: str | None = None
     event_date: datetime
-    event_time: Optional[time] = None
-    end_time: Optional[time] = None
+    event_time: time | None = None
+    end_time: time | None = None
     is_all_day: bool = False
     category: str = Field(
         ...,
         pattern="^(BIRTHDAY|LEASE|MAINTENANCE|SOCIAL|HOLIDAY|OTHER)$",
     )
-    recurrence_rule: Optional[str] = Field(None, max_length=500)  # RRULE string
-    reminder_minutes_before: Optional[int] = Field(None, ge=0)
-    location_text: Optional[str] = Field(None, max_length=500)
+    recurrence_rule: str | None = Field(None, max_length=500)  # RRULE string
+    reminder_minutes_before: int | None = Field(None, ge=0)
+    location_text: str | None = Field(None, max_length=500)
 
 
 class CalendarEventCreate(CalendarEventBase):
     """Schema for creating a calendar event."""
 
     group_id: int
-    linked_user_id: Optional[int] = None  # For birthdays
-    linked_asset_id: Optional[int] = None  # For maintenance
-    linked_pet_id: Optional[int] = None  # For vet appointments
+    linked_user_id: int | None = None  # For birthdays
+    linked_asset_id: int | None = None  # For maintenance
+    linked_pet_id: int | None = None  # For vet appointments
     attendee_ids: list[int] = Field(default_factory=list)
 
 
 class CalendarEventUpdate(BaseModel):
     """Schema for updating a calendar event."""
 
-    title: Optional[str] = Field(None, min_length=1, max_length=255)
-    description: Optional[str] = None
-    event_date: Optional[datetime] = None
-    event_time: Optional[time] = None
-    end_time: Optional[time] = None
-    is_all_day: Optional[bool] = None
-    category: Optional[str] = Field(
+    title: str | None = Field(None, min_length=1, max_length=255)
+    description: str | None = None
+    event_date: datetime | None = None
+    event_time: time | None = None
+    end_time: time | None = None
+    is_all_day: bool | None = None
+    category: str | None = Field(
         None,
         pattern="^(BIRTHDAY|LEASE|MAINTENANCE|SOCIAL|HOLIDAY|OTHER)$",
     )
-    recurrence_rule: Optional[str] = Field(None, max_length=500)
-    reminder_minutes_before: Optional[int] = Field(None, ge=0)
-    location_text: Optional[str] = Field(None, max_length=500)
-    linked_user_id: Optional[int] = None
-    linked_asset_id: Optional[int] = None
-    linked_pet_id: Optional[int] = None
+    recurrence_rule: str | None = Field(None, max_length=500)
+    reminder_minutes_before: int | None = Field(None, ge=0)
+    location_text: str | None = Field(None, max_length=500)
+    linked_user_id: int | None = None
+    linked_asset_id: int | None = None
+    linked_pet_id: int | None = None
 
 
 class CalendarEventCancelRequest(BaseModel):
@@ -73,7 +72,7 @@ class EventAttendeeResponse(BaseModel):
     event_id: int
     user_id: int
     rsvp_status: str
-    rsvp_at: Optional[datetime] = None
+    rsvp_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -86,9 +85,9 @@ class CalendarEventResponse(CalendarEventBase):
     id: int
     group_id: int
     created_by_id: int
-    linked_user_id: Optional[int] = None
-    linked_asset_id: Optional[int] = None
-    linked_pet_id: Optional[int] = None
+    linked_user_id: int | None = None
+    linked_asset_id: int | None = None
+    linked_pet_id: int | None = None
     is_cancelled: bool
     created_at: datetime
     updated_at: datetime
@@ -127,9 +126,9 @@ class ReminderBase(BaseModel):
     """Base reminder schema."""
 
     title: str = Field(..., min_length=1, max_length=255)
-    description: Optional[str] = None
+    description: str | None = None
     due_date: datetime
-    priority: Optional[str] = Field(None, pattern="^(LOW|MEDIUM|HIGH)$")
+    priority: str | None = Field(None, pattern="^(LOW|MEDIUM|HIGH)$")
 
 
 class ReminderCreate(ReminderBase):
@@ -141,10 +140,10 @@ class ReminderCreate(ReminderBase):
 class ReminderUpdate(BaseModel):
     """Schema for updating a reminder."""
 
-    title: Optional[str] = Field(None, min_length=1, max_length=255)
-    description: Optional[str] = None
-    due_date: Optional[datetime] = None
-    priority: Optional[str] = Field(None, pattern="^(LOW|MEDIUM|HIGH)$")
+    title: str | None = Field(None, min_length=1, max_length=255)
+    description: str | None = None
+    due_date: datetime | None = None
+    priority: str | None = Field(None, pattern="^(LOW|MEDIUM|HIGH)$")
 
 
 class ReminderCompleteRequest(BaseModel):
@@ -162,7 +161,7 @@ class ReminderResponse(ReminderBase):
     group_id: int
     user_id: int
     is_completed: bool
-    completed_at: Optional[datetime] = None
+    completed_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -176,7 +175,7 @@ class CalendarRangeRequest(BaseModel):
     group_id: int
     start_date: datetime
     end_date: datetime
-    categories: Optional[list[str]] = None
+    categories: list[str] | None = None
     include_cancelled: bool = False
 
 
@@ -254,4 +253,4 @@ class GroupCalendarSummaryResponse(BaseModel):
     events_this_month: int
     upcoming_birthdays: int
     overdue_reminders: int
-    next_event: Optional[CalendarEventResponse] = None
+    next_event: CalendarEventResponse | None = None

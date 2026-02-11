@@ -1,6 +1,5 @@
 """Notifications module FastAPI router."""
 
-from typing import List as ListType
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,6 +11,7 @@ from mitlist.modules.notifications.interface import (
     create_comment,
     delete_comment,
     get_comment_by_id,
+    get_preferences,
     get_unread_count,
     list_comments,
     list_notifications,
@@ -20,7 +20,6 @@ from mitlist.modules.notifications.interface import (
     mark_read,
     toggle_reaction,
     update_comment,
-    get_preferences,
     update_preference,
 )
 
@@ -36,9 +35,11 @@ async def get_notifications(
     db: AsyncSession = Depends(get_db),
 ):
     """List notifications for the current user."""
-    notifications = await list_notifications(db, user.id, unread_only=unread_only, limit=limit, offset=offset)
+    notifications = await list_notifications(
+        db, user.id, unread_only=unread_only, limit=limit, offset=offset
+    )
     unread = await get_unread_count(db, user.id)
-    
+
     return schemas.NotificationListResponse(
         notifications=notifications,
         total_count=len(notifications),
@@ -79,7 +80,7 @@ async def get_notifications_count(
     return {"unread_count": count}
 
 
-@router.get("/preferences", response_model=ListType[schemas.NotificationPreferenceResponse])
+@router.get("/preferences", response_model=list[schemas.NotificationPreferenceResponse])
 async def get_notification_preferences(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -111,7 +112,7 @@ async def patch_notification_preference(
 comments_router = APIRouter(prefix="/comments", tags=["comments"])
 
 
-@comments_router.get("", response_model=ListType[schemas.CommentWithReactionsResponse])
+@comments_router.get("", response_model=list[schemas.CommentWithReactionsResponse])
 async def get_comments_list(
     parent_type: str,
     parent_id: int,
@@ -121,14 +122,14 @@ async def get_comments_list(
 ):
     """List comments for an entity."""
     comments = await list_comments(db, parent_type, parent_id, limit=limit, offset=offset)
-    
+
     # Build response with reaction counts
     result = []
     for comment in comments:
         reaction_counts: dict[str, int] = {}
         for reaction in comment.reactions:
             reaction_counts[reaction.emoji_code] = reaction_counts.get(reaction.emoji_code, 0) + 1
-        
+
         result.append(
             schemas.CommentWithReactionsResponse(
                 id=comment.id,
@@ -171,7 +172,9 @@ async def get_comments_list(
     return result
 
 
-@comments_router.post("", response_model=schemas.CommentResponse, status_code=status.HTTP_201_CREATED)
+@comments_router.post(
+    "", response_model=schemas.CommentResponse, status_code=status.HTTP_201_CREATED
+)
 async def post_comment(
     data: schemas.CommentCreate,
     user: User = Depends(get_current_user),
@@ -242,7 +245,7 @@ async def post_reaction_toggle(
     return schemas.ReactionToggleResponse(action=action, reaction=reaction_response)
 
 
-@reactions_router.get("", response_model=ListType[schemas.ReactionResponse])
+@reactions_router.get("", response_model=list[schemas.ReactionResponse])
 async def get_reactions_list(
     target_type: str,
     target_id: int,

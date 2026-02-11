@@ -1,14 +1,11 @@
 import pytest
 from httpx import AsyncClient
 
+
 @pytest.mark.asyncio
 async def test_bulk_add_items_limit(client: AsyncClient, test_group):
     # 1. Create a list
-    list_data = {
-        "name": "Huge List",
-        "type": "SHOPPING",
-        "group_id": test_group.id
-    }
+    list_data = {"name": "Huge List", "type": "SHOPPING", "group_id": test_group.id}
     response = await client.post("/api/v1/lists", json=list_data)
     assert response.status_code == 201
     list_id = response.json()["id"]

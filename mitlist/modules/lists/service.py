@@ -1,7 +1,6 @@
 """Lists module service layer - business logic."""
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,8 +15,8 @@ from mitlist.modules.lists.models import InventoryItem, Item, List
 async def list_lists(
     db: AsyncSession,
     group_id: int,
-    is_archived: Optional[bool] = None,
-    list_type: Optional[str] = None,
+    is_archived: bool | None = None,
+    list_type: str | None = None,
 ) -> list[List]:
     """List all lists for a group with optional filters."""
     q = select(List).where(List.group_id == group_id)
@@ -30,9 +29,7 @@ async def list_lists(
     return list(result.scalars().all())
 
 
-async def get_list_by_id(
-    db: AsyncSession, list_id: int, load_items: bool = True
-) -> Optional[List]:
+async def get_list_by_id(db: AsyncSession, list_id: int, load_items: bool = True) -> List | None:
     """Get a list by ID, optionally loading items."""
     q = select(List).where(List.id == list_id)
     if load_items:
@@ -57,9 +54,9 @@ async def create_list(db: AsyncSession, group_id: int, name: str, list_type: str
 async def update_list(
     db: AsyncSession,
     list_id: int,
-    name: Optional[str] = None,
-    deadline: Optional[datetime] = None,
-    is_archived: Optional[bool] = None,
+    name: str | None = None,
+    deadline: datetime | None = None,
+    is_archived: bool | None = None,
 ) -> List:
     """
     Update a list with optimistic locking.
@@ -67,9 +64,7 @@ async def update_list(
     Raises StaleDataError if version_id mismatch (concurrent modification).
     """
     # Use with_for_update() for critical path (though for lists, optimistic locking is usually sufficient)
-    result = await db.execute(
-        select(List).where(List.id == list_id).with_for_update()
-    )
+    result = await db.execute(select(List).where(List.id == list_id).with_for_update())
     list_obj = result.scalar_one_or_none()
 
     if not list_obj:
@@ -82,7 +77,7 @@ async def update_list(
     if is_archived is not None:
         list_obj.is_archived = is_archived
         if is_archived:
-            list_obj.archived_at = datetime.now(timezone.utc)
+            list_obj.archived_at = datetime.now(UTC)
         else:
             list_obj.archived_at = None
 
@@ -97,18 +92,14 @@ async def update_list(
         raise
 
 
-async def decrement_item_quantity(
-    db: AsyncSession, item_id: int, quantity: float
-) -> Item:
+async def decrement_item_quantity(db: AsyncSession, item_id: int, quantity: float) -> Item:
     """
     Decrement item quantity - example of critical path using with_for_update().
 
     This demonstrates pessimistic locking for inventory-style operations.
     """
     # REQUIRED: Use with_for_update() for inventory decrements
-    result = await db.execute(
-        select(Item).where(Item.id == item_id).with_for_update()
-    )
+    result = await db.execute(select(Item).where(Item.id == item_id).with_for_update())
     item = result.scalar_one_or_none()
 
     if not item:
@@ -130,7 +121,7 @@ async def get_items_by_list_id(db: AsyncSession, list_id: int) -> list[Item]:
     return list(result.scalars().all())
 
 
-async def get_item_by_id(db: AsyncSession, item_id: int) -> Optional[Item]:
+async def get_item_by_id(db: AsyncSession, item_id: int) -> Item | None:
     """Get a single item by ID."""
     result = await db.execute(select(Item).where(Item.id == item_id))
     return result.scalar_one_or_none()
@@ -140,12 +131,12 @@ async def create_item(
     db: AsyncSession,
     list_id: int,
     name: str,
-    quantity_value: Optional[float] = None,
-    quantity_unit: Optional[str] = None,
+    quantity_value: float | None = None,
+    quantity_unit: str | None = None,
     is_checked: bool = False,
-    price_estimate: Optional[float] = None,
-    priority: Optional[str] = None,
-    notes: Optional[str] = None,
+    price_estimate: float | None = None,
+    priority: str | None = None,
+    notes: str | None = None,
 ) -> Item:
     """Add an item to a list."""
     item = Item(
@@ -167,13 +158,13 @@ async def create_item(
 async def update_item(
     db: AsyncSession,
     item_id: int,
-    name: Optional[str] = None,
-    quantity_value: Optional[float] = None,
-    quantity_unit: Optional[str] = None,
-    is_checked: Optional[bool] = None,
-    price_estimate: Optional[float] = None,
-    priority: Optional[str] = None,
-    notes: Optional[str] = None,
+    name: str | None = None,
+    quantity_value: float | None = None,
+    quantity_unit: str | None = None,
+    is_checked: bool | None = None,
+    price_estimate: float | None = None,
+    priority: str | None = None,
+    notes: str | None = None,
 ) -> Item:
     """Update an item (e.g. check/uncheck)."""
     result = await db.execute(select(Item).where(Item.id == item_id).with_for_update())
@@ -188,7 +179,7 @@ async def update_item(
         item.quantity_unit = quantity_unit
     if is_checked is not None:
         item.is_checked = is_checked
-        item.checked_at = datetime.now(timezone.utc) if is_checked else None
+        item.checked_at = datetime.now(UTC) if is_checked else None
     if price_estimate is not None:
         item.price_estimate = price_estimate
     if priority is not None:
@@ -250,7 +241,7 @@ async def list_inventory(db: AsyncSession, group_id: int) -> list[InventoryItem]
     return list(result.scalars().all())
 
 
-async def get_inventory_item_by_id(db: AsyncSession, inventory_id: int) -> Optional[InventoryItem]:
+async def get_inventory_item_by_id(db: AsyncSession, inventory_id: int) -> InventoryItem | None:
     """Get a single inventory item by ID."""
     result = await db.execute(select(InventoryItem).where(InventoryItem.id == inventory_id))
     return result.scalar_one_or_none()
@@ -259,11 +250,11 @@ async def get_inventory_item_by_id(db: AsyncSession, inventory_id: int) -> Optio
 async def update_inventory_item(
     db: AsyncSession,
     inventory_id: int,
-    quantity_value: Optional[float] = None,
-    quantity_unit: Optional[str] = None,
-    expiration_date: Optional[datetime] = None,
-    opened_date: Optional[datetime] = None,
-    restock_threshold: Optional[float] = None,
+    quantity_value: float | None = None,
+    quantity_unit: str | None = None,
+    expiration_date: datetime | None = None,
+    opened_date: datetime | None = None,
+    restock_threshold: float | None = None,
 ) -> InventoryItem:
     """Update quantity or other fields (e.g. mark out of stock by setting quantity_value to 0)."""
     result = await db.execute(
@@ -271,7 +262,9 @@ async def update_inventory_item(
     )
     inv = result.scalar_one_or_none()
     if not inv:
-        raise NotFoundError(code="INVENTORY_ITEM_NOT_FOUND", detail=f"Inventory item {inventory_id} not found")
+        raise NotFoundError(
+            code="INVENTORY_ITEM_NOT_FOUND", detail=f"Inventory item {inventory_id} not found"
+        )
     if quantity_value is not None:
         inv.quantity_value = quantity_value
     if quantity_unit is not None:

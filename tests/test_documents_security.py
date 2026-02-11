@@ -24,6 +24,7 @@ def test_encryption_implementation():
     decrypted = _decrypt_password(encrypted)
     assert decrypted == password
 
+
 def test_legacy_backward_compatibility():
     """Test that we can still decrypt legacy Base64 passwords."""
     password = "legacy_password"
@@ -32,6 +33,7 @@ def test_legacy_backward_compatibility():
     # This should work via fallback mechanism
     decrypted = _decrypt_password(legacy_encrypted)
     assert decrypted == password
+
 
 def test_corrupted_fernet_token():
     """Test that a corrupted Fernet token raises an error instead of returning garbage."""

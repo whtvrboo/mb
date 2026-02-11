@@ -1,6 +1,5 @@
 """Lists module FastAPI router. Lists + Items + Inventory."""
 
-from typing import List as ListType
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,13 +12,13 @@ router = APIRouter(prefix="/lists", tags=["lists"])
 inventory_router = APIRouter(prefix="/inventory", tags=["inventory"])
 
 
-@router.get("", response_model=ListType[schemas.ListResponse])
+@router.get("", response_model=list[schemas.ListResponse])
 async def get_lists(
     group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
     is_archived: bool | None = None,
     list_type: str | None = None,
-) -> ListType[schemas.ListResponse]:
+) -> list[schemas.ListResponse]:
     """
     Get all lists for a group.
 
@@ -60,7 +59,9 @@ async def create_list(
     Returns created list directly (no envelope) per API contract.
     """
     if data.group_id != group_id:
-        raise ValidationError(code="GROUP_MISMATCH", detail="group_id in body must match current group")
+        raise ValidationError(
+            code="GROUP_MISMATCH", detail="group_id in body must match current group"
+        )
     list_obj = await interface.create_list(db, group_id, data.name, data.type)
     return schemas.ListResponse.model_validate(list_obj)
 
@@ -93,12 +94,12 @@ async def update_list(
 
 
 # ---------- List items ----------
-@router.get("/{list_id}/items", response_model=ListType[schemas.ItemResponse])
+@router.get("/{list_id}/items", response_model=list[schemas.ItemResponse])
 async def get_list_items(
     list_id: int,
     group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
-) -> ListType[schemas.ItemResponse]:
+) -> list[schemas.ItemResponse]:
     """Get all items on a specific list."""
     list_obj = await interface.get_list_by_id(db, list_id, load_items=False)
     if not list_obj or list_obj.group_id != group_id:
@@ -205,11 +206,11 @@ async def bulk_add_list_items(
 
 
 # ---------- Inventory ----------
-@inventory_router.get("", response_model=ListType[schemas.InventoryItemResponse])
+@inventory_router.get("", response_model=list[schemas.InventoryItemResponse])
 async def get_inventory(
     group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
-) -> ListType[schemas.InventoryItemResponse]:
+) -> list[schemas.InventoryItemResponse]:
     """List current pantry/household inventory for a group."""
     items = await interface.list_inventory(db, group_id)
     return [schemas.InventoryItemResponse.model_validate(i) for i in items]
@@ -225,7 +226,9 @@ async def patch_inventory_item(
     """Update quantity or mark out of stock."""
     inv = await interface.get_inventory_item_by_id(db, inventory_id)
     if not inv or inv.group_id != group_id:
-        raise NotFoundError(code="INVENTORY_ITEM_NOT_FOUND", detail=f"Inventory item {inventory_id} not found")
+        raise NotFoundError(
+            code="INVENTORY_ITEM_NOT_FOUND", detail=f"Inventory item {inventory_id} not found"
+        )
     inv = await interface.update_inventory_item(
         db,
         inventory_id=inventory_id,

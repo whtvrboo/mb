@@ -1,7 +1,6 @@
 """Chores module Pydantic schemas for request/response models."""
 
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -13,49 +12,37 @@ class ChoreBase(BaseModel):
     """Base chore schema."""
 
     name: str = Field(..., min_length=1, max_length=255)
-    description: Optional[str] = None
-    frequency_type: str = Field(
-        ..., pattern="^(DAILY|WEEKLY|MONTHLY|CUSTOM|SEASONAL)$"
-    )
+    description: str | None = None
+    frequency_type: str = Field(..., pattern="^(DAILY|WEEKLY|MONTHLY|CUSTOM|SEASONAL)$")
     interval_value: int = Field(1, ge=1)
     effort_value: int = Field(..., ge=1, le=10)
-    estimated_duration_minutes: Optional[int] = Field(None, ge=1)
-    category: Optional[str] = Field(
-        None, pattern="^(CLEANING|OUTDOOR|MAINTENANCE|ADMIN|OTHER)$"
-    )
+    estimated_duration_minutes: int | None = Field(None, ge=1)
+    category: str | None = Field(None, pattern="^(CLEANING|OUTDOOR|MAINTENANCE|ADMIN|OTHER)$")
     is_rotating: bool = False
-    rotation_strategy: Optional[str] = Field(
-        None, pattern="^(ROUND_ROBIN|LEAST_BUSY|RANDOM)$"
-    )
+    rotation_strategy: str | None = Field(None, pattern="^(ROUND_ROBIN|LEAST_BUSY|RANDOM)$")
 
 
 class ChoreCreate(ChoreBase):
     """Schema for creating a chore."""
 
     group_id: int
-    required_item_concept_id: Optional[int] = None
+    required_item_concept_id: int | None = None
 
 
 class ChoreUpdate(BaseModel):
     """Schema for updating a chore."""
 
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    description: Optional[str] = None
-    frequency_type: Optional[str] = Field(
-        None, pattern="^(DAILY|WEEKLY|MONTHLY|CUSTOM|SEASONAL)$"
-    )
-    interval_value: Optional[int] = Field(None, ge=1)
-    effort_value: Optional[int] = Field(None, ge=1, le=10)
-    estimated_duration_minutes: Optional[int] = Field(None, ge=1)
-    category: Optional[str] = Field(
-        None, pattern="^(CLEANING|OUTDOOR|MAINTENANCE|ADMIN|OTHER)$"
-    )
-    is_rotating: Optional[bool] = None
-    rotation_strategy: Optional[str] = Field(
-        None, pattern="^(ROUND_ROBIN|LEAST_BUSY|RANDOM)$"
-    )
-    required_item_concept_id: Optional[int] = None
-    is_active: Optional[bool] = None
+    name: str | None = Field(None, min_length=1, max_length=255)
+    description: str | None = None
+    frequency_type: str | None = Field(None, pattern="^(DAILY|WEEKLY|MONTHLY|CUSTOM|SEASONAL)$")
+    interval_value: int | None = Field(None, ge=1)
+    effort_value: int | None = Field(None, ge=1, le=10)
+    estimated_duration_minutes: int | None = Field(None, ge=1)
+    category: str | None = Field(None, pattern="^(CLEANING|OUTDOOR|MAINTENANCE|ADMIN|OTHER)$")
+    is_rotating: bool | None = None
+    rotation_strategy: str | None = Field(None, pattern="^(ROUND_ROBIN|LEAST_BUSY|RANDOM)$")
+    required_item_concept_id: int | None = None
+    is_active: bool | None = None
 
 
 class ChoreResponse(ChoreBase):
@@ -65,8 +52,8 @@ class ChoreResponse(ChoreBase):
 
     id: int
     group_id: int
-    required_item_concept_id: Optional[int] = None
-    last_assigned_to_id: Optional[int] = None
+    required_item_concept_id: int | None = None
+    last_assigned_to_id: int | None = None
     is_active: bool
     created_at: datetime
     updated_at: datetime
@@ -79,7 +66,7 @@ class ChoreAssignmentBase(BaseModel):
     """Base chore assignment schema."""
 
     due_date: datetime
-    notes: Optional[str] = None
+    notes: str | None = None
 
 
 class ChoreAssignmentCreate(ChoreAssignmentBase):
@@ -92,11 +79,9 @@ class ChoreAssignmentCreate(ChoreAssignmentBase):
 class ChoreAssignmentUpdate(BaseModel):
     """Schema for updating a chore assignment."""
 
-    due_date: Optional[datetime] = None
-    status: Optional[str] = Field(
-        None, pattern="^(PENDING|IN_PROGRESS|COMPLETED|SKIPPED)$"
-    )
-    notes: Optional[str] = None
+    due_date: datetime | None = None
+    status: str | None = Field(None, pattern="^(PENDING|IN_PROGRESS|COMPLETED|SKIPPED)$")
+    notes: str | None = None
 
 
 class ChoreAssignmentStartRequest(BaseModel):
@@ -108,8 +93,8 @@ class ChoreAssignmentStartRequest(BaseModel):
 class ChoreAssignmentCompleteRequest(BaseModel):
     """Schema for completing a chore assignment."""
 
-    actual_duration_minutes: Optional[int] = Field(None, ge=1)
-    notes: Optional[str] = None
+    actual_duration_minutes: int | None = Field(None, ge=1)
+    notes: str | None = None
 
 
 class ChoreAssignmentRateRequest(BaseModel):
@@ -132,14 +117,14 @@ class ChoreAssignmentResponse(ChoreAssignmentBase):
     id: int
     chore_id: int
     assigned_to_id: int
-    completed_at: Optional[datetime] = None
-    completed_by_id: Optional[int] = None
+    completed_at: datetime | None = None
+    completed_by_id: int | None = None
     status: str
-    started_at: Optional[datetime] = None
-    actual_duration_minutes: Optional[int] = None
-    quality_rating: Optional[int] = None
-    rated_by_id: Optional[int] = None
-    attachment_id: Optional[int] = None
+    started_at: datetime | None = None
+    actual_duration_minutes: int | None = None
+    quality_rating: int | None = None
+    rated_by_id: int | None = None
+    attachment_id: int | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -185,15 +170,11 @@ class ChoreTemplateBase(BaseModel):
     """Base chore template schema."""
 
     name: str = Field(..., min_length=1, max_length=255)
-    description: Optional[str] = None
-    frequency_type: str = Field(
-        ..., pattern="^(DAILY|WEEKLY|MONTHLY|CUSTOM|SEASONAL)$"
-    )
+    description: str | None = None
+    frequency_type: str = Field(..., pattern="^(DAILY|WEEKLY|MONTHLY|CUSTOM|SEASONAL)$")
     interval_value: int = Field(1, ge=1)
     effort_value: int = Field(..., ge=1, le=10)
-    category: Optional[str] = Field(
-        None, pattern="^(CLEANING|OUTDOOR|MAINTENANCE|ADMIN|OTHER)$"
-    )
+    category: str | None = Field(None, pattern="^(CLEANING|OUTDOOR|MAINTENANCE|ADMIN|OTHER)$")
     is_public: bool = False
 
 
@@ -206,17 +187,13 @@ class ChoreTemplateCreate(ChoreTemplateBase):
 class ChoreTemplateUpdate(BaseModel):
     """Schema for updating a chore template."""
 
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    description: Optional[str] = None
-    frequency_type: Optional[str] = Field(
-        None, pattern="^(DAILY|WEEKLY|MONTHLY|CUSTOM|SEASONAL)$"
-    )
-    interval_value: Optional[int] = Field(None, ge=1)
-    effort_value: Optional[int] = Field(None, ge=1, le=10)
-    category: Optional[str] = Field(
-        None, pattern="^(CLEANING|OUTDOOR|MAINTENANCE|ADMIN|OTHER)$"
-    )
-    is_public: Optional[bool] = None
+    name: str | None = Field(None, min_length=1, max_length=255)
+    description: str | None = None
+    frequency_type: str | None = Field(None, pattern="^(DAILY|WEEKLY|MONTHLY|CUSTOM|SEASONAL)$")
+    interval_value: int | None = Field(None, ge=1)
+    effort_value: int | None = Field(None, ge=1, le=10)
+    category: str | None = Field(None, pattern="^(CLEANING|OUTDOOR|MAINTENANCE|ADMIN|OTHER)$")
+    is_public: bool | None = None
 
 
 class ChoreTemplateResponse(ChoreTemplateBase):
@@ -236,11 +213,9 @@ class ChoreFromTemplateRequest(BaseModel):
     template_id: int
     group_id: int
     # Override template defaults
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    frequency_type: Optional[str] = Field(
-        None, pattern="^(DAILY|WEEKLY|MONTHLY|CUSTOM|SEASONAL)$"
-    )
-    interval_value: Optional[int] = Field(None, ge=1)
+    name: str | None = Field(None, min_length=1, max_length=255)
+    frequency_type: str | None = Field(None, pattern="^(DAILY|WEEKLY|MONTHLY|CUSTOM|SEASONAL)$")
+    interval_value: int | None = Field(None, ge=1)
 
 
 # ====================
@@ -256,7 +231,7 @@ class ChoreStatisticsResponse(BaseModel):
     pending_assignments: int
     overdue_assignments: int
     completion_rate: float
-    average_completion_time_minutes: Optional[float] = None
+    average_completion_time_minutes: float | None = None
 
 
 class UserChoreStatsResponse(BaseModel):
@@ -268,7 +243,7 @@ class UserChoreStatsResponse(BaseModel):
     pending: int
     skipped: int
     total_effort_points: int
-    average_quality_rating: Optional[float] = None
+    average_quality_rating: float | None = None
     completion_rate: float
 
 

@@ -1,12 +1,11 @@
 """Plants module ORM models."""
 
 from datetime import datetime
-from typing import Optional
 
-from sqlalchemy import CheckConstraint, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from mitlist.db.base import Base, BaseModel, TimestampMixin
+from mitlist.db.base import BaseModel, TimestampMixin
 
 
 class ToxicityLevel(str):
@@ -84,17 +83,17 @@ class PlantSpecies(BaseModel, TimestampMixin):
     __tablename__ = "plant_species"
 
     scientific_name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    common_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    common_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     toxicity: Mapped[str] = mapped_column(String(20), nullable=False)
     light_needs: Mapped[str] = mapped_column(String(20), nullable=False)
-    water_interval_summer: Mapped[Optional[int]] = mapped_column(nullable=True)  # days
-    water_interval_winter: Mapped[Optional[int]] = mapped_column(nullable=True)  # days
-    humidity_preference: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
-    fertilize_frequency_weeks: Mapped[Optional[int]] = mapped_column(nullable=True)
-    growth_rate: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
-    mature_height_cm: Mapped[Optional[int]] = mapped_column(nullable=True)
-    propagation_method: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
-    care_difficulty: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    water_interval_summer: Mapped[int | None] = mapped_column(nullable=True)  # days
+    water_interval_winter: Mapped[int | None] = mapped_column(nullable=True)  # days
+    humidity_preference: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    fertilize_frequency_weeks: Mapped[int | None] = mapped_column(nullable=True)
+    growth_rate: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    mature_height_cm: Mapped[int | None] = mapped_column(nullable=True)
+    propagation_method: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    care_difficulty: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
 
 class Plant(BaseModel, TimestampMixin):
@@ -104,22 +103,26 @@ class Plant(BaseModel, TimestampMixin):
 
     group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False, index=True)
     species_id: Mapped[int] = mapped_column(ForeignKey("plant_species.id"), nullable=False)
-    location_id: Mapped[Optional[int]] = mapped_column(ForeignKey("locations.id"), nullable=True)
-    nickname: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    acquired_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
-    acquired_from: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
-    parent_plant_id: Mapped[Optional[int]] = mapped_column(ForeignKey("plants.id"), nullable=True)
-    pot_size_cm: Mapped[Optional[int]] = mapped_column(nullable=True)
-    photo_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    location_id: Mapped[int | None] = mapped_column(ForeignKey("locations.id"), nullable=True)
+    nickname: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    acquired_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    acquired_from: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    parent_plant_id: Mapped[int | None] = mapped_column(ForeignKey("plants.id"), nullable=True)
+    pot_size_cm: Mapped[int | None] = mapped_column(nullable=True)
+    photo_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     is_alive: Mapped[bool] = mapped_column(default=True, nullable=False)
-    died_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
-    death_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    died_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    death_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Relationships
     species: Mapped["PlantSpecies"] = relationship("PlantSpecies")
-    logs: Mapped[list["PlantLog"]] = relationship("PlantLog", back_populates="plant", cascade="all, delete-orphan")
-    schedules: Mapped[list["PlantSchedule"]] = relationship("PlantSchedule", back_populates="plant", cascade="all, delete-orphan")
+    logs: Mapped[list["PlantLog"]] = relationship(
+        "PlantLog", back_populates="plant", cascade="all, delete-orphan"
+    )
+    schedules: Mapped[list["PlantSchedule"]] = relationship(
+        "PlantSchedule", back_populates="plant", cascade="all, delete-orphan"
+    )
 
 
 class PlantLog(BaseModel, TimestampMixin):
@@ -130,10 +133,10 @@ class PlantLog(BaseModel, TimestampMixin):
     plant_id: Mapped[int] = mapped_column(ForeignKey("plants.id"), nullable=False, index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     action: Mapped[str] = mapped_column(String(50), nullable=False)
-    quantity_value: Mapped[Optional[float]] = mapped_column(nullable=True)
-    quantity_unit: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    photo_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    quantity_value: Mapped[float | None] = mapped_column(nullable=True)
+    quantity_unit: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    photo_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     occurred_at: Mapped[datetime] = mapped_column(nullable=False)
 
     # Relationships
@@ -149,7 +152,7 @@ class PlantSchedule(BaseModel, TimestampMixin):
     action_type: Mapped[str] = mapped_column(String(50), nullable=False)
     next_due_date: Mapped[datetime] = mapped_column(nullable=False)
     frequency_days: Mapped[int] = mapped_column(nullable=False)
-    assigned_to_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    assigned_to_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
 
     # Relationships
     plant: Mapped["Plant"] = relationship("Plant", back_populates="schedules")

@@ -1,9 +1,9 @@
 """Calendar module service layer. PRIVATE - other modules import from interface.py."""
 
 from datetime import date, datetime, timedelta
-from typing import Any, Optional
+from typing import Any
 
-from sqlalchemy import and_, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import contains_eager
 
@@ -11,8 +11,8 @@ from sqlalchemy.orm import contains_eager
 async def get_calendar_feed(
     db: AsyncSession,
     group_id: int,
-    start_date: Optional[date] = None,
-    end_date: Optional[date] = None,
+    start_date: date | None = None,
+    end_date: date | None = None,
 ) -> list[dict[str, Any]]:
     """
     Get a unified calendar feed for a group.
@@ -42,6 +42,7 @@ async def get_calendar_feed(
     # 1. Bills / Recurring Expenses
     try:
         from mitlist.modules.finance.models import RecurringExpense
+
         result = await db.execute(
             select(RecurringExpense).where(
                 RecurringExpense.group_id == group_id,
@@ -51,21 +52,24 @@ async def get_calendar_feed(
         recurring_expenses = result.scalars().all()
         for expense in recurring_expenses:
             if expense.next_due_date and start_date <= expense.next_due_date <= end_date:
-                events.append({
-                    "id": f"bill_{expense.id}",
-                    "type": "BILL",
-                    "title": expense.name,
-                    "date": expense.next_due_date.isoformat(),
-                    "amount": float(expense.amount) if expense.amount else None,
-                    "entity_id": expense.id,
-                    "entity_type": "recurring_expense",
-                })
+                events.append(
+                    {
+                        "id": f"bill_{expense.id}",
+                        "type": "BILL",
+                        "title": expense.name,
+                        "date": expense.next_due_date.isoformat(),
+                        "amount": float(expense.amount) if expense.amount else None,
+                        "entity_id": expense.id,
+                        "entity_type": "recurring_expense",
+                    }
+                )
     except Exception:
         pass  # Module may not exist or table may not exist
 
     # 2. Chore Deadlines
     try:
         from mitlist.modules.chores.models import Chore, ChoreAssignment
+
         result = await db.execute(
             select(ChoreAssignment)
             .join(Chore, ChoreAssignment.chore_id == Chore.id)
@@ -80,22 +84,26 @@ async def get_calendar_feed(
         assignments = result.scalars().all()
         for assignment in assignments:
             chore = assignment.chore
-            events.append({
-                "id": f"chore_{assignment.id}",
-                "type": "CHORE",
-                "title": chore.name if chore else "Chore",
-                "date": assignment.due_date.isoformat() if assignment.due_date else None,
-                "assigned_to_id": assignment.assigned_to_id,
-                "entity_id": assignment.id,
-                "entity_type": "chore_assignment",
-            })
+            events.append(
+                {
+                    "id": f"chore_{assignment.id}",
+                    "type": "CHORE",
+                    "title": chore.name if chore else "Chore",
+                    "date": assignment.due_date.isoformat() if assignment.due_date else None,
+                    "assigned_to_id": assignment.assigned_to_id,
+                    "entity_id": assignment.id,
+                    "entity_type": "chore_assignment",
+                }
+            )
     except Exception:
         pass
 
     # 3. Meal Plans
     try:
         from sqlalchemy.orm import selectinload
-        from mitlist.modules.recipes.models import MealPlan, Recipe
+
+        from mitlist.modules.recipes.models import MealPlan
+
         result = await db.execute(
             select(MealPlan)
             .options(selectinload(MealPlan.recipe))
@@ -108,26 +116,27 @@ async def get_calendar_feed(
         meal_plans = result.scalars().all()
         for mp in meal_plans:
             recipe_title = mp.recipe.title if mp.recipe else None
-            events.append({
-                "id": f"meal_{mp.id}",
-                "type": "MEAL_PLAN",
-                "title": recipe_title or mp.notes or f"{mp.meal_type} meal",
-                "date": mp.plan_date.isoformat(),
-                "meal_type": mp.meal_type,
-                "assigned_cook_id": mp.assigned_cook_id,
-                "entity_id": mp.id,
-                "entity_type": "meal_plan",
-            })
+            events.append(
+                {
+                    "id": f"meal_{mp.id}",
+                    "type": "MEAL_PLAN",
+                    "title": recipe_title or mp.notes or f"{mp.meal_type} meal",
+                    "date": mp.plan_date.isoformat(),
+                    "meal_type": mp.meal_type,
+                    "assigned_cook_id": mp.assigned_cook_id,
+                    "entity_id": mp.id,
+                    "entity_type": "meal_plan",
+                }
+            )
     except Exception:
         pass
 
     # 4. Pet Vaccine Schedules
     try:
         from mitlist.modules.pets.models import Pet, VetVisit
+
         # Get pets for the group
-        pets_result = await db.execute(
-            select(Pet).where(Pet.group_id == group_id)
-        )
+        pets_result = await db.execute(select(Pet).where(Pet.group_id == group_id))
         pets = {p.id: p for p in pets_result.scalars().all()}
 
         # Get upcoming vet visits
@@ -141,38 +150,41 @@ async def get_calendar_feed(
         visits = visits_result.scalars().all()
         for visit in visits:
             pet = pets.get(visit.pet_id)
-            events.append({
-                "id": f"vet_{visit.id}",
-                "type": "PET_VET_VISIT",
-                "title": f"{pet.name if pet else 'Pet'}: {visit.visit_type}",
-                "date": visit.scheduled_date.isoformat(),
-                "pet_id": visit.pet_id,
-                "entity_id": visit.id,
-                "entity_type": "vet_visit",
-            })
+            events.append(
+                {
+                    "id": f"vet_{visit.id}",
+                    "type": "PET_VET_VISIT",
+                    "title": f"{pet.name if pet else 'Pet'}: {visit.visit_type}",
+                    "date": visit.scheduled_date.isoformat(),
+                    "pet_id": visit.pet_id,
+                    "entity_id": visit.id,
+                    "entity_type": "vet_visit",
+                }
+            )
     except Exception:
         pass
 
     # 5. Lease Expiry
     try:
         from mitlist.modules.auth.models import Group
-        result = await db.execute(
-            select(Group).where(Group.id == group_id)
-        )
+
+        result = await db.execute(select(Group).where(Group.id == group_id))
         group = result.scalar_one_or_none()
         if group and group.lease_end_date:
             lease_end = group.lease_end_date
             if isinstance(lease_end, datetime):
                 lease_end = lease_end.date()
             if start_date <= lease_end <= end_date:
-                events.append({
-                    "id": f"lease_{group_id}",
-                    "type": "LEASE_EXPIRY",
-                    "title": "Lease Expiry",
-                    "date": lease_end.isoformat(),
-                    "entity_id": group_id,
-                    "entity_type": "group",
-                })
+                events.append(
+                    {
+                        "id": f"lease_{group_id}",
+                        "type": "LEASE_EXPIRY",
+                        "title": "Lease Expiry",
+                        "date": lease_end.isoformat(),
+                        "entity_id": group_id,
+                        "entity_type": "group",
+                    }
+                )
     except Exception:
         pass
 

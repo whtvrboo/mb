@@ -1,8 +1,11 @@
-import pytest
 from datetime import datetime, timedelta
 from decimal import Decimal
-from mitlist.modules.finance.models import Category, Budget, Expense
+
+import pytest
+
 from mitlist.modules.audit.service import generate_report
+from mitlist.modules.finance.models import Budget, Category, Expense
+
 
 @pytest.mark.asyncio
 async def test_generate_budget_report_performance(db, test_group, test_user):
@@ -15,11 +18,7 @@ async def test_generate_budget_report_performance(db, test_group, test_user):
     end_date = datetime.utcnow()
 
     for i in range(num_categories):
-        cat = Category(
-            group_id=test_group.id,
-            name=f"Report Category {i}",
-            is_income=False
-        )
+        cat = Category(group_id=test_group.id, name=f"Report Category {i}", is_income=False)
         db.add(cat)
         await db.flush()
 
@@ -63,4 +62,4 @@ async def test_generate_budget_report_performance(db, test_group, test_user):
     for b in budget_data:
         expected_spent = expenses_per_category * 10.0
         assert b["spent"] == expected_spent
-        assert b["remaining"] == float(1000.0) - expected_spent
+        assert b["remaining"] == 1000.0 - expected_spent

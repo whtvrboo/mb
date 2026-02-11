@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import secrets
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
-from sqlalchemy import and_, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -15,26 +14,24 @@ from mitlist.modules.auth.models import Group, Invite, Location, ServiceContact,
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 # ---------- Users ----------
-async def get_user_by_id(db: AsyncSession, user_id: int) -> Optional[User]:
+async def get_user_by_id(db: AsyncSession, user_id: int) -> User | None:
     """Get user by ID."""
-    result = await db.execute(
-        select(User).where(User.id == user_id, User.deleted_at.is_(None))
-    )
+    result = await db.execute(select(User).where(User.id == user_id, User.deleted_at.is_(None)))
     return result.scalar_one_or_none()
 
 
 async def update_user(
     db: AsyncSession,
     user_id: int,
-    name: Optional[str] = None,
-    avatar_url: Optional[str] = None,
-    phone_number: Optional[str] = None,
-    language_code: Optional[str] = None,
-    preferences: Optional[dict] = None,
+    name: str | None = None,
+    avatar_url: str | None = None,
+    phone_number: str | None = None,
+    language_code: str | None = None,
+    preferences: dict | None = None,
 ) -> User:
     """Update user profile."""
     user = await get_user_by_id(db, user_id)
@@ -76,7 +73,7 @@ def _generate_invite_code() -> str:
 
 
 # ---------- Membership / authorization helpers ----------
-async def get_membership(db: AsyncSession, group_id: int, user_id: int) -> Optional[UserGroup]:
+async def get_membership(db: AsyncSession, group_id: int, user_id: int) -> UserGroup | None:
     result = await db.execute(
         select(UserGroup).where(UserGroup.group_id == group_id, UserGroup.user_id == user_id)
     )
@@ -114,11 +111,11 @@ async def create_group(
     name: str,
     default_currency: str = "USD",
     timezone: str = "UTC",
-    description: Optional[str] = None,
-    avatar_url: Optional[str] = None,
-    address: Optional[str] = None,
-    lease_start_date: Optional[datetime] = None,
-    lease_end_date: Optional[datetime] = None,
+    description: str | None = None,
+    avatar_url: str | None = None,
+    address: str | None = None,
+    lease_start_date: datetime | None = None,
+    lease_end_date: datetime | None = None,
 ) -> Group:
     group = Group(
         name=name,
@@ -148,7 +145,7 @@ async def create_group(
     return group
 
 
-async def get_group_by_id(db: AsyncSession, group_id: int) -> Optional[Group]:
+async def get_group_by_id(db: AsyncSession, group_id: int) -> Group | None:
     result = await db.execute(select(Group).where(Group.id == group_id, Group.deleted_at.is_(None)))
     return result.scalar_one_or_none()
 
@@ -156,15 +153,15 @@ async def get_group_by_id(db: AsyncSession, group_id: int) -> Optional[Group]:
 async def update_group(
     db: AsyncSession,
     group_id: int,
-    name: Optional[str] = None,
-    default_currency: Optional[str] = None,
-    timezone: Optional[str] = None,
-    description: Optional[str] = None,
-    avatar_url: Optional[str] = None,
-    address: Optional[str] = None,
-    lease_start_date: Optional[datetime] = None,
-    lease_end_date: Optional[datetime] = None,
-    landlord_contact_id: Optional[int] = None,
+    name: str | None = None,
+    default_currency: str | None = None,
+    timezone: str | None = None,
+    description: str | None = None,
+    avatar_url: str | None = None,
+    address: str | None = None,
+    lease_start_date: datetime | None = None,
+    lease_end_date: datetime | None = None,
+    landlord_contact_id: int | None = None,
 ) -> Group:
     result = await db.execute(select(Group).where(Group.id == group_id, Group.deleted_at.is_(None)))
     group = result.scalar_one_or_none()
@@ -219,8 +216,8 @@ async def update_member(
     db: AsyncSession,
     group_id: int,
     user_id: int,
-    role: Optional[str] = None,
-    nickname: Optional[str] = None,
+    role: str | None = None,
+    nickname: str | None = None,
 ) -> UserGroup:
     result = await db.execute(
         select(UserGroup).where(UserGroup.group_id == group_id, UserGroup.user_id == user_id)
@@ -259,9 +256,9 @@ async def create_invite(
     group_id: int,
     created_by_id: int,
     role: str = "MEMBER",
-    email_hint: Optional[str] = None,
+    email_hint: str | None = None,
     max_uses: int = 1,
-    expires_at: Optional[datetime] = None,
+    expires_at: datetime | None = None,
 ) -> Invite:
     if max_uses < 1:
         raise ValidationError(code="INVALID_MAX_USES", detail="max_uses must be >= 1")
@@ -287,7 +284,9 @@ async def create_invite(
             await db.refresh(invite)
             return invite
 
-    raise ValidationError(code="INVITE_CODE_GENERATION_FAILED", detail="Could not generate invite code")
+    raise ValidationError(
+        code="INVITE_CODE_GENERATION_FAILED", detail="Could not generate invite code"
+    )
 
 
 def _invite_is_valid(invite: Invite) -> bool:
@@ -302,7 +301,7 @@ def _invite_is_valid(invite: Invite) -> bool:
 
 async def get_invite_by_code(
     db: AsyncSession, code: str, for_update: bool = False
-) -> Optional[Invite]:
+) -> Invite | None:
     stmt = select(Invite).where(Invite.code == code)
     if for_update:
         stmt = stmt.with_for_update()
@@ -310,14 +309,12 @@ async def get_invite_by_code(
     return result.scalar_one_or_none()
 
 
-async def get_invite_by_id(db: AsyncSession, invite_id: int) -> Optional[Invite]:
+async def get_invite_by_id(db: AsyncSession, invite_id: int) -> Invite | None:
     result = await db.execute(select(Invite).where(Invite.id == invite_id))
     return result.scalar_one_or_none()
 
 
-async def require_valid_invite(
-    db: AsyncSession, code: str, for_update: bool = False
-) -> Invite:
+async def require_valid_invite(db: AsyncSession, code: str, for_update: bool = False) -> Invite:
     invite = await get_invite_by_code(db, code, for_update=for_update)
     if not invite or not _invite_is_valid(invite):
         raise NotFoundError(code="INVITE_INVALID", detail="Invite code is invalid or expired")
@@ -365,9 +362,7 @@ async def revoke_invite(db: AsyncSession, invite_id: int) -> Invite:
 async def list_invites_for_group(db: AsyncSession, group_id: int) -> list[Invite]:
     """List invites for a group."""
     result = await db.execute(
-        select(Invite)
-        .where(Invite.group_id == group_id)
-        .order_by(Invite.created_at.desc())
+        select(Invite).where(Invite.group_id == group_id).order_by(Invite.created_at.desc())
     )
     return list(result.scalars().all())
 
@@ -382,8 +377,10 @@ async def add_member(
     # Check if already a member
     existing = await get_membership(db, group_id, user_id)
     if existing:
-        raise ValidationError(code="ALREADY_MEMBER", detail="User is already a member of this group")
-    
+        raise ValidationError(
+            code="ALREADY_MEMBER", detail="User is already a member of this group"
+        )
+
     ug = UserGroup(
         user_id=user_id,
         group_id=group_id,
@@ -407,7 +404,7 @@ async def list_locations(db: AsyncSession, group_id: int) -> list[Location]:
     return list(result.scalars().all())
 
 
-async def get_location_by_id(db: AsyncSession, location_id: int) -> Optional[Location]:
+async def get_location_by_id(db: AsyncSession, location_id: int) -> Location | None:
     """Get location by ID."""
     result = await db.execute(select(Location).where(Location.id == location_id))
     return result.scalar_one_or_none()
@@ -417,11 +414,11 @@ async def create_location(
     db: AsyncSession,
     group_id: int,
     name: str,
-    floor_level: Optional[int] = None,
-    sunlight_direction: Optional[str] = None,
-    humidity_level: Optional[str] = None,
-    temperature_avg_celsius: Optional[float] = None,
-    notes: Optional[str] = None,
+    floor_level: int | None = None,
+    sunlight_direction: str | None = None,
+    humidity_level: str | None = None,
+    temperature_avg_celsius: float | None = None,
+    notes: str | None = None,
 ) -> Location:
     """Create a new location."""
     location = Location(
@@ -442,12 +439,12 @@ async def create_location(
 async def update_location(
     db: AsyncSession,
     location_id: int,
-    name: Optional[str] = None,
-    floor_level: Optional[int] = None,
-    sunlight_direction: Optional[str] = None,
-    humidity_level: Optional[str] = None,
-    temperature_avg_celsius: Optional[float] = None,
-    notes: Optional[str] = None,
+    name: str | None = None,
+    floor_level: int | None = None,
+    sunlight_direction: str | None = None,
+    humidity_level: str | None = None,
+    temperature_avg_celsius: float | None = None,
+    notes: str | None = None,
 ) -> Location:
     """Update a location."""
     location = await get_location_by_id(db, location_id)
@@ -485,12 +482,14 @@ async def delete_location(db: AsyncSession, location_id: int) -> None:
 async def list_service_contacts(db: AsyncSession, group_id: int) -> list[ServiceContact]:
     """List service contacts for a group."""
     result = await db.execute(
-        select(ServiceContact).where(ServiceContact.group_id == group_id).order_by(ServiceContact.name)
+        select(ServiceContact)
+        .where(ServiceContact.group_id == group_id)
+        .order_by(ServiceContact.name)
     )
     return list(result.scalars().all())
 
 
-async def get_service_contact_by_id(db: AsyncSession, contact_id: int) -> Optional[ServiceContact]:
+async def get_service_contact_by_id(db: AsyncSession, contact_id: int) -> ServiceContact | None:
     """Get service contact by ID."""
     result = await db.execute(select(ServiceContact).where(ServiceContact.id == contact_id))
     return result.scalar_one_or_none()
@@ -501,13 +500,13 @@ async def create_service_contact(
     group_id: int,
     name: str,
     job_title: str,
-    company_name: Optional[str] = None,
-    phone: Optional[str] = None,
-    email: Optional[str] = None,
-    address: Optional[str] = None,
-    website_url: Optional[str] = None,
+    company_name: str | None = None,
+    phone: str | None = None,
+    email: str | None = None,
+    address: str | None = None,
+    website_url: str | None = None,
     emergency_contact: bool = False,
-    notes: Optional[str] = None,
+    notes: str | None = None,
 ) -> ServiceContact:
     """Create a new service contact."""
     contact = ServiceContact(
@@ -531,20 +530,22 @@ async def create_service_contact(
 async def update_service_contact(
     db: AsyncSession,
     contact_id: int,
-    name: Optional[str] = None,
-    job_title: Optional[str] = None,
-    company_name: Optional[str] = None,
-    phone: Optional[str] = None,
-    email: Optional[str] = None,
-    address: Optional[str] = None,
-    website_url: Optional[str] = None,
-    emergency_contact: Optional[bool] = None,
-    notes: Optional[str] = None,
+    name: str | None = None,
+    job_title: str | None = None,
+    company_name: str | None = None,
+    phone: str | None = None,
+    email: str | None = None,
+    address: str | None = None,
+    website_url: str | None = None,
+    emergency_contact: bool | None = None,
+    notes: str | None = None,
 ) -> ServiceContact:
     """Update a service contact."""
     contact = await get_service_contact_by_id(db, contact_id)
     if not contact:
-        raise NotFoundError(code="SERVICE_CONTACT_NOT_FOUND", detail=f"Service contact {contact_id} not found")
+        raise NotFoundError(
+            code="SERVICE_CONTACT_NOT_FOUND", detail=f"Service contact {contact_id} not found"
+        )
 
     if name is not None:
         contact.name = name
@@ -574,6 +575,8 @@ async def delete_service_contact(db: AsyncSession, contact_id: int) -> None:
     """Delete a service contact."""
     contact = await get_service_contact_by_id(db, contact_id)
     if not contact:
-        raise NotFoundError(code="SERVICE_CONTACT_NOT_FOUND", detail=f"Service contact {contact_id} not found")
+        raise NotFoundError(
+            code="SERVICE_CONTACT_NOT_FOUND", detail=f"Service contact {contact_id} not found"
+        )
     await db.delete(contact)
     await db.flush()

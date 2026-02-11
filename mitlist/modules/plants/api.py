@@ -1,16 +1,14 @@
 """Flora (Plants) module FastAPI router."""
 
-from typing import List as ListType
 
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from mitlist.api.deps import get_db, get_current_group_id, get_current_user
+from mitlist.api.deps import get_current_group_id, get_current_user, get_db
 from mitlist.core.errors import NotFoundError, ValidationError
 from mitlist.modules.plants import interface, schemas
 
 router = APIRouter(prefix="/plants", tags=["plants"])
-
 
 
 # ---------- Schedules (Top Level) ----------
@@ -36,8 +34,9 @@ async def mark_schedule_completed(
     )
     return schemas.PlantScheduleResponse.model_validate(updated)
 
+
 # ---------- Species ----------
-@router.get("/species", response_model=ListType[schemas.PlantSpeciesResponse])
+@router.get("/species", response_model=list[schemas.PlantSpeciesResponse])
 async def get_plant_species(db: AsyncSession = Depends(get_db)):
     """List all plant species."""
     species = await interface.list_species(db)
@@ -45,7 +44,7 @@ async def get_plant_species(db: AsyncSession = Depends(get_db)):
 
 
 # ---------- Plants ----------
-@router.get("", response_model=ListType[schemas.PlantResponse])
+@router.get("", response_model=list[schemas.PlantResponse])
 async def get_plants(
     group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
@@ -135,7 +134,7 @@ async def mark_plant_as_dead(
 
 
 # ---------- Logs ----------
-@router.get("/{plant_id}/logs", response_model=ListType[schemas.PlantLogResponse])
+@router.get("/{plant_id}/logs", response_model=list[schemas.PlantLogResponse])
 async def get_plant_logs(
     plant_id: int,
     group_id: int = Depends(get_current_group_id),
@@ -150,12 +149,14 @@ async def get_plant_logs(
     return [schemas.PlantLogResponse.model_validate(l) for l in logs]
 
 
-@router.post("/{plant_id}/logs", response_model=schemas.PlantLogResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{plant_id}/logs", response_model=schemas.PlantLogResponse, status_code=status.HTTP_201_CREATED
+)
 async def post_plant_log(
     plant_id: int,
     data: schemas.PlantLogCreate,
     group_id: int = Depends(get_current_group_id),
-    user = Depends(get_current_user),
+    user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Log a care action."""
@@ -178,7 +179,7 @@ async def post_plant_log(
 
 
 # ---------- Schedules ----------
-@router.get("/{plant_id}/schedules", response_model=ListType[schemas.PlantScheduleResponse])
+@router.get("/{plant_id}/schedules", response_model=list[schemas.PlantScheduleResponse])
 async def get_plant_schedules(
     plant_id: int,
     group_id: int = Depends(get_current_group_id),
@@ -193,7 +194,11 @@ async def get_plant_schedules(
     return [schemas.PlantScheduleResponse.model_validate(s) for s in schedules]
 
 
-@router.post("/{plant_id}/schedules", response_model=schemas.PlantScheduleResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{plant_id}/schedules",
+    response_model=schemas.PlantScheduleResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_plant_schedule(
     plant_id: int,
     data: schemas.PlantScheduleCreate,
@@ -214,5 +219,3 @@ async def create_plant_schedule(
         assigned_to_id=data.assigned_to_id,
     )
     return schemas.PlantScheduleResponse.model_validate(sched)
-
-

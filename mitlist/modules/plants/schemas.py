@@ -1,7 +1,6 @@
 """Plants module Pydantic schemas for request/response models."""
 
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -13,25 +12,17 @@ class PlantSpeciesBase(BaseModel):
     """Base plant species schema."""
 
     scientific_name: str = Field(..., min_length=1, max_length=255)
-    common_name: Optional[str] = Field(None, max_length=255)
-    toxicity: str = Field(
-        ..., pattern="^(SAFE|TOXIC_CATS|TOXIC_DOGS|TOXIC_ALL)$"
-    )
+    common_name: str | None = Field(None, max_length=255)
+    toxicity: str = Field(..., pattern="^(SAFE|TOXIC_CATS|TOXIC_DOGS|TOXIC_ALL)$")
     light_needs: str = Field(..., pattern="^(LOW|INDIRECT|DIRECT)$")
-    water_interval_summer: Optional[int] = Field(None, ge=1)  # days
-    water_interval_winter: Optional[int] = Field(None, ge=1)  # days
-    humidity_preference: Optional[str] = Field(
-        None, pattern="^(LOW|MEDIUM|HIGH)$"
-    )
-    fertilize_frequency_weeks: Optional[int] = Field(None, ge=1)
-    growth_rate: Optional[str] = Field(None, pattern="^(SLOW|MEDIUM|FAST)$")
-    mature_height_cm: Optional[int] = Field(None, ge=1)
-    propagation_method: Optional[str] = Field(
-        None, pattern="^(SEED|CUTTING|DIVISION)$"
-    )
-    care_difficulty: Optional[str] = Field(
-        None, pattern="^(EASY|MODERATE|HARD)$"
-    )
+    water_interval_summer: int | None = Field(None, ge=1)  # days
+    water_interval_winter: int | None = Field(None, ge=1)  # days
+    humidity_preference: str | None = Field(None, pattern="^(LOW|MEDIUM|HIGH)$")
+    fertilize_frequency_weeks: int | None = Field(None, ge=1)
+    growth_rate: str | None = Field(None, pattern="^(SLOW|MEDIUM|FAST)$")
+    mature_height_cm: int | None = Field(None, ge=1)
+    propagation_method: str | None = Field(None, pattern="^(SEED|CUTTING|DIVISION)$")
+    care_difficulty: str | None = Field(None, pattern="^(EASY|MODERATE|HARD)$")
 
 
 class PlantSpeciesCreate(PlantSpeciesBase):
@@ -43,26 +34,18 @@ class PlantSpeciesCreate(PlantSpeciesBase):
 class PlantSpeciesUpdate(BaseModel):
     """Schema for updating a plant species."""
 
-    scientific_name: Optional[str] = Field(None, min_length=1, max_length=255)
-    common_name: Optional[str] = Field(None, max_length=255)
-    toxicity: Optional[str] = Field(
-        None, pattern="^(SAFE|TOXIC_CATS|TOXIC_DOGS|TOXIC_ALL)$"
-    )
-    light_needs: Optional[str] = Field(None, pattern="^(LOW|INDIRECT|DIRECT)$")
-    water_interval_summer: Optional[int] = Field(None, ge=1)
-    water_interval_winter: Optional[int] = Field(None, ge=1)
-    humidity_preference: Optional[str] = Field(
-        None, pattern="^(LOW|MEDIUM|HIGH)$"
-    )
-    fertilize_frequency_weeks: Optional[int] = Field(None, ge=1)
-    growth_rate: Optional[str] = Field(None, pattern="^(SLOW|MEDIUM|FAST)$")
-    mature_height_cm: Optional[int] = Field(None, ge=1)
-    propagation_method: Optional[str] = Field(
-        None, pattern="^(SEED|CUTTING|DIVISION)$"
-    )
-    care_difficulty: Optional[str] = Field(
-        None, pattern="^(EASY|MODERATE|HARD)$"
-    )
+    scientific_name: str | None = Field(None, min_length=1, max_length=255)
+    common_name: str | None = Field(None, max_length=255)
+    toxicity: str | None = Field(None, pattern="^(SAFE|TOXIC_CATS|TOXIC_DOGS|TOXIC_ALL)$")
+    light_needs: str | None = Field(None, pattern="^(LOW|INDIRECT|DIRECT)$")
+    water_interval_summer: int | None = Field(None, ge=1)
+    water_interval_winter: int | None = Field(None, ge=1)
+    humidity_preference: str | None = Field(None, pattern="^(LOW|MEDIUM|HIGH)$")
+    fertilize_frequency_weeks: int | None = Field(None, ge=1)
+    growth_rate: str | None = Field(None, pattern="^(SLOW|MEDIUM|FAST)$")
+    mature_height_cm: int | None = Field(None, ge=1)
+    propagation_method: str | None = Field(None, pattern="^(SEED|CUTTING|DIVISION)$")
+    care_difficulty: str | None = Field(None, pattern="^(EASY|MODERATE|HARD)$")
 
 
 class PlantSpeciesResponse(PlantSpeciesBase):
@@ -82,38 +65,36 @@ class PlantBase(BaseModel):
     """Base plant schema."""
 
     species_id: int
-    location_id: Optional[int] = None
-    nickname: Optional[str] = Field(None, max_length=255)
-    acquired_at: Optional[datetime] = None
-    acquired_from: Optional[str] = Field(
-        None, pattern="^(STORE|GIFT|PROPAGATION)$"
-    )
-    pot_size_cm: Optional[int] = Field(None, ge=1)
-    photo_url: Optional[str] = Field(None, max_length=500)
-    notes: Optional[str] = None
+    location_id: int | None = None
+    nickname: str | None = Field(None, max_length=255)
+    acquired_at: datetime | None = None
+    acquired_from: str | None = Field(None, pattern="^(STORE|GIFT|PROPAGATION)$")
+    pot_size_cm: int | None = Field(None, ge=1)
+    photo_url: str | None = Field(None, max_length=500)
+    notes: str | None = None
 
 
 class PlantCreate(PlantBase):
     """Schema for creating a plant."""
 
     group_id: int
-    parent_plant_id: Optional[int] = None  # For propagated plants
+    parent_plant_id: int | None = None  # For propagated plants
 
 
 class PlantUpdate(BaseModel):
     """Schema for updating a plant."""
 
-    location_id: Optional[int] = None
-    nickname: Optional[str] = Field(None, max_length=255)
-    pot_size_cm: Optional[int] = Field(None, ge=1)
-    photo_url: Optional[str] = Field(None, max_length=500)
-    notes: Optional[str] = None
+    location_id: int | None = None
+    nickname: str | None = Field(None, max_length=255)
+    pot_size_cm: int | None = Field(None, ge=1)
+    photo_url: str | None = Field(None, max_length=500)
+    notes: str | None = None
 
 
 class PlantMarkDeadRequest(BaseModel):
     """Schema for marking a plant as dead."""
 
-    death_reason: Optional[str] = None
+    death_reason: str | None = None
 
 
 class PlantResponse(PlantBase):
@@ -123,10 +104,10 @@ class PlantResponse(PlantBase):
 
     id: int
     group_id: int
-    parent_plant_id: Optional[int] = None
+    parent_plant_id: int | None = None
     is_alive: bool
-    died_at: Optional[datetime] = None
-    death_reason: Optional[str] = None
+    died_at: datetime | None = None
+    death_reason: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -147,10 +128,10 @@ class PlantLogBase(BaseModel):
         ...,
         pattern="^(WATER|FERTILIZE|PRUNE|REPOT|PEST_CONTROL|ROTATE|PROPAGATE)$",
     )
-    quantity_value: Optional[float] = Field(None, ge=0)
-    quantity_unit: Optional[str] = Field(None, max_length=50)
-    notes: Optional[str] = None
-    photo_url: Optional[str] = Field(None, max_length=500)
+    quantity_value: float | None = Field(None, ge=0)
+    quantity_unit: str | None = Field(None, max_length=50)
+    notes: str | None = None
+    photo_url: str | None = Field(None, max_length=500)
     occurred_at: datetime
 
 
@@ -184,7 +165,7 @@ class PlantScheduleBase(BaseModel):
     )
     next_due_date: datetime
     frequency_days: int = Field(..., ge=1)
-    assigned_to_id: Optional[int] = None
+    assigned_to_id: int | None = None
 
 
 class PlantScheduleCreate(PlantScheduleBase):
@@ -196,9 +177,9 @@ class PlantScheduleCreate(PlantScheduleBase):
 class PlantScheduleUpdate(BaseModel):
     """Schema for updating a plant schedule."""
 
-    next_due_date: Optional[datetime] = None
-    frequency_days: Optional[int] = Field(None, ge=1)
-    assigned_to_id: Optional[int] = None
+    next_due_date: datetime | None = None
+    frequency_days: int | None = Field(None, ge=1)
+    assigned_to_id: int | None = None
 
 
 class PlantScheduleResponse(PlantScheduleBase):
@@ -215,9 +196,9 @@ class PlantScheduleResponse(PlantScheduleBase):
 class PlantScheduleMarkDoneRequest(BaseModel):
     """Schema for marking a scheduled action as done."""
 
-    notes: Optional[str] = None
-    quantity_value: Optional[float] = Field(None, ge=0)
-    quantity_unit: Optional[str] = Field(None, max_length=50)
+    notes: str | None = None
+    quantity_value: float | None = Field(None, ge=0)
+    quantity_unit: str | None = Field(None, max_length=50)
 
 
 # ====================
@@ -227,14 +208,14 @@ class PlantCareStatusResponse(BaseModel):
     """Schema for plant care status."""
 
     plant_id: int
-    nickname: Optional[str] = None
+    nickname: str | None = None
     species_name: str
     is_alive: bool
     overdue_actions: list[str]
     upcoming_actions: list[dict]  # action_type, due_date
-    last_watered_at: Optional[datetime] = None
-    last_fertilized_at: Optional[datetime] = None
-    days_since_last_care: Optional[int] = None
+    last_watered_at: datetime | None = None
+    last_fertilized_at: datetime | None = None
+    days_since_last_care: int | None = None
 
 
 class GroupPlantSummaryResponse(BaseModel):
@@ -253,7 +234,7 @@ class ToxicityWarningResponse(BaseModel):
     """Schema for toxicity warning (when pets are in same group)."""
 
     plant_id: int
-    plant_nickname: Optional[str] = None
+    plant_nickname: str | None = None
     species_name: str
     toxicity_level: str
     affected_pets: list[dict]  # pet_id, pet_name, pet_species
@@ -266,4 +247,4 @@ class PlantCareHistoryResponse(BaseModel):
     care_logs: list[PlantLogResponse]
     total_waterings: int
     total_fertilizations: int
-    average_days_between_waterings: Optional[float] = None
+    average_days_between_waterings: float | None = None

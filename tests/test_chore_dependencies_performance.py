@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from sqlalchemy import event
@@ -61,7 +61,7 @@ async def test_check_dependencies_performance(db: AsyncSession, engine, setup_da
     main_assignment = ChoreAssignment(
         chore_id=main_chore.id,
         assigned_to_id=user.id,
-        due_date=datetime.now(timezone.utc),
+        due_date=datetime.now(UTC),
         status="PENDING",
     )
     db.add(main_assignment)
@@ -92,9 +92,9 @@ async def test_check_dependencies_performance(db: AsyncSession, engine, setup_da
         assign = ChoreAssignment(
             chore_id=dep_chore.id,
             assigned_to_id=user.id,
-            due_date=datetime.now(timezone.utc),
+            due_date=datetime.now(UTC),
             status="COMPLETED",
-            completed_at=datetime.now(timezone.utc),
+            completed_at=datetime.now(UTC),
         )
         db.add(assign)
 
@@ -139,7 +139,7 @@ async def test_check_dependencies_correctness_mixed(db: AsyncSession, setup_data
     assign = ChoreAssignment(
         chore_id=main_chore.id,
         assigned_to_id=user.id,
-        due_date=datetime.now(timezone.utc),
+        due_date=datetime.now(UTC),
         status="PENDING",
     )
     db.add(assign)
@@ -160,7 +160,7 @@ async def test_check_dependencies_correctness_mixed(db: AsyncSession, setup_data
         ChoreAssignment(
             chore_id=dep1.id,
             assigned_to_id=user.id,
-            due_date=datetime.now(timezone.utc),
+            due_date=datetime.now(UTC),
             status="COMPLETED",
         )
     )
@@ -180,7 +180,7 @@ async def test_check_dependencies_correctness_mixed(db: AsyncSession, setup_data
         ChoreAssignment(
             chore_id=dep2.id,
             assigned_to_id=user.id,
-            due_date=datetime.now(timezone.utc),
+            due_date=datetime.now(UTC),
             status="PENDING",
         )
     )
@@ -211,7 +211,7 @@ async def test_check_dependencies_correctness_latest(db: AsyncSession, setup_dat
     assign = ChoreAssignment(
         chore_id=main_chore.id,
         assigned_to_id=user.id,
-        due_date=datetime.now(timezone.utc),
+        due_date=datetime.now(UTC),
         status="PENDING",
     )
     db.add(assign)
@@ -234,7 +234,7 @@ async def test_check_dependencies_correctness_latest(db: AsyncSession, setup_dat
         ChoreAssignment(
             chore_id=dep1.id,
             assigned_to_id=user.id,
-            due_date=datetime.now(timezone.utc) - timedelta(days=1),
+            due_date=datetime.now(UTC) - timedelta(days=1),
             status="COMPLETED",
         )
     )
@@ -243,7 +243,7 @@ async def test_check_dependencies_correctness_latest(db: AsyncSession, setup_dat
         ChoreAssignment(
             chore_id=dep1.id,
             assigned_to_id=user.id,
-            due_date=datetime.now(timezone.utc),
+            due_date=datetime.now(UTC),
             status="PENDING",
         )
     )

@@ -1,7 +1,7 @@
 """Governance module Pydantic schemas for request/response models."""
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -14,23 +14,21 @@ class BallotOptionInput(BaseModel):
 
     text: str = Field(..., min_length=1, max_length=500)
     display_order: int = Field(0, ge=0)
-    option_metadata: Optional[dict[str, Any]] = None
+    option_metadata: dict[str, Any] | None = None
 
 
 class ProposalBase(BaseModel):
     """Base proposal schema."""
 
     title: str = Field(..., min_length=1, max_length=255)
-    description: Optional[str] = None
+    description: str | None = None
     type: str = Field(
         ...,
         pattern="^(GENERAL|EXPENSE_REQUEST|POLICY_CHANGE|KICK_USER|CHORE_ASSIGNMENT|PET_ADOPTION)$",
     )
-    strategy: str = Field(
-        ..., pattern="^(SIMPLE_MAJORITY|UNANIMOUS|RANKED_CHOICE|WEIGHTED)$"
-    )
-    deadline_at: Optional[datetime] = None
-    min_quorum_percentage: Optional[int] = Field(None, ge=0, le=100)
+    strategy: str = Field(..., pattern="^(SIMPLE_MAJORITY|UNANIMOUS|RANKED_CHOICE|WEIGHTED)$")
+    deadline_at: datetime | None = None
+    min_quorum_percentage: int | None = Field(None, ge=0, le=100)
 
 
 class ProposalCreate(ProposalBase):
@@ -38,26 +36,24 @@ class ProposalCreate(ProposalBase):
 
     group_id: int
     ballot_options: list[BallotOptionInput] = Field(default_factory=list)
-    linked_expense_id: Optional[int] = None
-    linked_chore_id: Optional[int] = None
-    linked_pet_id: Optional[int] = None
+    linked_expense_id: int | None = None
+    linked_chore_id: int | None = None
+    linked_pet_id: int | None = None
 
 
 class ProposalUpdate(BaseModel):
     """Schema for updating a proposal."""
 
-    title: Optional[str] = Field(None, min_length=1, max_length=255)
-    description: Optional[str] = None
-    deadline_at: Optional[datetime] = None
-    min_quorum_percentage: Optional[int] = Field(None, ge=0, le=100)
+    title: str | None = Field(None, min_length=1, max_length=255)
+    description: str | None = None
+    deadline_at: datetime | None = None
+    min_quorum_percentage: int | None = Field(None, ge=0, le=100)
 
 
 class ProposalStatusUpdate(BaseModel):
     """Schema for updating proposal status."""
 
-    status: str = Field(
-        ..., pattern="^(DRAFT|OPEN|PASSED|REJECTED|EXECUTED|CANCELLED)$"
-    )
+    status: str = Field(..., pattern="^(DRAFT|OPEN|PASSED|REJECTED|EXECUTED|CANCELLED)$")
 
 
 class BallotOptionResponse(BaseModel):
@@ -69,7 +65,7 @@ class BallotOptionResponse(BaseModel):
     proposal_id: int
     text: str
     display_order: int
-    option_metadata: Optional[dict[str, Any]] = None
+    option_metadata: dict[str, Any] | None = None
     vote_count: int
     created_at: datetime
     updated_at: datetime
@@ -84,11 +80,11 @@ class ProposalResponse(ProposalBase):
     group_id: int
     created_by_id: int
     status: str
-    linked_expense_id: Optional[int] = None
-    linked_chore_id: Optional[int] = None
-    linked_pet_id: Optional[int] = None
-    execution_result: Optional[dict[str, Any]] = None
-    executed_at: Optional[datetime] = None
+    linked_expense_id: int | None = None
+    linked_chore_id: int | None = None
+    linked_pet_id: int | None = None
+    execution_result: dict[str, Any] | None = None
+    executed_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
     ballot_options: list[BallotOptionResponse] = Field(default_factory=list)
@@ -101,7 +97,7 @@ class VoteBase(BaseModel):
     """Base vote schema."""
 
     ballot_option_id: int
-    rank_order: Optional[int] = Field(None, ge=1)  # For ranked choice
+    rank_order: int | None = Field(None, ge=1)  # For ranked choice
     weight: int = Field(1, ge=1)
     is_anonymous: bool = False
 
@@ -156,7 +152,7 @@ class VoteDelegationBase(BaseModel):
         ..., pattern="^(ALL|FINANCE|CHORES|PETS|PLANTS|ASSETS|RECIPES|OTHER)$"
     )
     start_date: datetime
-    end_date: Optional[datetime] = None
+    end_date: datetime | None = None
 
 
 class VoteDelegationCreate(VoteDelegationBase):
@@ -169,8 +165,8 @@ class VoteDelegationCreate(VoteDelegationBase):
 class VoteDelegationUpdate(BaseModel):
     """Schema for updating a vote delegation."""
 
-    end_date: Optional[datetime] = None
-    is_active: Optional[bool] = None
+    end_date: datetime | None = None
+    is_active: bool | None = None
 
 
 class VoteDelegationResponse(VoteDelegationBase):
@@ -196,15 +192,15 @@ class BallotOptionCreate(BaseModel):
     proposal_id: int
     text: str = Field(..., min_length=1, max_length=500)
     display_order: int = Field(0, ge=0)
-    option_metadata: Optional[dict[str, Any]] = None
+    option_metadata: dict[str, Any] | None = None
 
 
 class BallotOptionUpdate(BaseModel):
     """Schema for updating a ballot option."""
 
-    text: Optional[str] = Field(None, min_length=1, max_length=500)
-    display_order: Optional[int] = Field(None, ge=0)
-    option_metadata: Optional[dict[str, Any]] = None
+    text: str | None = Field(None, min_length=1, max_length=500)
+    display_order: int | None = Field(None, ge=0)
+    option_metadata: dict[str, Any] | None = None
 
 
 # ====================
@@ -217,10 +213,10 @@ class ProposalResultResponse(BaseModel):
     status: str
     total_votes: int
     quorum_reached: bool
-    required_quorum: Optional[int] = None
+    required_quorum: int | None = None
     results: list[dict[str, Any]]  # Option ID, text, vote count, percentage
-    winner_option_id: Optional[int] = None
-    winner_option_text: Optional[str] = None
+    winner_option_id: int | None = None
+    winner_option_text: str | None = None
 
 
 class VotingSummaryResponse(BaseModel):
@@ -232,7 +228,7 @@ class VotingSummaryResponse(BaseModel):
     participation_rate: float
     votes_by_option: dict[int, int]  # Option ID -> vote count
     is_concluded: bool
-    deadline_remaining_seconds: Optional[int] = None
+    deadline_remaining_seconds: int | None = None
 
 
 class UserVotingHistoryResponse(BaseModel):

@@ -1,12 +1,11 @@
 """Pets module ORM models."""
 
 from datetime import datetime
-from typing import Optional
 
-from sqlalchemy import CheckConstraint, ForeignKey, JSON, Numeric, String, Text
+from sqlalchemy import JSON, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from mitlist.db.base import Base, BaseModel, TimestampMixin
+from mitlist.db.base import BaseModel, TimestampMixin
 
 
 class PetSpecies(str):
@@ -66,29 +65,35 @@ class Pet(BaseModel, TimestampMixin):
     group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     species: Mapped[str] = mapped_column(String(20), nullable=False)
-    breed: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    sex: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
-    date_of_birth: Mapped[Optional[datetime]] = mapped_column(nullable=True)
-    adoption_date: Mapped[Optional[datetime]] = mapped_column(nullable=True)
-    chip_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    weight_kg: Mapped[Optional[float]] = mapped_column(nullable=True)
-    color_markings: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
-    photo_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
-    vet_contact_id: Mapped[Optional[int]] = mapped_column(ForeignKey("service_contacts.id"), nullable=True)
-    insurance_policy_number: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    insurance_provider: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    diet_instructions: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    medication_schedule: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
-    special_needs: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    breed: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    sex: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    date_of_birth: Mapped[datetime | None] = mapped_column(nullable=True)
+    adoption_date: Mapped[datetime | None] = mapped_column(nullable=True)
+    chip_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    weight_kg: Mapped[float | None] = mapped_column(nullable=True)
+    color_markings: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    photo_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    vet_contact_id: Mapped[int | None] = mapped_column(
+        ForeignKey("service_contacts.id"), nullable=True
+    )
+    insurance_policy_number: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    insurance_provider: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    diet_instructions: Mapped[str | None] = mapped_column(Text, nullable=True)
+    medication_schedule: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    special_needs: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_alive: Mapped[bool] = mapped_column(default=True, nullable=False)
-    died_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    died_at: Mapped[datetime | None] = mapped_column(nullable=True)
 
     # Relationships
     medical_records: Mapped[list["PetMedicalRecord"]] = relationship(
         "PetMedicalRecord", back_populates="pet", cascade="all, delete-orphan"
     )
-    logs: Mapped[list["PetLog"]] = relationship("PetLog", back_populates="pet", cascade="all, delete-orphan")
-    schedules: Mapped[list["PetSchedule"]] = relationship("PetSchedule", back_populates="pet", cascade="all, delete-orphan")
+    logs: Mapped[list["PetLog"]] = relationship(
+        "PetLog", back_populates="pet", cascade="all, delete-orphan"
+    )
+    schedules: Mapped[list["PetSchedule"]] = relationship(
+        "PetSchedule", back_populates="pet", cascade="all, delete-orphan"
+    )
 
 
 class PetMedicalRecord(BaseModel, TimestampMixin):
@@ -100,12 +105,12 @@ class PetMedicalRecord(BaseModel, TimestampMixin):
     type: Mapped[str] = mapped_column(String(50), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     performed_at: Mapped[datetime] = mapped_column(nullable=False)
-    performed_by: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    cost_expense_id: Mapped[Optional[int]] = mapped_column(nullable=True)  # FK to expenses
-    expires_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
-    reminder_days_before: Mapped[Optional[int]] = mapped_column(nullable=True)
-    document_id: Mapped[Optional[int]] = mapped_column(nullable=True)  # FK to documents
-    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    performed_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    cost_expense_id: Mapped[int | None] = mapped_column(nullable=True)  # FK to expenses
+    expires_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    reminder_days_before: Mapped[int | None] = mapped_column(nullable=True)
+    document_id: Mapped[int | None] = mapped_column(nullable=True)  # FK to documents
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Relationships
     pet: Mapped["Pet"] = relationship("Pet", back_populates="medical_records")
@@ -119,10 +124,10 @@ class PetLog(BaseModel, TimestampMixin):
     pet_id: Mapped[int] = mapped_column(ForeignKey("pets.id"), nullable=False, index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     action: Mapped[str] = mapped_column(String(50), nullable=False)
-    value_amount: Mapped[Optional[float]] = mapped_column(nullable=True)
-    value_unit: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    photo_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    value_amount: Mapped[float | None] = mapped_column(nullable=True)
+    value_unit: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    photo_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     occurred_at: Mapped[datetime] = mapped_column(nullable=False)
 
     # Relationships
@@ -137,8 +142,8 @@ class PetSchedule(BaseModel, TimestampMixin):
     pet_id: Mapped[int] = mapped_column(ForeignKey("pets.id"), nullable=False, index=True)
     action_type: Mapped[str] = mapped_column(String(50), nullable=False)
     frequency_type: Mapped[str] = mapped_column(String(20), nullable=False)
-    time_of_day: Mapped[Optional[datetime]] = mapped_column(nullable=True)  # TIME type
-    assigned_to_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    time_of_day: Mapped[datetime | None] = mapped_column(nullable=True)  # TIME type
+    assigned_to_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     is_rotating: Mapped[bool] = mapped_column(default=False, nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
 

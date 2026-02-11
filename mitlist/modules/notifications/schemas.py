@@ -1,7 +1,6 @@
 """Notifications module Pydantic schemas for request/response models."""
 
 from datetime import datetime, time
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -15,8 +14,8 @@ class NotificationPreferenceBase(BaseModel):
     event_type: str = Field(..., max_length=100)
     channel: str = Field(..., pattern="^(EMAIL|PUSH|SMS|IN_APP)$")
     enabled: bool = True
-    advance_notice_hours: Optional[int] = Field(None, ge=0)
-    quiet_hours_start: Optional[time] = None
+    advance_notice_hours: int | None = Field(None, ge=0)
+    quiet_hours_start: time | None = None
 
 
 class NotificationPreferenceCreate(NotificationPreferenceBase):
@@ -28,9 +27,9 @@ class NotificationPreferenceCreate(NotificationPreferenceBase):
 class NotificationPreferenceUpdate(BaseModel):
     """Schema for updating a notification preference."""
 
-    enabled: Optional[bool] = None
-    advance_notice_hours: Optional[int] = Field(None, ge=0)
-    quiet_hours_start: Optional[time] = None
+    enabled: bool | None = None
+    advance_notice_hours: int | None = Field(None, ge=0)
+    quiet_hours_start: time | None = None
 
 
 class NotificationPreferenceResponse(NotificationPreferenceBase):
@@ -59,7 +58,7 @@ class NotificationBase(BaseModel):
     type: str = Field(..., max_length=100)
     title: str = Field(..., min_length=1, max_length=255)
     body: str = Field(..., min_length=1)
-    link_url: Optional[str] = Field(None, max_length=500)
+    link_url: str | None = Field(None, max_length=500)
     priority: str = Field("MEDIUM", pattern="^(LOW|MEDIUM|HIGH)$")
 
 
@@ -67,7 +66,7 @@ class NotificationCreate(NotificationBase):
     """Schema for creating a notification."""
 
     user_id: int
-    group_id: Optional[int] = None
+    group_id: int | None = None
 
 
 class NotificationResponse(NotificationBase):
@@ -77,10 +76,10 @@ class NotificationResponse(NotificationBase):
 
     id: int
     user_id: int
-    group_id: Optional[int] = None
+    group_id: int | None = None
     is_read: bool
-    read_at: Optional[datetime] = None
-    delivered_at: Optional[datetime] = None
+    read_at: datetime | None = None
+    delivered_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -94,7 +93,7 @@ class NotificationMarkReadRequest(BaseModel):
 class NotificationMarkAllReadRequest(BaseModel):
     """Schema for marking all notifications as read."""
 
-    group_id: Optional[int] = None  # If provided, only marks notifications for this group
+    group_id: int | None = None  # If provided, only marks notifications for this group
 
 
 # ====================
@@ -144,8 +143,8 @@ class CommentResponse(CommentBase):
     id: int
     author_id: int
     is_edited: bool
-    edited_at: Optional[datetime] = None
-    deleted_at: Optional[datetime] = None
+    edited_at: datetime | None = None
+    deleted_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
     mentions: list[MentionResponse] = Field(default_factory=list)
@@ -164,9 +163,7 @@ class CommentWithReactionsResponse(CommentResponse):
 class ReactionBase(BaseModel):
     """Base reaction schema."""
 
-    target_type: str = Field(
-        ..., pattern="^(COMMENT|EXPENSE|CHORE_ASSIGNMENT)$"
-    )
+    target_type: str = Field(..., pattern="^(COMMENT|EXPENSE|CHORE_ASSIGNMENT)$")
     target_id: int
     emoji_code: str = Field(..., min_length=1, max_length=20)
 
@@ -184,7 +181,7 @@ class ReactionResponse(ReactionBase):
 
     id: int
     user_id: int
-    comment_id: Optional[int] = None
+    comment_id: int | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -192,9 +189,7 @@ class ReactionResponse(ReactionBase):
 class ReactionToggleRequest(BaseModel):
     """Schema for toggling a reaction (add if not exists, remove if exists)."""
 
-    target_type: str = Field(
-        ..., pattern="^(COMMENT|EXPENSE|CHORE_ASSIGNMENT)$"
-    )
+    target_type: str = Field(..., pattern="^(COMMENT|EXPENSE|CHORE_ASSIGNMENT)$")
     target_id: int
     emoji_code: str = Field(..., min_length=1, max_length=20)
 
@@ -203,7 +198,7 @@ class ReactionToggleResponse(BaseModel):
     """Schema for reaction toggle response."""
 
     action: str  # "added" or "removed"
-    reaction: Optional[ReactionResponse] = None
+    reaction: ReactionResponse | None = None
 
 
 # ====================
@@ -225,7 +220,7 @@ class NotificationSummaryResponse(BaseModel):
     total_unread: int
     unread_by_type: dict[str, int]
     unread_by_priority: dict[str, int]
-    oldest_unread_at: Optional[datetime] = None
+    oldest_unread_at: datetime | None = None
 
 
 class UserMentionsSummaryResponse(BaseModel):

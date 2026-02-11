@@ -1,13 +1,12 @@
 """Tests for auth module."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
-import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from mitlist.modules.auth.models import Group, Invite, User, UserGroup
+from mitlist.modules.auth.models import Group, User, UserGroup
 
 
 class TestGroups:
@@ -73,7 +72,7 @@ class TestInvites:
             json={
                 "email_hint": "newuser@example.com",
                 "role": "MEMBER",
-                "expires_at": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
+                "expires_at": (datetime.now(UTC) + timedelta(days=7)).isoformat(),
             },
         )
         assert response.status_code == 201
@@ -83,17 +82,19 @@ class TestInvites:
         assert data["status"] == "PENDING"  # alias from model_dump
         assert "invite_code" in data  # alias from model_dump
 
-    async def test_list_invites(self, client: AsyncClient, test_group: Group, db: AsyncSession, test_user: User):
+    async def test_list_invites(
+        self, client: AsyncClient, test_group: Group, db: AsyncSession, test_user: User
+    ):
         """Test listing group invites."""
         from mitlist.modules.auth.service import create_invite
-        
+
         invite = await create_invite(
             db,
             group_id=test_group.id,
             created_by_id=test_user.id,
             role="MEMBER",
             email_hint="invite@example.com",
-            expires_at=datetime.now(timezone.utc) + timedelta(days=7),
+            expires_at=datetime.now(UTC) + timedelta(days=7),
         )
         await db.flush()
 
@@ -103,17 +104,19 @@ class TestInvites:
         assert len(data) >= 1
         assert any(i.get("email") == "invite@example.com" for i in data)
 
-    async def test_revoke_invite(self, client: AsyncClient, test_group: Group, db: AsyncSession, test_user: User):
+    async def test_revoke_invite(
+        self, client: AsyncClient, test_group: Group, db: AsyncSession, test_user: User
+    ):
         """Test revoking an invite."""
         from mitlist.modules.auth.service import create_invite
-        
+
         invite = await create_invite(
             db,
             group_id=test_group.id,
             created_by_id=test_user.id,
             role="MEMBER",
             email_hint="revoke@example.com",
-            expires_at=datetime.now(timezone.utc) + timedelta(days=7),
+            expires_at=datetime.now(UTC) + timedelta(days=7),
         )
         await db.flush()
         await db.refresh(invite)
@@ -154,7 +157,7 @@ class TestMembers:
             user_id=test_user2.id,
             group_id=test_group.id,
             role="MEMBER",
-            joined_at=datetime.now(timezone.utc),
+            joined_at=datetime.now(UTC),
         )
         db.add(membership)
         await db.flush()
@@ -175,7 +178,7 @@ class TestMembers:
             user_id=test_user2.id,
             group_id=test_group.id,
             role="MEMBER",
-            joined_at=datetime.now(timezone.utc),
+            joined_at=datetime.now(UTC),
         )
         db.add(membership)
         await db.flush()

@@ -1,7 +1,7 @@
 """Auth module Pydantic schemas for request/response models."""
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field
 
@@ -14,9 +14,9 @@ class UserBase(BaseModel):
 
     email: EmailStr
     name: str = Field(..., min_length=1, max_length=255)
-    phone_number: Optional[str] = Field(None, max_length=50)
-    birth_date: Optional[datetime] = None
-    avatar_url: Optional[str] = Field(None, max_length=500)
+    phone_number: str | None = Field(None, max_length=50)
+    birth_date: datetime | None = None
+    avatar_url: str | None = Field(None, max_length=500)
     language_code: str = Field("en", max_length=10)
 
 
@@ -29,12 +29,12 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     """Schema for updating a user."""
 
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    phone_number: Optional[str] = Field(None, max_length=50)
-    birth_date: Optional[datetime] = None
-    avatar_url: Optional[str] = Field(None, max_length=500)
-    language_code: Optional[str] = Field(None, max_length=10)
-    preferences: Optional[dict[str, Any]] = None
+    name: str | None = Field(None, min_length=1, max_length=255)
+    phone_number: str | None = Field(None, max_length=50)
+    birth_date: datetime | None = None
+    avatar_url: str | None = Field(None, max_length=500)
+    language_code: str | None = Field(None, max_length=10)
+    preferences: dict[str, Any] | None = None
 
 
 class UserResponse(UserBase):
@@ -45,8 +45,8 @@ class UserResponse(UserBase):
     id: int
     is_superuser: bool
     is_active: bool
-    preferences: Optional[dict[str, Any]] = None
-    last_login_at: Optional[datetime] = None
+    preferences: dict[str, Any] | None = None
+    last_login_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -75,30 +75,30 @@ class GroupBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     default_currency: str = Field("USD", max_length=3, pattern="^[A-Z]{3}$")
     timezone: str = Field("UTC", max_length=50)
-    description: Optional[str] = None
-    avatar_url: Optional[str] = Field(None, max_length=500)
-    address: Optional[str] = None
+    description: str | None = None
+    avatar_url: str | None = Field(None, max_length=500)
+    address: str | None = None
 
 
 class GroupCreate(GroupBase):
     """Schema for creating a group."""
 
-    lease_start_date: Optional[datetime] = None
-    lease_end_date: Optional[datetime] = None
+    lease_start_date: datetime | None = None
+    lease_end_date: datetime | None = None
 
 
 class GroupUpdate(BaseModel):
     """Schema for updating a group."""
 
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    default_currency: Optional[str] = Field(None, max_length=3, pattern="^[A-Z]{3}$")
-    timezone: Optional[str] = Field(None, max_length=50)
-    description: Optional[str] = None
-    avatar_url: Optional[str] = Field(None, max_length=500)
-    address: Optional[str] = None
-    lease_start_date: Optional[datetime] = None
-    lease_end_date: Optional[datetime] = None
-    landlord_contact_id: Optional[int] = None
+    name: str | None = Field(None, min_length=1, max_length=255)
+    default_currency: str | None = Field(None, max_length=3, pattern="^[A-Z]{3}$")
+    timezone: str | None = Field(None, max_length=50)
+    description: str | None = None
+    avatar_url: str | None = Field(None, max_length=500)
+    address: str | None = None
+    lease_start_date: datetime | None = None
+    lease_end_date: datetime | None = None
+    landlord_contact_id: int | None = None
 
 
 class GroupResponse(GroupBase):
@@ -108,9 +108,9 @@ class GroupResponse(GroupBase):
 
     id: int
     created_by_id: int
-    lease_start_date: Optional[datetime] = None
-    lease_end_date: Optional[datetime] = None
-    landlord_contact_id: Optional[int] = None
+    lease_start_date: datetime | None = None
+    lease_end_date: datetime | None = None
+    landlord_contact_id: int | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -122,7 +122,7 @@ class UserGroupBase(BaseModel):
     """Base user-group membership schema."""
 
     role: str = Field(..., pattern="^(ADMIN|MEMBER|GUEST|CHILD)$")
-    nickname: Optional[str] = Field(None, max_length=255)
+    nickname: str | None = Field(None, max_length=255)
 
 
 class UserGroupCreate(UserGroupBase):
@@ -142,8 +142,8 @@ class UserGroupCreate(BaseModel):
 class UserGroupUpdate(BaseModel):
     """Schema for updating a user-group membership."""
 
-    role: Optional[str] = Field(None, pattern="^(ADMIN|MEMBER|GUEST|CHILD)$")
-    nickname: Optional[str] = Field(None, max_length=255)
+    role: str | None = Field(None, pattern="^(ADMIN|MEMBER|GUEST|CHILD)$")
+    nickname: str | None = Field(None, max_length=255)
 
 
 class UserGroupResponse(UserGroupBase):
@@ -155,7 +155,7 @@ class UserGroupResponse(UserGroupBase):
     user_id: int
     group_id: int
     joined_at: datetime
-    left_at: Optional[datetime] = None
+    left_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -168,7 +168,7 @@ class GroupMemberResponse(BaseModel):
     id: int
     user_id: int
     role: str
-    nickname: Optional[str] = None
+    nickname: str | None = None
     joined_at: datetime
     user: UserResponse
 
@@ -179,7 +179,7 @@ class GroupMemberResponse(BaseModel):
 class InviteBase(BaseModel):
     """Base invite schema."""
 
-    email_hint: Optional[str] = Field(None, max_length=255)
+    email_hint: str | None = Field(None, max_length=255)
     role: str = Field("MEMBER", pattern="^(ADMIN|MEMBER|GUEST|CHILD)$")
     max_uses: int = Field(1, ge=1)
 
@@ -188,13 +188,13 @@ class InviteCreate(InviteBase):
     """Schema for creating an invite."""
 
     group_id: int
-    expires_at: Optional[datetime] = None
+    expires_at: datetime | None = None
 
 
 class InviteCreateRequest(InviteBase):
     """Schema for creating an invite (group_id comes from path)."""
 
-    expires_at: Optional[datetime] = None
+    expires_at: datetime | None = None
 
 
 class InviteResponse(InviteBase):
@@ -207,23 +207,23 @@ class InviteResponse(InviteBase):
     created_by_id: int
     code: str
     use_count: int
-    expires_at: Optional[datetime] = None
+    expires_at: datetime | None = None
     is_active: bool
     created_at: datetime
     updated_at: datetime
-    
+
     @computed_field
     @property
-    def email(self) -> Optional[str]:
+    def email(self) -> str | None:
         """Alias for email_hint."""
         return self.email_hint
-    
+
     @computed_field
-    @property  
+    @property
     def invite_code(self) -> str:
         """Alias for code."""
         return self.code
-    
+
     @computed_field
     @property
     def status(self) -> str:
@@ -244,11 +244,11 @@ class LocationBase(BaseModel):
     """Base location schema."""
 
     name: str = Field(..., min_length=1, max_length=255)
-    floor_level: Optional[int] = None
-    sunlight_direction: Optional[str] = Field(None, pattern="^(NORTH|SOUTH|EAST|WEST)$")
-    humidity_level: Optional[str] = Field(None, pattern="^(LOW|MEDIUM|HIGH)$")
-    temperature_avg_celsius: Optional[float] = None
-    notes: Optional[str] = Field(None, max_length=1000)
+    floor_level: int | None = None
+    sunlight_direction: str | None = Field(None, pattern="^(NORTH|SOUTH|EAST|WEST)$")
+    humidity_level: str | None = Field(None, pattern="^(LOW|MEDIUM|HIGH)$")
+    temperature_avg_celsius: float | None = None
+    notes: str | None = Field(None, max_length=1000)
 
 
 class LocationCreate(LocationBase):
@@ -260,12 +260,12 @@ class LocationCreate(LocationBase):
 class LocationUpdate(BaseModel):
     """Schema for updating a location."""
 
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    floor_level: Optional[int] = None
-    sunlight_direction: Optional[str] = Field(None, pattern="^(NORTH|SOUTH|EAST|WEST)$")
-    humidity_level: Optional[str] = Field(None, pattern="^(LOW|MEDIUM|HIGH)$")
-    temperature_avg_celsius: Optional[float] = None
-    notes: Optional[str] = Field(None, max_length=1000)
+    name: str | None = Field(None, min_length=1, max_length=255)
+    floor_level: int | None = None
+    sunlight_direction: str | None = Field(None, pattern="^(NORTH|SOUTH|EAST|WEST)$")
+    humidity_level: str | None = Field(None, pattern="^(LOW|MEDIUM|HIGH)$")
+    temperature_avg_celsius: float | None = None
+    notes: str | None = Field(None, max_length=1000)
 
 
 class LocationResponse(LocationBase):
@@ -290,13 +290,13 @@ class ServiceContactBase(BaseModel):
         ...,
         pattern="^(VET|PLUMBER|ELECTRICIAN|DOCTOR|LANDLORD|CLEANER|HANDYMAN|OTHER)$",
     )
-    company_name: Optional[str] = Field(None, max_length=255)
-    phone: Optional[str] = Field(None, max_length=50)
-    email: Optional[EmailStr] = None
-    address: Optional[str] = Field(None, max_length=500)
-    website_url: Optional[str] = Field(None, max_length=500)
+    company_name: str | None = Field(None, max_length=255)
+    phone: str | None = Field(None, max_length=50)
+    email: EmailStr | None = None
+    address: str | None = Field(None, max_length=500)
+    website_url: str | None = Field(None, max_length=500)
     emergency_contact: bool = False
-    notes: Optional[str] = Field(None, max_length=1000)
+    notes: str | None = Field(None, max_length=1000)
 
 
 class ServiceContactCreate(ServiceContactBase):
@@ -308,18 +308,18 @@ class ServiceContactCreate(ServiceContactBase):
 class ServiceContactUpdate(BaseModel):
     """Schema for updating a service contact."""
 
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    job_title: Optional[str] = Field(
+    name: str | None = Field(None, min_length=1, max_length=255)
+    job_title: str | None = Field(
         None,
         pattern="^(VET|PLUMBER|ELECTRICIAN|DOCTOR|LANDLORD|CLEANER|HANDYMAN|OTHER)$",
     )
-    company_name: Optional[str] = Field(None, max_length=255)
-    phone: Optional[str] = Field(None, max_length=50)
-    email: Optional[EmailStr] = None
-    address: Optional[str] = Field(None, max_length=500)
-    website_url: Optional[str] = Field(None, max_length=500)
-    emergency_contact: Optional[bool] = None
-    notes: Optional[str] = Field(None, max_length=1000)
+    company_name: str | None = Field(None, max_length=255)
+    phone: str | None = Field(None, max_length=50)
+    email: EmailStr | None = None
+    address: str | None = Field(None, max_length=500)
+    website_url: str | None = Field(None, max_length=500)
+    emergency_contact: bool | None = None
+    notes: str | None = Field(None, max_length=1000)
 
 
 class ServiceContactResponse(ServiceContactBase):
@@ -340,10 +340,10 @@ class CommonItemConceptBase(BaseModel):
     """Base common item concept schema."""
 
     name: str = Field(..., min_length=1, max_length=255)
-    default_category_id: Optional[int] = None
-    barcode: Optional[str] = Field(None, max_length=100)
-    average_price: Optional[float] = Field(None, ge=0)
-    image_url: Optional[str] = Field(None, max_length=500)
+    default_category_id: int | None = None
+    barcode: str | None = Field(None, max_length=100)
+    average_price: float | None = Field(None, ge=0)
+    image_url: str | None = Field(None, max_length=500)
 
 
 class CommonItemConceptCreate(CommonItemConceptBase):
@@ -355,11 +355,11 @@ class CommonItemConceptCreate(CommonItemConceptBase):
 class CommonItemConceptUpdate(BaseModel):
     """Schema for updating a common item concept."""
 
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    default_category_id: Optional[int] = None
-    barcode: Optional[str] = Field(None, max_length=100)
-    average_price: Optional[float] = Field(None, ge=0)
-    image_url: Optional[str] = Field(None, max_length=500)
+    name: str | None = Field(None, min_length=1, max_length=255)
+    default_category_id: int | None = None
+    barcode: str | None = Field(None, max_length=100)
+    average_price: float | None = Field(None, ge=0)
+    image_url: str | None = Field(None, max_length=500)
 
 
 class CommonItemConceptResponse(CommonItemConceptBase):

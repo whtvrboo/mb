@@ -1,13 +1,17 @@
 """Audit & admin module FastAPI router."""
 
-from typing import List as ListType
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from mitlist.api.deps import get_current_group_id, get_current_user, get_db, require_group_admin, require_introspection_user
+from mitlist.api.deps import (
+    get_current_group_id,
+    get_current_user,
+    get_db,
+    require_group_admin,
+    require_introspection_user,
+)
 from mitlist.core.errors import NotFoundError, ValidationError
-from mitlist.modules.auth.models import User
 from mitlist.modules.audit import schemas
 from mitlist.modules.audit.interface import (
     assign_tag,
@@ -17,13 +21,14 @@ from mitlist.modules.audit.interface import (
     generate_report,
     get_entity_history,
     get_entity_tags,
-    get_tag_by_id,
     get_system_stats,
+    get_tag_by_id,
     list_audit_logs,
     list_reports,
     list_tags,
     update_tag,
 )
+from mitlist.modules.auth.models import User
 
 router = APIRouter(prefix="/admin", tags=["audit", "admin"])
 
@@ -125,6 +130,7 @@ async def post_admin_maintenance_mode(
 ):
     """Toggle maintenance mode."""
     from mitlist.modules.audit.service import set_maintenance_mode
+
     result = set_maintenance_mode(enabled=enabled, message=message, enabled_by=_user.id)
     return result
 
@@ -133,11 +139,12 @@ async def post_admin_maintenance_mode(
 async def get_admin_maintenance_mode():
     """Get current maintenance mode status."""
     from mitlist.modules.audit.service import get_maintenance_mode
+
     return get_maintenance_mode()
 
 
 # ---------- Reports ----------
-@router.get("/reports", response_model=ListType[schemas.ReportSnapshotResponse])
+@router.get("/reports", response_model=list[schemas.ReportSnapshotResponse])
 async def get_reports(
     report_type: str | None = None,
     limit: int = 10,
@@ -149,7 +156,11 @@ async def get_reports(
     return reports
 
 
-@router.post("/reports/generate", response_model=schemas.ReportSnapshotResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/reports/generate",
+    response_model=schemas.ReportSnapshotResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def post_generate_report(
     data: schemas.GenerateReportRequest,
     group_id: int = Depends(get_current_group_id),
@@ -158,7 +169,9 @@ async def post_generate_report(
 ):
     """Generate a new report."""
     if data.group_id != group_id:
-        raise ValidationError(code="GROUP_MISMATCH", detail="group_id in body must match current group")
+        raise ValidationError(
+            code="GROUP_MISMATCH", detail="group_id in body must match current group"
+        )
     report = await generate_report(
         db,
         group_id=data.group_id,
@@ -170,7 +183,7 @@ async def post_generate_report(
 
 
 # ---------- Tags ----------
-@router.get("/tags", response_model=ListType[schemas.TagResponse])
+@router.get("/tags", response_model=list[schemas.TagResponse])
 async def get_tags(
     group_id: int = Depends(get_current_group_id),
     db: AsyncSession = Depends(get_db),
@@ -189,7 +202,9 @@ async def post_tag(
 ):
     """Create a new tag."""
     if data.group_id != group_id:
-        raise ValidationError(code="GROUP_MISMATCH", detail="group_id in body must match current group")
+        raise ValidationError(
+            code="GROUP_MISMATCH", detail="group_id in body must match current group"
+        )
     tag = await create_tag(db, data.group_id, data.name, data.color_hex)
     return tag
 
@@ -224,7 +239,11 @@ async def delete_tag_endpoint(
     await delete_tag(db, tag_id)
 
 
-@router.post("/tags/assign", response_model=schemas.TagAssignmentResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/tags/assign",
+    response_model=schemas.TagAssignmentResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def post_assign_tag(
     data: schemas.TagAssignmentCreate,
     group_id: int = Depends(get_current_group_id),

@@ -1,0 +1,38 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.12, pytest-9.0.2, pluggy-1.6.0
+rootdir: /app
+configfile: pyproject.toml
+plugins: asyncio-1.3.0, anyio-4.12.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 68 items
+
+tests/test_audit_report.py .                                             [  1%]
+tests/test_auth.py ...........                                           [ 17%]
+tests/test_auth_takeover.py .                                            [ 19%]
+tests/test_chore_assignments_perf.py .                                   [ 20%]
+tests/test_chore_dependencies_performance.py ...                         [ 25%]
+tests/test_chores_performance.py .                                       [ 26%]
+tests/test_documents_fix.py .                                            [ 27%]
+tests/test_documents_security.py ...                                     [ 32%]
+tests/test_finance.py ................................                   [ 79%]
+tests/test_finance_security.py ..                                        [ 82%]
+tests/test_gamification_performance.py .                                 [ 83%]
+tests/test_lists_security.py .                                           [ 85%]
+tests/test_notifications_opt.py ...                                      [ 89%]
+tests/test_security_input_limits.py .......                              [100%]
+
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/pythonjsonlogger/jsonlogger.py:11
+  /app/.venv/lib/python3.12/site-packages/pythonjsonlogger/jsonlogger.py:11: DeprecationWarning: pythonjsonlogger.jsonlogger has been moved to pythonjsonlogger.json
+    warnings.warn(
+
+tests/test_audit_report.py::test_generate_budget_report_performance
+  /app/tests/test_audit_report.py:17: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    start_date = datetime.utcnow() - timedelta(days=30)
+
+tests/test_audit_report.py::test_generate_budget_report_performance
+  /app/tests/test_audit_report.py:18: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    end_date = datetime.utcnow()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 68 passed, 3 warnings in 2.52s ========================

@@ -1,7 +1,7 @@
 """Audit module service layer. PRIVATE - other modules import from interface.py."""
 
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,12 +16,12 @@ async def log_action(
     action: str,
     entity_type: str,
     entity_id: int,
-    group_id: Optional[int] = None,
-    user_id: Optional[int] = None,
-    old_values: Optional[dict[str, Any]] = None,
-    new_values: Optional[dict[str, Any]] = None,
-    ip_address: Optional[str] = None,
-    user_agent: Optional[str] = None,
+    group_id: int | None = None,
+    user_id: int | None = None,
+    old_values: dict[str, Any] | None = None,
+    new_values: dict[str, Any] | None = None,
+    ip_address: str | None = None,
+    user_agent: str | None = None,
 ) -> AuditLog:
     """Log an action in the audit trail."""
     log = AuditLog(
@@ -34,7 +34,7 @@ async def log_action(
         new_values=new_values,
         ip_address=ip_address,
         user_agent=user_agent,
-        occurred_at=datetime.now(timezone.utc),
+        occurred_at=datetime.now(UTC),
     )
     db.add(log)
     await db.flush()
@@ -44,13 +44,13 @@ async def log_action(
 
 async def list_audit_logs(
     db: AsyncSession,
-    group_id: Optional[int] = None,
-    user_id: Optional[int] = None,
-    entity_type: Optional[str] = None,
-    entity_id: Optional[int] = None,
-    action: Optional[str] = None,
-    start_date: Optional[datetime] = None,
-    end_date: Optional[datetime] = None,
+    group_id: int | None = None,
+    user_id: int | None = None,
+    entity_type: str | None = None,
+    entity_id: int | None = None,
+    action: str | None = None,
+    start_date: datetime | None = None,
+    end_date: datetime | None = None,
     limit: int = 100,
     offset: int = 0,
 ) -> list[AuditLog]:
@@ -81,7 +81,7 @@ async def get_entity_history(
     db: AsyncSession,
     entity_type: str,
     entity_id: int,
-    group_id: Optional[int] = None,
+    group_id: int | None = None,
     limit: int = 100,
 ) -> list[AuditLog]:
     """Get audit history for a specific entity, optionally scoped to a group."""
@@ -135,7 +135,9 @@ async def generate_report(
         result = await db.execute(
             select(
                 func.count(ChoreAssignment.id).label("total"),
-                func.sum(func.cast(ChoreAssignment.status == "COMPLETED", Integer)).label("completed"),  # noqa: F821
+                func.sum(func.cast(ChoreAssignment.status == "COMPLETED", Integer)).label(
+                    "completed"
+                ),  # noqa: F821
             ).where(
                 ChoreAssignment.due_date >= period_start_date,
                 ChoreAssignment.due_date <= period_end_date,
@@ -154,9 +156,7 @@ async def generate_report(
     elif report_type == "BUDGET_STATUS":
         from mitlist.modules.finance.models import Budget, Expense
 
-        budgets_result = await db.execute(
-            select(Budget).where(Budget.group_id == group_id)
-        )
+        budgets_result = await db.execute(select(Budget).where(Budget.group_id == group_id))
         budgets = budgets_result.scalars().all()
 
         # Optimize: Fetch all relevant expenses in one query
@@ -185,13 +185,15 @@ async def generate_report(
         budget_data = []
         for budget in budgets:
             spent = expense_map.get(budget.category_id, 0)
-            budget_data.append({
-                "budget_id": budget.id,
-                "category_id": budget.category_id,
-                "limit": float(budget.amount_limit),
-                "spent": float(spent),
-                "remaining": float(budget.amount_limit - spent),
-            })
+            budget_data.append(
+                {
+                    "budget_id": budget.id,
+                    "category_id": budget.category_id,
+                    "limit": float(budget.amount_limit),
+                    "spent": float(spent),
+                    "remaining": float(budget.amount_limit - spent),
+                }
+            )
         data_json = {"budgets": budget_data}
 
     report = ReportSnapshot(
@@ -200,7 +202,7 @@ async def generate_report(
         period_start_date=period_start_date,
         period_end_date=period_end_date,
         data_json=data_json,
-        generated_at=datetime.now(timezone.utc),
+        generated_at=datetime.now(UTC),
     )
     db.add(report)
     await db.flush()
@@ -211,7 +213,7 @@ async def generate_report(
 async def list_reports(
     db: AsyncSession,
     group_id: int,
-    report_type: Optional[str] = None,
+    report_type: str | None = None,
     limit: int = 10,
 ) -> list[ReportSnapshot]:
     """List report snapshots."""
@@ -223,24 +225,20 @@ async def list_reports(
     return list(result.scalars().all())
 
 
-async def get_report_by_id(db: AsyncSession, report_id: int) -> Optional[ReportSnapshot]:
+async def get_report_by_id(db: AsyncSession, report_id: int) -> ReportSnapshot | None:
     """Get report by ID."""
-    result = await db.execute(
-        select(ReportSnapshot).where(ReportSnapshot.id == report_id)
-    )
+    result = await db.execute(select(ReportSnapshot).where(ReportSnapshot.id == report_id))
     return result.scalar_one_or_none()
 
 
 # ---------- Tags ----------
 async def list_tags(db: AsyncSession, group_id: int) -> list[Tag]:
     """List tags for a group."""
-    result = await db.execute(
-        select(Tag).where(Tag.group_id == group_id).order_by(Tag.name)
-    )
+    result = await db.execute(select(Tag).where(Tag.group_id == group_id).order_by(Tag.name))
     return list(result.scalars().all())
 
 
-async def get_tag_by_id(db: AsyncSession, tag_id: int) -> Optional[Tag]:
+async def get_tag_by_id(db: AsyncSession, tag_id: int) -> Tag | None:
     """Get tag by ID."""
     result = await db.execute(select(Tag).where(Tag.id == tag_id))
     return result.scalar_one_or_none()
@@ -250,7 +248,7 @@ async def create_tag(
     db: AsyncSession,
     group_id: int,
     name: str,
-    color_hex: Optional[str] = None,
+    color_hex: str | None = None,
 ) -> Tag:
     """Create a new tag."""
     tag = Tag(
@@ -267,8 +265,8 @@ async def create_tag(
 async def update_tag(
     db: AsyncSession,
     tag_id: int,
-    name: Optional[str] = None,
-    color_hex: Optional[str] = None,
+    name: str | None = None,
+    color_hex: str | None = None,
 ) -> Tag:
     """Update a tag."""
     tag = await get_tag_by_id(db, tag_id)
@@ -330,9 +328,7 @@ async def assign_tag(
 
 async def remove_tag_assignment(db: AsyncSession, assignment_id: int) -> None:
     """Remove a tag assignment."""
-    result = await db.execute(
-        select(TagAssignment).where(TagAssignment.id == assignment_id)
-    )
+    result = await db.execute(select(TagAssignment).where(TagAssignment.id == assignment_id))
     assignment = result.scalar_one_or_none()
     if assignment:
         await db.delete(assignment)
@@ -374,14 +370,14 @@ def get_maintenance_mode() -> dict[str, Any]:
 def set_maintenance_mode(
     enabled: bool,
     message: str = "",
-    enabled_by: Optional[int] = None,
+    enabled_by: int | None = None,
 ) -> dict[str, Any]:
     """Toggle maintenance mode."""
     global _maintenance_state
     _maintenance_state = {
         "enabled": enabled,
         "message": message,
-        "enabled_at": datetime.now(timezone.utc).isoformat() if enabled else None,
+        "enabled_at": datetime.now(UTC).isoformat() if enabled else None,
         "enabled_by": enabled_by,
     }
     return _maintenance_state.copy()
@@ -398,7 +394,7 @@ async def get_system_stats(db: AsyncSession) -> dict[str, Any]:
     return {
         "total_users": users_result.scalar_one() or 0,
         "total_groups": groups_result.scalar_one() or 0,
-        "server_time": datetime.now(timezone.utc).isoformat(),
+        "server_time": datetime.now(UTC).isoformat(),
     }
 
 
@@ -412,9 +408,7 @@ async def broadcast_notification(
     from mitlist.modules.auth.models import UserGroup
     from mitlist.modules.notifications.interface import create_notifications_bulk
 
-    result = await db.execute(
-        select(UserGroup.user_id).where(UserGroup.group_id == group_id)
-    )
+    result = await db.execute(select(UserGroup.user_id).where(UserGroup.group_id == group_id))
     user_ids = result.scalars().all()
 
     if not user_ids:

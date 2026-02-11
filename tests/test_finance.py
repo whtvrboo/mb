@@ -1,11 +1,9 @@
 """Tests for finance module."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
-import pytest
 from httpx import AsyncClient
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mitlist.modules.finance.models import (
@@ -93,7 +91,7 @@ class TestExpenses:
                 "amount": "125.50",
                 "currency_code": "USD",
                 "category_id": test_category.id,
-                "expense_date": datetime.now(timezone.utc).isoformat(),
+                "expense_date": datetime.now(UTC).isoformat(),
                 "payment_method": "CARD",
             },
         )
@@ -103,7 +101,9 @@ class TestExpenses:
         assert Decimal(data["amount"]) == Decimal("125.50")
         assert data["paid_by_user_id"] == test_user.id
 
-    async def test_list_expenses(self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group):
+    async def test_list_expenses(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group
+    ):
         """Test listing expenses."""
         expense = Expense(
             group_id=test_group.id,
@@ -111,7 +111,7 @@ class TestExpenses:
             description="Test expense",
             amount=Decimal("50.00"),
             category_id=test_category.id,
-            expense_date=datetime.now(timezone.utc),
+            expense_date=datetime.now(UTC),
             currency_code="USD",
         )
         db.add(expense)
@@ -123,7 +123,9 @@ class TestExpenses:
         assert len(data) >= 1
         assert any(e["description"] == "Test expense" for e in data)
 
-    async def test_get_expense(self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group):
+    async def test_get_expense(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group
+    ):
         """Test getting an expense."""
         expense = Expense(
             group_id=test_group.id,
@@ -131,7 +133,7 @@ class TestExpenses:
             description="Get me",
             amount=Decimal("75.00"),
             category_id=test_category.id,
-            expense_date=datetime.now(timezone.utc),
+            expense_date=datetime.now(UTC),
             currency_code="USD",
         )
         db.add(expense)
@@ -144,7 +146,9 @@ class TestExpenses:
         assert data["id"] == expense.id
         assert data["description"] == "Get me"
 
-    async def test_update_expense(self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group):
+    async def test_update_expense(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group
+    ):
         """Test updating an expense."""
         expense = Expense(
             group_id=test_group.id,
@@ -152,7 +156,7 @@ class TestExpenses:
             description="Update me",
             amount=Decimal("100.00"),
             category_id=test_category.id,
-            expense_date=datetime.now(timezone.utc),
+            expense_date=datetime.now(UTC),
             currency_code="USD",
             version_id=1,
         )
@@ -173,7 +177,9 @@ class TestExpenses:
         assert data["description"] == "Updated expense"
         assert Decimal(data["amount"]) == Decimal("150.00")
 
-    async def test_delete_expense(self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group):
+    async def test_delete_expense(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group
+    ):
         """Test deleting an expense."""
         expense = Expense(
             group_id=test_group.id,
@@ -181,7 +187,7 @@ class TestExpenses:
             description="Delete me",
             amount=Decimal("25.00"),
             category_id=test_category.id,
-            expense_date=datetime.now(timezone.utc),
+            expense_date=datetime.now(UTC),
             currency_code="USD",
         )
         db.add(expense)
@@ -195,7 +201,15 @@ class TestExpenses:
 class TestBalances:
     """Test balance endpoints."""
 
-    async def test_get_balances(self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_user2, test_group):
+    async def test_get_balances(
+        self,
+        client: AsyncClient,
+        db: AsyncSession,
+        test_category,
+        test_user,
+        test_user2,
+        test_group,
+    ):
         """Test calculating group balances."""
         from mitlist.modules.auth.models import UserGroup
 
@@ -203,7 +217,7 @@ class TestBalances:
             user_id=test_user2.id,
             group_id=test_group.id,
             role="MEMBER",
-            joined_at=datetime.now(timezone.utc),
+            joined_at=datetime.now(UTC),
         )
         db.add(membership2)
         await db.flush()
@@ -214,7 +228,7 @@ class TestBalances:
             description="Shared expense",
             amount=Decimal("100.00"),
             category_id=test_category.id,
-            expense_date=datetime.now(timezone.utc),
+            expense_date=datetime.now(UTC),
             currency_code="USD",
         )
         db.add(expense)
@@ -250,7 +264,9 @@ class TestBalances:
 class TestSettlements:
     """Test settlement endpoints."""
 
-    async def test_create_settlement(self, client: AsyncClient, test_user, test_user2, test_group, db: AsyncSession):
+    async def test_create_settlement(
+        self, client: AsyncClient, test_user, test_user2, test_group, db: AsyncSession
+    ):
         """Test creating a settlement."""
         from mitlist.modules.auth.models import UserGroup
 
@@ -258,7 +274,7 @@ class TestSettlements:
             user_id=test_user2.id,
             group_id=test_group.id,
             role="MEMBER",
-            joined_at=datetime.now(timezone.utc),
+            joined_at=datetime.now(UTC),
         )
         db.add(membership2)
         await db.flush()
@@ -270,7 +286,7 @@ class TestSettlements:
                 "amount": "50.00",
                 "currency_code": "USD",
                 "method": "VENMO",
-                "settled_at": datetime.now(timezone.utc).isoformat(),
+                "settled_at": datetime.now(UTC).isoformat(),
                 "notes": "Splitting groceries",
             },
         )
@@ -280,7 +296,9 @@ class TestSettlements:
         assert data["payer_id"] == test_user.id
         assert data["payee_id"] == test_user2.id
 
-    async def test_list_settlements(self, client: AsyncClient, db: AsyncSession, test_user, test_user2, test_group):
+    async def test_list_settlements(
+        self, client: AsyncClient, db: AsyncSession, test_user, test_user2, test_group
+    ):
         """Test listing settlements."""
         settlement = Settlement(
             group_id=test_group.id,
@@ -289,7 +307,7 @@ class TestSettlements:
             amount=Decimal("75.00"),
             currency_code="USD",
             method="CASH",
-            settled_at=datetime.now(timezone.utc),
+            settled_at=datetime.now(UTC),
         )
         db.add(settlement)
         await db.flush()
@@ -299,7 +317,9 @@ class TestSettlements:
         data = response.json()
         assert len(data) >= 1
 
-    async def test_get_settlement(self, client: AsyncClient, db: AsyncSession, test_user, test_user2, test_group):
+    async def test_get_settlement(
+        self, client: AsyncClient, db: AsyncSession, test_user, test_user2, test_group
+    ):
         """Test getting a settlement."""
         settlement = Settlement(
             group_id=test_group.id,
@@ -308,7 +328,7 @@ class TestSettlements:
             amount=Decimal("100.00"),
             currency_code="USD",
             method="ZELLE",
-            settled_at=datetime.now(timezone.utc),
+            settled_at=datetime.now(UTC),
         )
         db.add(settlement)
         await db.flush()
@@ -319,7 +339,9 @@ class TestSettlements:
         data = response.json()
         assert data["id"] == settlement.id
 
-    async def test_delete_settlement(self, client: AsyncClient, db: AsyncSession, test_user, test_user2, test_group):
+    async def test_delete_settlement(
+        self, client: AsyncClient, db: AsyncSession, test_user, test_user2, test_group
+    ):
         """Test deleting a settlement."""
         settlement = Settlement(
             group_id=test_group.id,
@@ -328,7 +350,7 @@ class TestSettlements:
             amount=Decimal("25.00"),
             currency_code="USD",
             method="CASH",
-            settled_at=datetime.now(timezone.utc),
+            settled_at=datetime.now(UTC),
         )
         db.add(settlement)
         await db.flush()
@@ -350,7 +372,7 @@ class TestBudgets:
                 "amount_limit": "500.00",
                 "currency_code": "USD",
                 "period_type": "MONTHLY",
-                "start_date": datetime.now(timezone.utc).isoformat(),
+                "start_date": datetime.now(UTC).isoformat(),
                 "alert_threshold_percentage": 80,
             },
         )
@@ -359,7 +381,9 @@ class TestBudgets:
         assert Decimal(data["amount_limit"]) == Decimal("500.00")
         assert data["period_type"] == "MONTHLY"
 
-    async def test_list_budgets(self, client: AsyncClient, db: AsyncSession, test_category, test_group):
+    async def test_list_budgets(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_group
+    ):
         """Test listing budgets."""
         budget = Budget(
             group_id=test_group.id,
@@ -367,7 +391,7 @@ class TestBudgets:
             amount_limit=Decimal("300.00"),
             currency_code="USD",
             period_type="WEEKLY",
-            start_date=datetime.now(timezone.utc),
+            start_date=datetime.now(UTC),
             alert_threshold_percentage=75,
         )
         db.add(budget)
@@ -378,7 +402,9 @@ class TestBudgets:
         data = response.json()
         assert len(data) >= 1
 
-    async def test_get_budget(self, client: AsyncClient, db: AsyncSession, test_category, test_group):
+    async def test_get_budget(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_group
+    ):
         """Test getting a budget with status."""
         budget = Budget(
             group_id=test_group.id,
@@ -386,7 +412,7 @@ class TestBudgets:
             amount_limit=Decimal("200.00"),
             currency_code="USD",
             period_type="MONTHLY",
-            start_date=datetime.now(timezone.utc),
+            start_date=datetime.now(UTC),
             alert_threshold_percentage=80,
         )
         db.add(budget)
@@ -400,7 +426,9 @@ class TestBudgets:
         assert "current_spent" in data
         assert "percentage_used" in data
 
-    async def test_update_budget(self, client: AsyncClient, db: AsyncSession, test_category, test_group):
+    async def test_update_budget(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_group
+    ):
         """Test updating a budget."""
         budget = Budget(
             group_id=test_group.id,
@@ -408,7 +436,7 @@ class TestBudgets:
             amount_limit=Decimal("400.00"),
             currency_code="USD",
             period_type="MONTHLY",
-            start_date=datetime.now(timezone.utc),
+            start_date=datetime.now(UTC),
             alert_threshold_percentage=80,
         )
         db.add(budget)
@@ -423,7 +451,9 @@ class TestBudgets:
         data = response.json()
         assert Decimal(data["amount_limit"]) == Decimal("600.00")
 
-    async def test_delete_budget(self, client: AsyncClient, db: AsyncSession, test_category, test_group):
+    async def test_delete_budget(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_group
+    ):
         """Test deleting a budget."""
         budget = Budget(
             group_id=test_group.id,
@@ -431,7 +461,7 @@ class TestBudgets:
             amount_limit=Decimal("100.00"),
             currency_code="USD",
             period_type="WEEKLY",
-            start_date=datetime.now(timezone.utc),
+            start_date=datetime.now(UTC),
             alert_threshold_percentage=80,
         )
         db.add(budget)
@@ -456,7 +486,7 @@ class TestRecurringExpenses:
                 "category_id": test_category.id,
                 "frequency_type": "MONTHLY",
                 "interval_value": 1,
-                "start_date": datetime.now(timezone.utc).isoformat(),
+                "start_date": datetime.now(UTC).isoformat(),
                 "auto_create_expense": True,
             },
         )
@@ -466,7 +496,9 @@ class TestRecurringExpenses:
         assert Decimal(data["amount"]) == Decimal("1200.00")
         assert data["frequency_type"] == "MONTHLY"
 
-    async def test_list_recurring_expenses(self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group):
+    async def test_list_recurring_expenses(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group
+    ):
         """Test listing recurring expenses."""
         recurring = RecurringExpense(
             group_id=test_group.id,
@@ -477,8 +509,8 @@ class TestRecurringExpenses:
             category_id=test_category.id,
             frequency_type="WEEKLY",
             interval_value=1,
-            start_date=datetime.now(timezone.utc),
-            next_due_date=datetime.now(timezone.utc) + timedelta(days=7),
+            start_date=datetime.now(UTC),
+            next_due_date=datetime.now(UTC) + timedelta(days=7),
             auto_create_expense=True,
             is_active=True,
         )
@@ -490,7 +522,9 @@ class TestRecurringExpenses:
         data = response.json()
         assert len(data) >= 1
 
-    async def test_get_recurring_expense(self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group):
+    async def test_get_recurring_expense(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group
+    ):
         """Test getting a recurring expense."""
         recurring = RecurringExpense(
             group_id=test_group.id,
@@ -501,8 +535,8 @@ class TestRecurringExpenses:
             category_id=test_category.id,
             frequency_type="MONTHLY",
             interval_value=3,
-            start_date=datetime.now(timezone.utc),
-            next_due_date=datetime.now(timezone.utc) + timedelta(days=90),
+            start_date=datetime.now(UTC),
+            next_due_date=datetime.now(UTC) + timedelta(days=90),
             auto_create_expense=False,
             is_active=True,
         )
@@ -515,7 +549,9 @@ class TestRecurringExpenses:
         data = response.json()
         assert data["id"] == recurring.id
 
-    async def test_update_recurring_expense(self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group):
+    async def test_update_recurring_expense(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group
+    ):
         """Test updating a recurring expense."""
         recurring = RecurringExpense(
             group_id=test_group.id,
@@ -526,8 +562,8 @@ class TestRecurringExpenses:
             category_id=test_category.id,
             frequency_type="WEEKLY",
             interval_value=1,
-            start_date=datetime.now(timezone.utc),
-            next_due_date=datetime.now(timezone.utc) + timedelta(days=7),
+            start_date=datetime.now(UTC),
+            next_due_date=datetime.now(UTC) + timedelta(days=7),
             auto_create_expense=True,
             is_active=True,
         )
@@ -543,7 +579,9 @@ class TestRecurringExpenses:
         data = response.json()
         assert Decimal(data["amount"]) == Decimal("75.00")
 
-    async def test_delete_recurring_expense(self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group):
+    async def test_delete_recurring_expense(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group
+    ):
         """Test deactivating a recurring expense."""
         recurring = RecurringExpense(
             group_id=test_group.id,
@@ -554,8 +592,8 @@ class TestRecurringExpenses:
             category_id=test_category.id,
             frequency_type="MONTHLY",
             interval_value=1,
-            start_date=datetime.now(timezone.utc),
-            next_due_date=datetime.now(timezone.utc) + timedelta(days=30),
+            start_date=datetime.now(UTC),
+            next_due_date=datetime.now(UTC) + timedelta(days=30),
             auto_create_expense=True,
             is_active=True,
         )
@@ -566,7 +604,9 @@ class TestRecurringExpenses:
         response = await client.delete(f"/api/v1/recurring-expenses/{recurring.id}")
         assert response.status_code == 204
 
-    async def test_generate_expense_from_recurring(self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group):
+    async def test_generate_expense_from_recurring(
+        self, client: AsyncClient, db: AsyncSession, test_category, test_user, test_group
+    ):
         """Test generating an expense from recurring template."""
         recurring = RecurringExpense(
             group_id=test_group.id,
@@ -577,8 +617,8 @@ class TestRecurringExpenses:
             category_id=test_category.id,
             frequency_type="MONTHLY",
             interval_value=1,
-            start_date=datetime.now(timezone.utc),
-            next_due_date=datetime.now(timezone.utc) + timedelta(days=30),
+            start_date=datetime.now(UTC),
+            next_due_date=datetime.now(UTC) + timedelta(days=30),
             auto_create_expense=True,
             is_active=True,
         )
@@ -597,7 +637,9 @@ class TestRecurringExpenses:
 class TestSplitPresets:
     """Test split preset endpoints."""
 
-    async def test_create_split_preset(self, client: AsyncClient, test_user, test_user2, test_group):
+    async def test_create_split_preset(
+        self, client: AsyncClient, test_user, test_user2, test_group
+    ):
         """Test creating a split preset."""
         response = await client.post(
             "/api/v1/split-presets",
@@ -618,7 +660,9 @@ class TestSplitPresets:
         assert data["method"] == "EQUAL"
         assert len(data["members"]) == 2
 
-    async def test_list_split_presets(self, client: AsyncClient, db: AsyncSession, test_user, test_group):
+    async def test_list_split_presets(
+        self, client: AsyncClient, db: AsyncSession, test_user, test_group
+    ):
         """Test listing split presets."""
         preset = SplitPreset(
             group_id=test_group.id,

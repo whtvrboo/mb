@@ -1,5 +1,6 @@
-import pytest
 from datetime import date, timedelta
+
+import pytest
 from httpx import AsyncClient
 
 
@@ -25,7 +26,12 @@ async def test_recipes_create_and_get(authed_client: AsyncClient, auth_headers: 
         "servings": 4,
         "ingredients": [
             {"name": "Pasta", "quantity_value": 400, "quantity_unit": "g", "is_optional": False},
-            {"name": "Tomato sauce", "quantity_value": 1, "quantity_unit": "cup", "is_optional": False},
+            {
+                "name": "Tomato sauce",
+                "quantity_value": 1,
+                "quantity_unit": "cup",
+                "is_optional": False,
+            },
         ],
         "steps": [
             {"step_number": 1, "instruction": "Boil water and cook pasta."},

@@ -1,7 +1,6 @@
 """Gamification module Pydantic schemas for request/response models."""
 
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -26,8 +25,8 @@ class UserPointsCreate(UserPointsBase):
 class UserPointsUpdate(BaseModel):
     """Schema for updating user points."""
 
-    total_points: Optional[int] = Field(None, ge=0)
-    monthly_points: Optional[int] = Field(None, ge=0)
+    total_points: int | None = Field(None, ge=0)
+    monthly_points: int | None = Field(None, ge=0)
 
 
 class UserPointsResponse(UserPointsBase):
@@ -38,8 +37,8 @@ class UserPointsResponse(UserPointsBase):
     id: int
     user_id: int
     group_id: int
-    last_reset_at: Optional[datetime] = None
-    rank_position: Optional[int] = None
+    last_reset_at: datetime | None = None
+    rank_position: int | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -71,7 +70,7 @@ class AchievementBase(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=255)
     description: str = Field(..., min_length=1, max_length=500)
-    badge_icon_url: Optional[str] = Field(None, max_length=500)
+    badge_icon_url: str | None = Field(None, max_length=500)
     category: str = Field(..., pattern="^(CHORES|FINANCE|PLANTS|PETS)$")
     requirement_type: str = Field(..., pattern="^(POINTS|COUNT|STREAK)$")
     requirement_value: int = Field(..., ge=1)
@@ -86,15 +85,13 @@ class AchievementCreate(AchievementBase):
 class AchievementUpdate(BaseModel):
     """Schema for updating an achievement."""
 
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    description: Optional[str] = Field(None, min_length=1, max_length=500)
-    badge_icon_url: Optional[str] = Field(None, max_length=500)
-    category: Optional[str] = Field(None, pattern="^(CHORES|FINANCE|PLANTS|PETS)$")
-    requirement_type: Optional[str] = Field(
-        None, pattern="^(POINTS|COUNT|STREAK)$"
-    )
-    requirement_value: Optional[int] = Field(None, ge=1)
-    is_active: Optional[bool] = None
+    name: str | None = Field(None, min_length=1, max_length=255)
+    description: str | None = Field(None, min_length=1, max_length=500)
+    badge_icon_url: str | None = Field(None, max_length=500)
+    category: str | None = Field(None, pattern="^(CHORES|FINANCE|PLANTS|PETS)$")
+    requirement_type: str | None = Field(None, pattern="^(POINTS|COUNT|STREAK)$")
+    requirement_value: int | None = Field(None, ge=1)
+    is_active: bool | None = None
 
 
 class AchievementResponse(AchievementBase):
@@ -152,7 +149,7 @@ class AchievementProgressResponse(BaseModel):
     required_value: int
     progress_percentage: float
     is_earned: bool
-    earned_at: Optional[datetime] = None
+    earned_at: datetime | None = None
 
 
 # ====================
@@ -161,9 +158,7 @@ class AchievementProgressResponse(BaseModel):
 class StreakBase(BaseModel):
     """Base streak schema."""
 
-    activity_type: str = Field(
-        ..., pattern="^(CHORES|PLANT_CARE|PET_CARE)$"
-    )
+    activity_type: str = Field(..., pattern="^(CHORES|PLANT_CARE|PET_CARE)$")
     current_streak_days: int = Field(0, ge=0)
     longest_streak_days: int = Field(0, ge=0)
 
@@ -178,8 +173,8 @@ class StreakCreate(StreakBase):
 class StreakUpdate(BaseModel):
     """Schema for updating a streak."""
 
-    current_streak_days: Optional[int] = Field(None, ge=0)
-    longest_streak_days: Optional[int] = Field(None, ge=0)
+    current_streak_days: int | None = Field(None, ge=0)
+    longest_streak_days: int | None = Field(None, ge=0)
 
 
 class StreakResponse(StreakBase):
@@ -190,7 +185,7 @@ class StreakResponse(StreakBase):
     id: int
     user_id: int
     group_id: int
-    last_activity_date: Optional[datetime] = None
+    last_activity_date: datetime | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -198,9 +193,7 @@ class StreakResponse(StreakBase):
 class StreakRecordActivityRequest(BaseModel):
     """Schema for recording activity to update streak."""
 
-    activity_type: str = Field(
-        ..., pattern="^(CHORES|PLANT_CARE|PET_CARE)$"
-    )
+    activity_type: str = Field(..., pattern="^(CHORES|PLANT_CARE|PET_CARE)$")
     group_id: int
 
 
@@ -219,11 +212,9 @@ class LeaderboardBase(BaseModel):
     """Base leaderboard schema."""
 
     period_type: str = Field(..., pattern="^(WEEKLY|MONTHLY|ALL_TIME)$")
-    metric: str = Field(
-        ..., pattern="^(POINTS|CHORES_COMPLETED|EXPENSES_ADDED)$"
-    )
+    metric: str = Field(..., pattern="^(POINTS|CHORES_COMPLETED|EXPENSES_ADDED)$")
     period_start_date: datetime
-    period_end_date: Optional[datetime] = None
+    period_end_date: datetime | None = None
 
 
 class LeaderboardCreate(LeaderboardBase):
@@ -249,9 +240,9 @@ class LeaderboardEntryResponse(BaseModel):
     rank: int
     user_id: int
     user_name: str
-    avatar_url: Optional[str] = None
+    avatar_url: str | None = None
     value: int  # Points, chores completed, etc.
-    change_from_previous: Optional[int] = None  # Rank change
+    change_from_previous: int | None = None  # Rank change
 
 
 class LeaderboardWithEntriesResponse(LeaderboardResponse):
@@ -259,7 +250,7 @@ class LeaderboardWithEntriesResponse(LeaderboardResponse):
 
     entries: list[LeaderboardEntryResponse]
     total_participants: int
-    current_user_rank: Optional[int] = None
+    current_user_rank: int | None = None
 
 
 # ====================
@@ -272,7 +263,7 @@ class UserGamificationSummaryResponse(BaseModel):
     group_id: int
     total_points: int
     monthly_points: int
-    rank_position: Optional[int] = None
+    rank_position: int | None = None
     achievements_earned: int
     total_achievements: int
     active_streaks: list[StreakResponse]
@@ -285,7 +276,7 @@ class GroupGamificationSummaryResponse(BaseModel):
 
     group_id: int
     total_points_this_month: int
-    most_active_user_id: Optional[int] = None
+    most_active_user_id: int | None = None
     most_active_user_points: int
     achievements_earned_this_month: int
     active_streaks_count: int

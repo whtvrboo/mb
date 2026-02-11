@@ -18,6 +18,7 @@ class QueryCounter:
     def __call__(self, conn, cursor, statement, parameters, context, executemany):
         self.count += 1
 
+
 @pytest.mark.asyncio
 async def test_leaderboard_performance(db: AsyncSession, engine):
     """
@@ -38,7 +39,7 @@ async def test_leaderboard_performance(db: AsyncSession, engine):
             email=f"perf_user{i}@example.com",
             name=f"Perf User {i}",
             hashed_password="pw",
-            is_active=True
+            is_active=True,
         )
         db.add(user)
         users.append(user)
@@ -52,7 +53,7 @@ async def test_leaderboard_performance(db: AsyncSession, engine):
             name=f"Chore {i}",
             frequency_type="DAILY",
             effort_value=10,
-            interval_value=1
+            interval_value=1,
         )
         db.add(chore)
         chores.append(chore)
@@ -69,7 +70,7 @@ async def test_leaderboard_performance(db: AsyncSession, engine):
                 due_date=datetime.now(UTC),
                 status=status,
                 completed_at=datetime.now(UTC) if status == "COMPLETED" else None,
-                quality_rating=random.randint(1, 5) if status == "COMPLETED" else None
+                quality_rating=random.randint(1, 5) if status == "COMPLETED" else None,
             )
             db.add(assignment)
     await db.commit()
