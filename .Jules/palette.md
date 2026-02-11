@@ -5,3 +5,7 @@
 ## 2026-01-31 - Secure ID Generation
 **Learning:** Using `Math.random()` for ID generation causes hydration mismatches in Nuxt/SSR applications and potential ID collisions.
 **Action:** Replace all instances of `Math.random()` with Vue 3.5's `useId()` composable for stable, unique, and accessible ID generation.
+
+## 2026-02-01 - Mobile Form Pattern
+**Learning:** Wrapping a text input and its submit button in a `<form>` element enables the "Go"/"Submit" key on mobile keyboards, providing a smoother interaction than a standalone input and button.
+**Action:** Always wrap input+button groups in a `<form @submit.prevent="...">` tag to leverage native browser behaviors for accessibility and mobile UX.
