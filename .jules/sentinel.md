@@ -12,3 +12,8 @@
 **Vulnerability:** The finance module schemas (`ExpenseCreate`, `SplitPresetCreate`) accepted lists (`splits`, `members`) without a `max_length` constraint. This allowed attackers to send massive payloads (e.g., 100k+ items), potentially causing memory exhaustion or DB bottlenecks.
 **Learning:** Pydantic's `list[T]` does not imply any size limit. It defaults to unbounded, which is dangerous for public APIs.
 **Prevention:** Always define `max_length` for `list` fields in Pydantic models that accept user input. Use `Field(..., max_length=N)`.
+
+## 2026-02-12 - [Insecure Dev Config in Production]
+**Vulnerability:** The application configuration allowed `DEV_TEST_USER_ENABLED=True` even when `ENVIRONMENT` was set to "production", potentially allowing attackers to bypass authentication using development tokens.
+**Learning:** Relying on documentation or developer discipline to disable debug flags in production is insufficient. Configurations must be self-validating.
+**Prevention:** Use Pydantic's `@model_validator` in configuration classes to strictly enforce mutually exclusive settings (e.g., `if production and dev_flag: raise ValueError`).
