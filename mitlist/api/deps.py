@@ -109,9 +109,20 @@ async def get_current_user(
         # update last_login and ensure we remember sub
         user.last_login_at = datetime.now(timezone.utc)
         prefs = user.preferences or {}
-        if prefs.get("zitadel_sub") != sub:
+
+        # Security: Verify sub matches if already linked
+        existing_sub = prefs.get("zitadel_sub")
+        if existing_sub and existing_sub != sub:
+            raise UnauthorizedError(
+                code="SUB_MISMATCH", detail="Token subject does not match linked user identity"
+            )
+
+        if existing_sub != sub:
+            # Trust On First Use: Link sub to user (only if not already linked)
+            prefs = dict(prefs)
             prefs["zitadel_sub"] = sub
             user.preferences = prefs
+
         await db.flush()
         await db.refresh(user)
 

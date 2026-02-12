@@ -12,3 +12,8 @@
 **Vulnerability:** The finance module schemas (`ExpenseCreate`, `SplitPresetCreate`) accepted lists (`splits`, `members`) without a `max_length` constraint. This allowed attackers to send massive payloads (e.g., 100k+ items), potentially causing memory exhaustion or DB bottlenecks.
 **Learning:** Pydantic's `list[T]` does not imply any size limit. It defaults to unbounded, which is dangerous for public APIs.
 **Prevention:** Always define `max_length` for `list` fields in Pydantic models that accept user input. Use `Field(..., max_length=N)`.
+
+## 2026-02-03 - [Account Takeover via Email Matching]
+**Vulnerability:** `mitlist/api/deps.py` blindly trusted `email` claims from IDP tokens to update the user's `zitadel_sub` (subject identifier), allowing an attacker to takeover an account if they could register the same email on the IDP with a different subject.
+**Learning:** Never trust mutable attributes (like email) over immutable identifiers (like `sub`) for ongoing authentication. Trust On First Use (TOFU) must be strictly one-way: link email -> sub ONCE, then enforce sub -> sub forever.
+**Prevention:** Verify `sub` matches the stored identity *before* any update logic. Use explicit `UnauthorizedError` on mismatch. Also, verify SQLAlchemy `JSON` updates are persisted (use `dict()` copy or `MutableDict`).
