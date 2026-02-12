@@ -50,12 +50,12 @@ const inputId = computed(() => props.id || generatedId)
         <div class="relative flex items-center">
             <input type="checkbox" :id="inputId" :checked="isChecked" :value="value" :disabled="disabled"
                 @change="handleChange"
-                class="peer appearance-none size-6 border-[3px] border-background-dark rounded bg-white checked:bg-primary transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50" />
+                class="peer appearance-none size-6 border-[3px] border-background-dark rounded bg-white checked:bg-primary transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-background-dark" />
 
             <!-- Checkmark -->
             <span
                 class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity">
-                <span class="material-symbols-outlined text-[20px] font-bold text-background-dark">check</span>
+                <span class="material-symbols-outlined text-[20px] font-bold text-background-dark" aria-hidden="true">check</span>
             </span>
         </div>
 
