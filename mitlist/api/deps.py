@@ -109,7 +109,19 @@ async def get_current_user(
         # update last_login and ensure we remember sub
         user.last_login_at = datetime.now(timezone.utc)
         prefs = user.preferences or {}
-        if prefs.get("zitadel_sub") != sub:
+
+        # SECURITY: If user is already linked to a sub, it MUST match.
+        # This prevents account takeover if an attacker manages to verify the same email
+        # on the IDP (or if email verification is bypassed/disabled).
+        existing_sub = prefs.get("zitadel_sub")
+        if existing_sub and existing_sub != sub:
+            raise UnauthorizedError(
+                code="SUB_MISMATCH",
+                detail="Identity provider subject mismatch. Account is linked to a different identity.",
+            )
+
+        # Trust On First Use: link if not yet linked
+        if existing_sub != sub:
             prefs["zitadel_sub"] = sub
             user.preferences = prefs
         await db.flush()
