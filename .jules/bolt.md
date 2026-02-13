@@ -9,3 +9,7 @@
 ## 2024-05-24 - Redundant Indexing with Composite Indexes
 **Learning:** When adding a composite index `(col_a, col_b)` to optimize `WHERE col_a = ? ORDER BY col_b`, the existing index on `col_a` becomes redundant as the composite index can serve queries on `col_a` alone.
 **Action:** Remove `index=True` from the leading column of a new composite index to save storage and write overhead.
+
+## 2026-02-13 - Vue Computed Property Iteration
+**Learning:** Separate computed properties that filter the same source array (e.g., `activeItems` and `checkedItems`) cause multiple iterations (O(2N)) over the source data. A single computed property returning grouped data reduces this to O(N).
+**Action:** Use a single loop inside one computed property to categorize items when multiple derived lists are needed from the same source.
