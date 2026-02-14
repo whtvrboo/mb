@@ -109,9 +109,21 @@ async def get_current_user(
         # update last_login and ensure we remember sub
         user.last_login_at = datetime.now(timezone.utc)
         prefs = user.preferences or {}
-        if prefs.get("zitadel_sub") != sub:
-            prefs["zitadel_sub"] = sub
-            user.preferences = prefs
+
+        # Security: Prevent account takeover via sub mismatch (Trust On First Use)
+        existing_sub = prefs.get("zitadel_sub")
+        if existing_sub and existing_sub != sub:
+            raise UnauthorizedError(
+                code="TOKEN_SUB_MISMATCH",
+                detail="Token subject does not match linked identity",
+            )
+
+        if existing_sub != sub:
+            # Create a copy to ensure SQLAlchemy detects the change
+            new_prefs = dict(prefs)
+            new_prefs["zitadel_sub"] = sub
+            user.preferences = new_prefs
+
         await db.flush()
         await db.refresh(user)
 
