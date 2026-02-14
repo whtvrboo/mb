@@ -9,3 +9,7 @@
 ## 2024-05-24 - Redundant Indexing with Composite Indexes
 **Learning:** When adding a composite index `(col_a, col_b)` to optimize `WHERE col_a = ? ORDER BY col_b`, the existing index on `col_a` becomes redundant as the composite index can serve queries on `col_a` alone.
 **Action:** Remove `index=True` from the leading column of a new composite index to save storage and write overhead.
+
+## 2026-03-01 - Status Filtering in Sorted Lists
+**Learning:** For "My Pending Items" queries (`WHERE user_id = ? AND status = ? ORDER BY due_date`), a composite index on `(user_id, due_date)` avoids sorting but scans all closed items. A composite index on `(user_id, status, due_date)` optimizes both filtering (skipping closed items) and sorting, drastically reducing read I/O for lists with high "completed" to "active" ratios.
+**Action:** Include low-cardinality status columns in composite indexes for task/todo lists.
