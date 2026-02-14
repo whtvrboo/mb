@@ -12,3 +12,8 @@
 **Vulnerability:** The finance module schemas (`ExpenseCreate`, `SplitPresetCreate`) accepted lists (`splits`, `members`) without a `max_length` constraint. This allowed attackers to send massive payloads (e.g., 100k+ items), potentially causing memory exhaustion or DB bottlenecks.
 **Learning:** Pydantic's `list[T]` does not imply any size limit. It defaults to unbounded, which is dangerous for public APIs.
 **Prevention:** Always define `max_length` for `list` fields in Pydantic models that accept user input. Use `Field(..., max_length=N)`.
+
+## 2025-05-27 - [Misleading JWT Verification]
+**Vulnerability:** The `verify_iat=True` option in `python-jose` only validates that the `iat` claim is an integer, ignoring whether the timestamp is in the future. This allowed tokens with future `iat` values to bypass validation.
+**Learning:** Security libraries may implement verification flags differently than expected (e.g., type check vs. logic check). Trust but verify.
+**Prevention:** Manually validate the `iat` claim against current time after decoding if using `python-jose`, or switch to a library like `PyJWT` which implements strict checks. Always include unit tests for token validation edge cases (future `iat`, missing `nbf`).
