@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 from jose import jwk, jwt
@@ -23,11 +23,11 @@ class VerifiedToken:
     claims: dict[str, Any]
 
     @property
-    def sub(self) -> Optional[str]:
+    def sub(self) -> str | None:
         return self.claims.get("sub")
 
     @property
-    def email(self) -> Optional[str]:
+    def email(self) -> str | None:
         return self.claims.get("email")
 
 
@@ -121,10 +121,11 @@ async def verify_access_token(token: str) -> VerifiedToken:
             "verify_signature": True,
             "verify_exp": True,
             "verify_nbf": True,
-            "verify_iat": False,
+            "verify_iat": True,
             "verify_aud": verify_aud,
             "verify_iss": verify_iss,
             "require_exp": True,
+            "require_iat": True,
             "leeway": settings.ZITADEL_CLOCK_SKEW_SECONDS,
         }
 
@@ -136,6 +137,15 @@ async def verify_access_token(token: str) -> VerifiedToken:
             issuer=settings.zitadel_issuer if verify_iss else None,
             options=options,
         )
+
+        # python-jose verify_iat only validates data type, not the timestamp itself
+        # Manually verify that iat is not in the future
+        iat = claims.get("iat")
+        if iat is not None:
+            now = time.time()
+            if iat > (now + settings.ZITADEL_CLOCK_SKEW_SECONDS):
+                raise ZitadelTokenError(f"Token issued in the future (iat={iat}).")
+
         return VerifiedToken(token=token, claims=claims)
     except (ExpiredSignatureError, JWTClaimsError, JWTError) as e:
         raise ZitadelTokenError(f"Invalid token: {e}") from e
@@ -172,4 +182,3 @@ async def require_active_token(token: str) -> dict[str, Any]:
     if not data.get("active"):
         raise ZitadelTokenError("Token is not active (revoked or expired).")
     return data
-
