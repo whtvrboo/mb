@@ -121,7 +121,7 @@ async def verify_access_token(token: str) -> VerifiedToken:
             "verify_signature": True,
             "verify_exp": True,
             "verify_nbf": True,
-            "verify_iat": False,
+            "verify_iat": True,
             "verify_aud": verify_aud,
             "verify_iss": verify_iss,
             "require_exp": True,
@@ -136,6 +136,14 @@ async def verify_access_token(token: str) -> VerifiedToken:
             issuer=settings.zitadel_issuer if verify_iss else None,
             options=options,
         )
+
+        # Security: Manually verify iat is not in the future (plus leeway)
+        # python-jose verify_iat only checks data type, not logical validity
+        if "iat" in claims:
+            now = time.time()
+            if claims["iat"] > now + settings.ZITADEL_CLOCK_SKEW_SECONDS:
+                raise ZitadelTokenError("Token issued in the future (iat validation failed).")
+
         return VerifiedToken(token=token, claims=claims)
     except (ExpiredSignatureError, JWTClaimsError, JWTError) as e:
         raise ZitadelTokenError(f"Invalid token: {e}") from e
