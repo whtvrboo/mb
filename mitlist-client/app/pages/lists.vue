@@ -16,6 +16,7 @@ const items = ref<ItemResponse[]>([])
 const members = ref<GroupMemberResponse[]>([])
 const newItemName = ref('')
 const isLoading = ref(true)
+const isAdding = ref(false)
 
 // Fetch Data
 const fetchData = async () => {
@@ -59,6 +60,7 @@ const fetchData = async () => {
 const handleAddItem = async () => {
   if (!newItemName.value || !currentListId.value || !groupId.value) return
 
+  isAdding.value = true
   try {
     const newItem = await addItem(currentListId.value, {
       list_id: currentListId.value,
@@ -70,6 +72,8 @@ const handleAddItem = async () => {
     newItemName.value = ''
   } catch (e) {
     console.error('Failed to add item', e)
+  } finally {
+    isAdding.value = false
   }
 }
 
@@ -127,7 +131,7 @@ onMounted(() => {
       <header
         class="shrink-0 bg-background-light dark:bg-background-dark pt-6 pb-2 px-5 z-10 border-b-[3px] border-background-dark">
         <div class="flex items-center justify-between mb-4">
-          <NuxtLink to="/"
+          <NuxtLink to="/" aria-label="Go back"
             class="flex items-center justify-center size-10 rounded-full border-[2px] border-background-dark hover:bg-background-dark hover:text-white transition-colors active:translate-y-[2px] active:translate-x-[2px] active:shadow-none shadow-neobrutalism-sm bg-white text-background-dark">
             <span class="material-symbols-outlined font-bold">arrow_back</span>
           </NuxtLink>
@@ -193,13 +197,19 @@ onMounted(() => {
         class="fixed md:absolute bottom-0 left-0 w-full bg-background-light p-4 z-20 border-t-[3px] border-background-dark max-w-md mx-auto">
         <div class="flex gap-3">
           <div class="relative flex-1">
-            <input v-model="newItemName" @keyup.enter="handleAddItem" :disabled="isLoading || !currentListId"
+            <label for="new-item-input" class="sr-only">Add new item</label>
+            <input id="new-item-input" v-model="newItemName" @keyup.enter="handleAddItem" :disabled="isLoading || !currentListId || isAdding"
               class="w-full h-14 bg-white border-[3px] border-background-dark rounded-lg px-4 text-lg font-medium placeholder:text-gray-400 shadow-neobrutalism-sm focus:outline-none focus:ring-0 focus:shadow-neobrutalism focus:-translate-y-1 transition-all disabled:opacity-50"
               placeholder="Add new item..." type="text" />
           </div>
-          <button @click="handleAddItem" :disabled="isLoading || !currentListId"
+          <button @click="handleAddItem" :disabled="isLoading || !currentListId || isAdding"
+            aria-label="Add item"
             class="size-14 bg-primary border-[3px] border-background-dark rounded-lg shadow-neobrutalism-sm flex items-center justify-center hover:bg-[#ffe14f] active:shadow-none active:translate-y-[2px] active:translate-x-[2px] transition-all disabled:opacity-50">
-            <span class="material-symbols-outlined text-background-dark text-3xl font-bold">add</span>
+            <svg v-if="isAdding" class="animate-spin h-8 w-8 text-background-dark" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span v-else class="material-symbols-outlined text-background-dark text-3xl font-bold">add</span>
           </button>
         </div>
         <!-- Bottom safe area spacer -->
