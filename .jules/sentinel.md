@@ -12,3 +12,8 @@
 **Vulnerability:** The finance module schemas (`ExpenseCreate`, `SplitPresetCreate`) accepted lists (`splits`, `members`) without a `max_length` constraint. This allowed attackers to send massive payloads (e.g., 100k+ items), potentially causing memory exhaustion or DB bottlenecks.
 **Learning:** Pydantic's `list[T]` does not imply any size limit. It defaults to unbounded, which is dangerous for public APIs.
 **Prevention:** Always define `max_length` for `list` fields in Pydantic models that accept user input. Use `Field(..., max_length=N)`.
+
+## 2025-02-18 - [Account Takeover via Mutable Identity]
+**Vulnerability:** The authentication logic allowed a user to login with a valid email but a different Identity Provider subject (`sub`) than the one previously linked. The code attempted to update the subject to the new one, effectively allowing account takeover if an attacker could control an email on a trusted IDP.
+**Learning:** Identity linking must be immutable. Once a user is linked to an external ID (`sub`), that link must never change automatically.
+**Prevention:** Enforce strict checks: if a user has a linked ID, the incoming token MUST match it. Reject any mismatch. Also, when updating JSON fields in SQLAlchemy, always assign a new dictionary copy (`obj.data = dict(new_data)`) to ensure change tracking works.

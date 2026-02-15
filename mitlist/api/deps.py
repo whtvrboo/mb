@@ -109,9 +109,22 @@ async def get_current_user(
         # update last_login and ensure we remember sub
         user.last_login_at = datetime.now(timezone.utc)
         prefs = user.preferences or {}
-        if prefs.get("zitadel_sub") != sub:
+
+        # CRITICAL: Prevent account takeover by verifying subject immutability
+        existing_sub = prefs.get("zitadel_sub")
+        if existing_sub and existing_sub != sub:
+            # Token subject does not match the subject linked to this user account
+            raise UnauthorizedError(
+                code="SUBJECT_MISMATCH",
+                detail="Identity provider subject mismatch. Contact support.",
+            )
+
+        if existing_sub != sub:
+            # First time seeing sub for this user (Trust On First Use)
             prefs["zitadel_sub"] = sub
-            user.preferences = prefs
+            # SQLAlchemy JSON update: must assign a copy to trigger change tracking
+            user.preferences = dict(prefs)
+
         await db.flush()
         await db.refresh(user)
 
