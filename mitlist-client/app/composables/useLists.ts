@@ -18,7 +18,7 @@ export function useLists() {
     listLists: (params?: {
       is_archived?: boolean
       list_type?: string
-    }) => useApi<ListResponse[]>('/lists', { query: params }),
+    }) => $api<ListResponse[]>('/lists', { query: params }),
     getList: (listId: number) =>
       useApi<ListResponse>(`/lists/${listId}`),
     createList: (data: ListCreate) =>
@@ -30,7 +30,7 @@ export function useLists() {
       }),
 
     listItems: (listId: number) =>
-      useApi<ItemResponse[]>(`/lists/${listId}/items`),
+      $api<ItemResponse[]>(`/lists/${listId}/items`),
     addItem: (listId: number, data: ItemCreate) =>
       $api<ItemResponse>(`/lists/${listId}/items`, {
         method: 'POST',
