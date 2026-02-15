@@ -5,3 +5,7 @@
 ## 2026-01-31 - Secure ID Generation
 **Learning:** Using `Math.random()` for ID generation causes hydration mismatches in Nuxt/SSR applications and potential ID collisions.
 **Action:** Replace all instances of `Math.random()` with Vue 3.5's `useId()` composable for stable, unique, and accessible ID generation.
+
+## 2026-02-01 - Sticky Action Loading States
+**Learning:** Critical actions in sticky footers (like "Add Item") often lack loading feedback, leading to double submissions and user uncertainty on slower connections.
+**Action:** Always implement a reactive `isAdding` state that replaces the action icon with a spinner and disables the input during async operations to prevent duplicate submissions.
