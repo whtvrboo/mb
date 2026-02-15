@@ -106,10 +106,24 @@ const getMemberName = (userId: number | null) => {
 }
 
 // Computed Grouping
-// Since API doesn't have categories, we group by "Pending" vs "Completed" for now, or just "Items"
-// If we want categories, we'd need to add that field to API or infer it. For now, fallback to flat list or checked separation.
-const activeItems = computed(() => items.value.filter(i => !i.is_checked))
-const checkedItems = computed(() => items.value.filter(i => i.is_checked))
+// Optimization: Single-pass filtering O(n) instead of O(2n)
+const groupedItems = computed(() => {
+  const active: ItemResponse[] = []
+  const checked: ItemResponse[] = []
+
+  for (const item of items.value) {
+    if (item.is_checked) {
+      checked.push(item)
+    } else {
+      active.push(item)
+    }
+  }
+
+  return { active, checked }
+})
+
+const activeItems = computed(() => groupedItems.value.active)
+const checkedItems = computed(() => groupedItems.value.checked)
 
 onMounted(() => {
   fetchData()
