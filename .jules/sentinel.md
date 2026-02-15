@@ -12,3 +12,8 @@
 **Vulnerability:** The finance module schemas (`ExpenseCreate`, `SplitPresetCreate`) accepted lists (`splits`, `members`) without a `max_length` constraint. This allowed attackers to send massive payloads (e.g., 100k+ items), potentially causing memory exhaustion or DB bottlenecks.
 **Learning:** Pydantic's `list[T]` does not imply any size limit. It defaults to unbounded, which is dangerous for public APIs.
 **Prevention:** Always define `max_length` for `list` fields in Pydantic models that accept user input. Use `Field(..., max_length=N)`.
+
+## 2024-05-22 - Identity Provider Linking Vulnerability
+**Vulnerability:** The application blindly updated the `zitadel_sub` link for a user upon login if the email matched, allowing an attacker with a different IDP subject (but same email) to take over the account.
+**Learning:** Trust-On-First-Use (TOFU) logic must be explicit. Relying on "email match" for authentication updates without verifying the existing identity link destroys the security guarantee of the external IDP.
+**Prevention:** Always check if an identity is already linked. If linked, enforce immutability unless an explicit re-linking flow (with proof of ownership of both) is executed.

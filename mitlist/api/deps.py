@@ -109,9 +109,20 @@ async def get_current_user(
         # update last_login and ensure we remember sub
         user.last_login_at = datetime.now(timezone.utc)
         prefs = user.preferences or {}
-        if prefs.get("zitadel_sub") != sub:
+        existing_sub = prefs.get("zitadel_sub")
+
+        # Security: Enforce strict immutability of IDP subject link (Trust On First Use)
+        if existing_sub and existing_sub != sub:
+            raise UnauthorizedError(
+                code="SUB_MISMATCH",
+                detail="Account already linked to a different identity provider subject",
+            )
+
+        if not existing_sub:
+            # First time seeing a sub for this email (legacy user or first login)
             prefs["zitadel_sub"] = sub
             user.preferences = prefs
+
         await db.flush()
         await db.refresh(user)
 
