@@ -9,3 +9,7 @@
 ## 2024-05-24 - Redundant Indexing with Composite Indexes
 **Learning:** When adding a composite index `(col_a, col_b)` to optimize `WHERE col_a = ? ORDER BY col_b`, the existing index on `col_a` becomes redundant as the composite index can serve queries on `col_a` alone.
 **Action:** Remove `index=True` from the leading column of a new composite index to save storage and write overhead.
+
+## 2026-02-15 - Single-Pass Filtering for Reactive Lists
+**Learning:** Filtering a large array into multiple reactive lists using separate `computed` properties (e.g., `activeItems` and `checkedItems`) causes multiple iterations over the source array (O(kn)).
+**Action:** Use a single `computed` property to iterate once (O(n)) and separate items into grouped arrays, then expose them via lightweight computed getters.
