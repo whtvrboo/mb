@@ -5,3 +5,7 @@
 ## 2026-01-31 - Secure ID Generation
 **Learning:** Using `Math.random()` for ID generation causes hydration mismatches in Nuxt/SSR applications and potential ID collisions.
 **Action:** Replace all instances of `Math.random()` with Vue 3.5's `useId()` composable for stable, unique, and accessible ID generation.
+
+## 2026-02-16 - Expanding List Item Click Targets
+**Learning:** Wrapping only the checkbox input in a `<label>` creates a small, frustrating click target on mobile devices. Users expect the entire list item row to be interactive.
+**Action:** When designing list items with a primary toggle action (like check/uncheck), wrap the entire content area (text + checkbox) in a `<label class="cursor-pointer">`. Keep secondary actions (like delete buttons) outside this label to prevent conflict.
