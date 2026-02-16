@@ -106,12 +106,25 @@ async def get_current_user(
         await db.flush()
         await db.refresh(user)
     else:
-        # update last_login and ensure we remember sub
-        user.last_login_at = datetime.now(timezone.utc)
+        # Check if existing user is linked to a different sub (Account Takeover Protection)
         prefs = user.preferences or {}
-        if prefs.get("zitadel_sub") != sub:
-            prefs["zitadel_sub"] = sub
-            user.preferences = prefs
+        existing_sub = prefs.get("zitadel_sub")
+        if existing_sub and existing_sub != sub:
+            raise UnauthorizedError(
+                code="TOKEN_SUB_MISMATCH",
+                detail="Token subject mismatch (account linked to different identity)",
+            )
+
+        # update last_login
+        user.last_login_at = datetime.now(timezone.utc)
+
+        # Link on first use if not already linked (e.g. legacy user or first login with IDP)
+        if not existing_sub:
+            # Create a copy to ensure change tracking works reliably
+            new_prefs = dict(prefs)
+            new_prefs["zitadel_sub"] = sub
+            user.preferences = new_prefs
+
         await db.flush()
         await db.refresh(user)
 
