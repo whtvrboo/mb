@@ -12,3 +12,8 @@
 **Vulnerability:** The finance module schemas (`ExpenseCreate`, `SplitPresetCreate`) accepted lists (`splits`, `members`) without a `max_length` constraint. This allowed attackers to send massive payloads (e.g., 100k+ items), potentially causing memory exhaustion or DB bottlenecks.
 **Learning:** Pydantic's `list[T]` does not imply any size limit. It defaults to unbounded, which is dangerous for public APIs.
 **Prevention:** Always define `max_length` for `list` fields in Pydantic models that accept user input. Use `Field(..., max_length=N)`.
+
+## 2026-02-03 - [Account Takeover via Weak Identity Linking]
+**Vulnerability:** The `get_current_user` function automatically updated the `zitadel_sub` preference if it didn't match the token's subject, based solely on email matching. This allowed any valid token with the same email (from a different IDP subject) to hijack the account (Trust On First Use logic extended indefinitely).
+**Learning:** Convenience features like "auto-update user identity" can undermine security guarantees. Trust On First Use (TOFU) must be strictly "First Use Only", not "Trust Every Time".
+**Prevention:** When linking external identities, make the link immutable after creation. Explicitly reject mismatched identities for the same user account unless a secure re-linking flow (e.g., email verification) is performed.
