@@ -9,3 +9,7 @@
 ## 2024-05-24 - Redundant Indexing with Composite Indexes
 **Learning:** When adding a composite index `(col_a, col_b)` to optimize `WHERE col_a = ? ORDER BY col_b`, the existing index on `col_a` becomes redundant as the composite index can serve queries on `col_a` alone.
 **Action:** Remove `index=True` from the leading column of a new composite index to save storage and write overhead.
+
+## 2026-02-15 - Merging Alembic Heads
+**Learning:** The project uses modular migrations which can result in multiple head revisions (e.g., separate optimizations for `chores` and `finance`). New migrations must merge these heads by specifying a tuple in `down_revision`.
+**Action:** Check for multiple heads with `alembic heads` (or by inspecting revision files) before creating a new migration, and merge them if necessary.
