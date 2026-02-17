@@ -12,3 +12,7 @@
 **Vulnerability:** The finance module schemas (`ExpenseCreate`, `SplitPresetCreate`) accepted lists (`splits`, `members`) without a `max_length` constraint. This allowed attackers to send massive payloads (e.g., 100k+ items), potentially causing memory exhaustion or DB bottlenecks.
 **Learning:** Pydantic's `list[T]` does not imply any size limit. It defaults to unbounded, which is dangerous for public APIs.
 **Prevention:** Always define `max_length` for `list` fields in Pydantic models that accept user input. Use `Field(..., max_length=N)`.
+## 2025-02-18 - Account Takeover via IdP Subject Mismatch
+**Vulnerability:** The application blindly updated the local user's linked IdP subject (`zitadel_sub`) to match the incoming token's `sub`, even if the user was already linked to a different subject. This allowed an attacker with access to the same email address (e.g., via account recreation or IdP compromise) to take over an existing account.
+**Learning:** Trust On First Use (TOFU) must be implemented strictly as "First Use Only". Subsequent logins must verify the immutable link established during the first use. SQLAlchemy's JSON field update tracking requires explicit reassignment of a new dictionary object to persist changes reliable.
+**Prevention:** Enforce an immutable link between local user identity and external IdP subject. Raise an explicit security exception (e.g., `UnauthorizedError`) on subject mismatch rather than updating the record.
