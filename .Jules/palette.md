@@ -5,3 +5,7 @@
 ## 2026-01-31 - Secure ID Generation
 **Learning:** Using `Math.random()` for ID generation causes hydration mismatches in Nuxt/SSR applications and potential ID collisions.
 **Action:** Replace all instances of `Math.random()` with Vue 3.5's `useId()` composable for stable, unique, and accessible ID generation.
+
+## 2026-02-01 - Accessible Modal Pattern
+**Learning:** Modals must implement `role="dialog"`, `aria-modal="true"`, and `aria-labelledby` pointing to the title ID via `useId()` to be accessible. Escape key interaction requires manual `window.addEventListener` handling in `onMounted` with `onUnmounted` cleanup.
+**Action:** Apply this comprehensive pattern (semantic role, aria-labelling, keyboard support) to all overlay components to ensure screen reader and keyboard accessibility.
