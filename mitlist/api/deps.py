@@ -1,5 +1,6 @@
 """FastAPI dependencies for database and authentication."""
 
+import logging
 from datetime import datetime, timezone
 from typing import Any
 
@@ -109,9 +110,27 @@ async def get_current_user(
         # update last_login and ensure we remember sub
         user.last_login_at = datetime.now(timezone.utc)
         prefs = user.preferences or {}
-        if prefs.get("zitadel_sub") != sub:
-            prefs["zitadel_sub"] = sub
-            user.preferences = prefs
+        existing_sub = prefs.get("zitadel_sub")
+
+        if existing_sub and existing_sub != sub:
+            # CRITICAL: Prevent account takeover via IdP subject mismatch.
+            # If the user is already linked to a different subject, do NOT update it.
+            # Raise an error instead.
+            logging.getLogger(__name__).warning(
+                f"Security: Account takeover attempt prevented. User {user.id} ({user.email}) "
+                f"linked to sub {existing_sub}, but token has sub {sub}."
+            )
+            raise UnauthorizedError(
+                code="TOKEN_SUB_MISMATCH", detail="Token subject does not match user record"
+            )
+
+        if existing_sub != sub:
+            # Trust On First Use (TOFU) or idempotent update
+            # Use dict(prefs) to ensure SQLAlchemy detects the change (JSON mutation)
+            new_prefs = dict(prefs)
+            new_prefs["zitadel_sub"] = sub
+            user.preferences = new_prefs
+
         await db.flush()
         await db.refresh(user)
 
