@@ -2,9 +2,11 @@
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
+from typing import Any, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from mitlist.core.validation import validate_dict_size
 
 
 # ====================
@@ -56,6 +58,11 @@ class ExpenseSplitInput(BaseModel):
     user_id: int
     owed_amount: Decimal = Field(..., ge=0)
     manual_override: Optional[dict] = None
+
+    @field_validator("manual_override")
+    @classmethod
+    def validate_manual_override(cls, v: dict[str, Any] | None) -> dict[str, Any] | None:
+        return validate_dict_size(v, max_items=20)
 
 
 class ExpenseBase(BaseModel):

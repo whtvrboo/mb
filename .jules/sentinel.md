@@ -12,3 +12,8 @@
 **Vulnerability:** The finance module schemas (`ExpenseCreate`, `SplitPresetCreate`) accepted lists (`splits`, `members`) without a `max_length` constraint. This allowed attackers to send massive payloads (e.g., 100k+ items), potentially causing memory exhaustion or DB bottlenecks.
 **Learning:** Pydantic's `list[T]` does not imply any size limit. It defaults to unbounded, which is dangerous for public APIs.
 **Prevention:** Always define `max_length` for `list` fields in Pydantic models that accept user input. Use `Field(..., max_length=N)`.
+
+## 2026-02-03 - [Unbounded Dict Input (DoS Risk)]
+**Vulnerability:** The documents and finance modules accepted unbounded dictionaries (`tags`, `manual_override`) in Pydantic schemas. Attackers could send massive or deeply nested dictionaries, causing resource exhaustion.
+**Learning:** Pydantic's `dict` validation does not limit the number of items or key/value sizes by default.
+**Prevention:** Use a custom validator like `mitlist.core.validation.validate_dict_size` for all `dict` fields exposed in public APIs to enforce limits on item count and content length.
