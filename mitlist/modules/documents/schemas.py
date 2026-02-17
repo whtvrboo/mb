@@ -3,7 +3,9 @@
 from datetime import datetime
 from typing import Any, Optional
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+
+from mitlist.core.validation import validate_dict_size
 
 
 # ====================
@@ -17,6 +19,11 @@ class DocumentBase(BaseModel):
     folder_path: Optional[str] = Field(None, max_length=500)
     tags: Optional[dict[str, Any]] = None
     is_encrypted: bool = False
+
+    @field_validator("tags")
+    @classmethod
+    def validate_tags(cls, v: dict[str, Any] | None) -> dict[str, Any] | None:
+        return validate_dict_size(v, max_items=50)
 
 
 class DocumentCreate(DocumentBase):
@@ -33,6 +40,11 @@ class DocumentUpdate(BaseModel):
     file_name: Optional[str] = Field(None, min_length=1, max_length=255)
     folder_path: Optional[str] = Field(None, max_length=500)
     tags: Optional[dict[str, Any]] = None
+
+    @field_validator("tags")
+    @classmethod
+    def validate_tags(cls, v: dict[str, Any] | None) -> dict[str, Any] | None:
+        return validate_dict_size(v, max_items=50)
 
 
 class DocumentResponse(DocumentBase):
@@ -199,6 +211,11 @@ class DocumentSearchRequest(BaseModel):
     uploaded_by_id: Optional[int] = None
     created_after: Optional[datetime] = None
     created_before: Optional[datetime] = None
+
+    @field_validator("tags")
+    @classmethod
+    def validate_tags(cls, v: dict[str, Any] | None) -> dict[str, Any] | None:
+        return validate_dict_size(v, max_items=50)
 
 
 class CredentialRotationReminderResponse(BaseModel):
