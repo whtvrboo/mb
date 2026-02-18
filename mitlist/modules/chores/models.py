@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import CheckConstraint, ForeignKey, Integer, String, Text
+from sqlalchemy import CheckConstraint, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from mitlist.db.base import Base, BaseModel, TimestampMixin
@@ -58,7 +58,7 @@ class Chore(BaseModel, TimestampMixin):
 
     __tablename__ = "chores"
 
-    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False, index=True)
+    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     frequency_type: Mapped[str] = mapped_column(String(20), nullable=False)
@@ -79,14 +79,16 @@ class Chore(BaseModel, TimestampMixin):
         "ChoreAssignment", back_populates="chore", cascade="all, delete-orphan"
     )
 
+    __table_args__ = (Index("ix_chores_group_active", "group_id", "is_active"),)
+
 
 class ChoreAssignment(BaseModel, TimestampMixin):
     """Chore assignment - specific instance of a chore."""
 
     __tablename__ = "chore_assignments"
 
-    chore_id: Mapped[int] = mapped_column(ForeignKey("chores.id"), nullable=False, index=True)
-    assigned_to_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    chore_id: Mapped[int] = mapped_column(ForeignKey("chores.id"), nullable=False)
+    assigned_to_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     due_date: Mapped[datetime] = mapped_column(nullable=False, index=True)
     completed_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
     completed_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
@@ -102,7 +104,12 @@ class ChoreAssignment(BaseModel, TimestampMixin):
     chore: Mapped["Chore"] = relationship("Chore", back_populates="assignments")
 
     __table_args__ = (
-        CheckConstraint("quality_rating IS NULL OR (quality_rating >= 1 AND quality_rating <= 5)", name="ck_chore_rating"),
+        CheckConstraint(
+            "quality_rating IS NULL OR (quality_rating >= 1 AND quality_rating <= 5)",
+            name="ck_chore_rating",
+        ),
+        Index("ix_chore_assignments_assigned_status_due", "assigned_to_id", "status", "due_date"),
+        Index("ix_chore_assignments_chore_status_due", "chore_id", "status", "due_date"),
     )
 
 
