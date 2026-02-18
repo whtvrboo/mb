@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useId, onMounted, onUnmounted } from 'vue'
+
 interface Props {
     modelValue: boolean
     title?: string
@@ -21,6 +23,22 @@ const close = () => {
         emit('close')
     }
 }
+
+const titleId = useId()
+
+const handleKeydown = (e: KeyboardEvent) => {
+    if (e.key === 'Escape' && props.modelValue) {
+        close()
+    }
+}
+
+onMounted(() => {
+    window.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+    window.removeEventListener('keydown', handleKeydown)
+})
 </script>
 
 <template>
@@ -30,17 +48,18 @@ const close = () => {
             leave-from-class="opacity-100" leave-to-class="opacity-0">
             <div v-if="modelValue"
                 class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background-dark/80 backdrop-blur-sm"
-                @click="close">
+                role="dialog" aria-modal="true" :aria-labelledby="title ? titleId : undefined" @click="close">
                 <div class="relative w-full bg-white border-[3px] border-background-dark rounded-xl shadow-[8px_8px_0px_0px_#221f10] overflow-hidden"
                     :class="[width]" @click.stop>
                     <!-- Header -->
                     <div v-if="title || closeable"
                         class="flex items-center justify-between px-6 py-4 border-b-[3px] border-background-dark bg-background-light">
-                        <h3 v-if="title" class="text-xl font-bold uppercase tracking-tight truncate">
+                        <h3 v-if="title" :id="titleId" class="text-xl font-bold uppercase tracking-tight truncate">
                             {{ title }}
                         </h3>
                         <button v-if="closeable"
                             class="ml-auto flex items-center justify-center size-8 rounded-lg hover:bg-black/5 transition-colors"
+                            aria-label="Close"
                             @click="close">
                             <span class="material-symbols-outlined font-bold">close</span>
                         </button>
