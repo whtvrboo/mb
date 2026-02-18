@@ -26,7 +26,7 @@ class List(BaseModel, TimestampMixin):
 
     __tablename__ = "lists"
 
-    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False, index=True)
+    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     type: Mapped[ListType] = mapped_column(String(20), nullable=False)
     created_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
@@ -39,10 +39,13 @@ class List(BaseModel, TimestampMixin):
     # Optimistic locking
     version_id: Mapped[int] = mapped_column(nullable=False, default=1)
 
+    __table_args__ = (Index("ix_lists_group_archived_id", "group_id", "is_archived", "id"),)
     __mapper_args__ = {"version_id_col": version_id}
 
     # Relationships
-    items: Mapped[list["Item"]] = relationship("Item", back_populates="list", cascade="all, delete-orphan")
+    items: Mapped[list["Item"]] = relationship(
+        "Item", back_populates="list", cascade="all, delete-orphan"
+    )
 
 
 class ListShare(BaseModel, TimestampMixin):
@@ -63,7 +66,9 @@ class InventoryItem(BaseModel, TimestampMixin):
 
     group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False, index=True)
     location_id: Mapped[Optional[int]] = mapped_column(ForeignKey("locations.id"), nullable=True)
-    concept_id: Mapped[Optional[int]] = mapped_column(ForeignKey("common_item_concepts.id"), nullable=True)
+    concept_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("common_item_concepts.id"), nullable=True
+    )
     quantity_value: Mapped[Optional[float]] = mapped_column(nullable=True)
     quantity_unit: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     expiration_date: Mapped[Optional[datetime]] = mapped_column(nullable=True)
@@ -84,7 +89,9 @@ class Item(BaseModel, TimestampMixin, VersionMixin):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     quantity_value: Mapped[Optional[float]] = mapped_column(nullable=True)
     quantity_unit: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    concept_id: Mapped[Optional[int]] = mapped_column(ForeignKey("common_item_concepts.id"), nullable=True)
+    concept_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("common_item_concepts.id"), nullable=True
+    )
     is_checked: Mapped[bool] = mapped_column(default=False, nullable=False)
     checked_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
     price_estimate: Mapped[Optional[float]] = mapped_column(nullable=True)
