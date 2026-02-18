@@ -3,7 +3,9 @@
 from datetime import datetime
 from typing import Any, Optional
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field, field_validator
+
+from mitlist.core.validation import validate_dict_size
 
 
 # ====================
@@ -35,6 +37,11 @@ class UserUpdate(BaseModel):
     avatar_url: Optional[str] = Field(None, max_length=500)
     language_code: Optional[str] = Field(None, max_length=10)
     preferences: Optional[dict[str, Any]] = None
+
+    @field_validator("preferences")
+    @classmethod
+    def validate_preferences(cls, v: Optional[dict[str, Any]]) -> Optional[dict[str, Any]]:
+        return validate_dict_size(v, max_items=50, max_key_length=100, max_value_length=1000)
 
 
 class UserResponse(UserBase):
@@ -123,13 +130,6 @@ class UserGroupBase(BaseModel):
 
     role: str = Field(..., pattern="^(ADMIN|MEMBER|GUEST|CHILD)$")
     nickname: Optional[str] = Field(None, max_length=255)
-
-
-class UserGroupCreate(UserGroupBase):
-    """Schema for creating a user-group membership."""
-
-    user_id: int
-    group_id: int
 
 
 class UserGroupCreate(BaseModel):
