@@ -28,6 +28,7 @@ const isChecked = computed({
 })
 
 const labelId = useId()
+const inputId = useId()
 </script>
 
 <template>
@@ -43,6 +44,7 @@ const labelId = useId()
         <!-- Neo Checkbox -->
         <label class="relative cursor-pointer mt-1 shrink-0">
           <input
+            :id="inputId"
             v-model="isChecked"
             type="checkbox"
             class="peer sr-only"
@@ -57,10 +59,12 @@ const labelId = useId()
         </label>
 
         <div class="flex flex-col">
-          <span :id="labelId" class="text-xl font-bold leading-tight transition-colors"
-            :class="[isChecked ? 'line-through decoration-2 decoration-background-dark text-gray-500' : 'group-hover:text-primary-dark']">
-            {{ name }}
-          </span>
+          <label :for="inputId" class="cursor-pointer select-none w-fit">
+            <span :id="labelId" class="text-xl font-bold leading-tight transition-colors"
+              :class="[isChecked ? 'line-through decoration-2 decoration-background-dark text-gray-500' : 'group-hover:text-primary-dark']">
+              {{ name }}
+            </span>
+          </label>
           <div v-if="!isChecked" class="flex items-center gap-2 mt-1">
             <span v-if="quantityValue > 1"
               class="text-xs font-bold border border-background-dark px-1.5 rounded bg-gray-100">
