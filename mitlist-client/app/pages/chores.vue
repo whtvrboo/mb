@@ -8,6 +8,7 @@ const { getMyStats, listAssignments, completeAssignment } = useChores()
 const stats = ref<UserChoreStatsResponse | null>(null)
 const assignments = ref<ChoreAssignmentWithChoreResponse[]>([])
 const isLoading = ref(true)
+const loadingAssignmentId = ref<number | null>(null)
 
 const fetchData = async () => {
     isLoading.value = true
@@ -16,8 +17,8 @@ const fetchData = async () => {
             getMyStats(),
             listAssignments({ status_filter: 'pending' }) // Fetch pending assignments
         ])
-        stats.value = statsData
-        assignments.value = assignmentsData
+        stats.value = statsData.data.value
+        assignments.value = assignmentsData.data.value || []
     } catch (e) {
         console.error('Failed to fetch chores data', e)
     } finally {
@@ -26,12 +27,15 @@ const fetchData = async () => {
 }
 
 const handleComplete = async (assignmentId: number) => {
+    loadingAssignmentId.value = assignmentId
     try {
         await completeAssignment(assignmentId, { completed_at: new Date().toISOString() })
         // Refresh or optimistically update
         assignments.value = assignments.value.filter(a => a.id !== assignmentId)
     } catch (e) {
         console.error('Failed to complete assignment', e)
+    } finally {
+        loadingAssignmentId.value = null
     }
 }
 
@@ -120,13 +124,19 @@ onMounted(() => {
                                 <input
                                     type="checkbox"
                                     class="peer sr-only"
+                                    :disabled="loadingAssignmentId === assignment.id"
+                                    :aria-busy="loadingAssignmentId === assignment.id"
                                     :aria-labelledby="`chore-title-${assignment.id}`"
                                     @change="handleComplete(assignment.id)"
                                 />
                                 <div
-                                    class="size-7 border-[3px] border-background-dark rounded bg-white peer-checked:bg-primary transition-colors flex items-center justify-center hover:bg-gray-100">
-                                    <span
+                                    class="size-7 border-[3px] border-background-dark rounded bg-white peer-checked:bg-primary transition-colors flex items-center justify-center hover:bg-gray-100 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed">
+                                    <span v-if="loadingAssignmentId !== assignment.id"
                                         class="material-symbols-outlined text-sm opacity-0 peer-checked:opacity-100 font-bold">check</span>
+                                    <svg v-else class="animate-spin h-4 w-4 text-background-dark" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
                                 </div>
                             </label>
                         </div>

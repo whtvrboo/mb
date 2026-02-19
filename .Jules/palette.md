@@ -5,3 +5,7 @@
 ## 2026-01-31 - Secure ID Generation
 **Learning:** Using `Math.random()` for ID generation causes hydration mismatches in Nuxt/SSR applications and potential ID collisions.
 **Action:** Replace all instances of `Math.random()` with Vue 3.5's `useId()` composable for stable, unique, and accessible ID generation.
+
+## 2025-05-24 - Async Checkbox Feedback
+**Learning:** Checkboxes that trigger immediate async actions (like completing a task) leave users uncertain if the action was registered, leading to potential double-clicks.
+**Action:** Implement an inline loading spinner replacing the checkmark and disable the input during the async operation to provide immediate feedback.
