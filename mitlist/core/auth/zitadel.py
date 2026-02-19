@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 from jose import jwk, jwt
@@ -23,11 +23,11 @@ class VerifiedToken:
     claims: dict[str, Any]
 
     @property
-    def sub(self) -> Optional[str]:
+    def sub(self) -> str | None:
         return self.claims.get("sub")
 
     @property
-    def email(self) -> Optional[str]:
+    def email(self) -> str | None:
         return self.claims.get("email")
 
 
@@ -121,7 +121,7 @@ async def verify_access_token(token: str) -> VerifiedToken:
             "verify_signature": True,
             "verify_exp": True,
             "verify_nbf": True,
-            "verify_iat": False,
+            "verify_iat": True,
             "verify_aud": verify_aud,
             "verify_iss": verify_iss,
             "require_exp": True,
@@ -136,6 +136,14 @@ async def verify_access_token(token: str) -> VerifiedToken:
             issuer=settings.zitadel_issuer if verify_iss else None,
             options=options,
         )
+
+        # Enforce iat check (reject future tokens)
+        iat = claims.get("iat")
+        if iat is not None:
+            now = time.time()
+            if iat > (now + settings.ZITADEL_CLOCK_SKEW_SECONDS):
+                raise ZitadelTokenError(f"Token issued in the future (iat={iat}, now={now})")
+
         return VerifiedToken(token=token, claims=claims)
     except (ExpiredSignatureError, JWTClaimsError, JWTError) as e:
         raise ZitadelTokenError(f"Invalid token: {e}") from e
