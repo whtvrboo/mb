@@ -8,6 +8,7 @@ const { getMyStats, listAssignments, completeAssignment } = useChores()
 const stats = ref<UserChoreStatsResponse | null>(null)
 const assignments = ref<ChoreAssignmentWithChoreResponse[]>([])
 const isLoading = ref(true)
+const loadingAssignmentIds = ref(new Set<number>())
 
 const fetchData = async () => {
     isLoading.value = true
@@ -26,12 +27,16 @@ const fetchData = async () => {
 }
 
 const handleComplete = async (assignmentId: number) => {
+    if (loadingAssignmentIds.value.has(assignmentId)) return
+    loadingAssignmentIds.value.add(assignmentId)
     try {
         await completeAssignment(assignmentId, { completed_at: new Date().toISOString() })
         // Refresh or optimistically update
         assignments.value = assignments.value.filter(a => a.id !== assignmentId)
     } catch (e) {
         console.error('Failed to complete assignment', e)
+    } finally {
+        loadingAssignmentIds.value.delete(assignmentId)
     }
 }
 
@@ -121,11 +126,13 @@ onMounted(() => {
                                     type="checkbox"
                                     class="peer sr-only"
                                     :aria-labelledby="`chore-title-${assignment.id}`"
+                                    :disabled="loadingAssignmentIds.has(assignment.id)"
                                     @change="handleComplete(assignment.id)"
                                 />
                                 <div
-                                    class="size-7 border-[3px] border-background-dark rounded bg-white peer-checked:bg-primary transition-colors flex items-center justify-center hover:bg-gray-100">
-                                    <span
+                                    class="size-7 border-[3px] border-background-dark rounded bg-white peer-checked:bg-primary transition-colors flex items-center justify-center hover:bg-gray-100 peer-disabled:opacity-70 peer-disabled:cursor-not-allowed">
+                                    <span v-if="loadingAssignmentIds.has(assignment.id)" class="animate-spin size-4 border-2 border-background-dark border-t-transparent rounded-full"></span>
+                                    <span v-else
                                         class="material-symbols-outlined text-sm opacity-0 peer-checked:opacity-100 font-bold">check</span>
                                 </div>
                             </label>
