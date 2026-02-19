@@ -99,10 +99,19 @@ const handleToggleItem = async (item: ItemResponse) => {
 }
 
 // Helpers
+// Optimization: Pre-compute member names map for O(1) lookup instead of O(N) find
+const membersMap = computed(() => {
+  const map = new Map<number, string>()
+  for (const member of members.value) {
+    const name = member.user?.name || member.user?.email || 'User'
+    map.set(member.user_id, name)
+  }
+  return map
+})
+
 const getMemberName = (userId: number | null) => {
   if (!userId) return ''
-  const member = members.value.find(m => m.user_id === userId)
-  return member ? (member.user?.name || member.user?.email || 'User') : 'Unknown'
+  return membersMap.value.get(userId) || 'Unknown'
 }
 
 // Computed Grouping
