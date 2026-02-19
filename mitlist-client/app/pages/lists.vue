@@ -99,10 +99,18 @@ const handleToggleItem = async (item: ItemResponse) => {
 }
 
 // Helpers
+const memberMap = computed(() => {
+  const map = new Map<number, string>()
+  for (const m of members.value) {
+    const name = m.user?.name || m.user?.email || 'User'
+    map.set(m.user_id, name)
+  }
+  return map
+})
+
 const getMemberName = (userId: number | null) => {
   if (!userId) return ''
-  const member = members.value.find(m => m.user_id === userId)
-  return member ? (member.user?.name || member.user?.email || 'User') : 'Unknown'
+  return memberMap.value.get(userId) || 'Unknown'
 }
 
 // Computed Grouping
