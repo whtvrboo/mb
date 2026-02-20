@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useChores } from '~/composables/useChores'
+import Toast from '~/components/ui/Toast.vue'
 import type { UserChoreStatsResponse, ChoreAssignmentWithChoreResponse } from '~/types/chores'
 
 const { getMyStats, listAssignments, completeAssignment } = useChores()
@@ -9,17 +10,31 @@ const stats = ref<UserChoreStatsResponse | null>(null)
 const assignments = ref<ChoreAssignmentWithChoreResponse[]>([])
 const isLoading = ref(true)
 
+// Toast State
+const showToast = ref(false)
+const toastMessage = ref('')
+const toastTitle = ref('')
+const toastVariant = ref<'success' | 'error' | 'warning' | 'info'>('info')
+
+const showNotification = (title: string, message: string, variant: 'success' | 'error' | 'warning' | 'info' = 'info') => {
+    toastTitle.value = title
+    toastMessage.value = message
+    toastVariant.value = variant
+    showToast.value = true
+}
+
 const fetchData = async () => {
     isLoading.value = true
     try {
-        const [statsData, assignmentsData] = await Promise.all([
+        const [statsResponse, assignmentsResponse] = await Promise.all([
             getMyStats(),
             listAssignments({ status_filter: 'pending' }) // Fetch pending assignments
         ])
-        stats.value = statsData
-        assignments.value = assignmentsData
+        stats.value = statsResponse.data.value
+        assignments.value = assignmentsResponse.data.value || []
     } catch (e) {
         console.error('Failed to fetch chores data', e)
+        showNotification('Error', 'Failed to load chores data. Please try again.', 'error')
     } finally {
         isLoading.value = false
     }
@@ -27,11 +42,16 @@ const fetchData = async () => {
 
 const handleComplete = async (assignmentId: number) => {
     try {
-        await completeAssignment(assignmentId, { completed_at: new Date().toISOString() })
-        // Refresh or optimistically update
+        // Optimistic update
         assignments.value = assignments.value.filter(a => a.id !== assignmentId)
+
+        await completeAssignment(assignmentId, { completed_at: new Date().toISOString() })
+        showNotification('Nice work!', 'Chore completed successfully.', 'success')
     } catch (e) {
         console.error('Failed to complete assignment', e)
+        // Revert optimistic update by re-fetching
+        await fetchData()
+        showNotification('Error', 'Failed to complete chore. Please try again.', 'error')
     }
 }
 
@@ -107,11 +127,23 @@ onMounted(() => {
             <div class="flex flex-col gap-4">
                 <h3 class="font-bold text-lg uppercase tracking-wide opacity-80 pl-1">Results</h3>
 
-                <div v-if="isLoading" class="text-center py-4">Loading chores...</div>
+                <div v-if="isLoading" class="flex flex-col gap-4">
+                    <span class="sr-only">Loading chores...</span>
+                    <div v-for="i in 3" :key="i" class="bg-white border-[3px] border-background-dark rounded-xl p-4 shadow-neobrutalism flex items-start gap-4" aria-hidden="true">
+                        <div class="size-7 bg-gray-200 rounded animate-pulse shrink-0"></div>
+                        <div class="flex-1 space-y-2">
+                            <div class="flex justify-between items-start">
+                                <div class="h-6 bg-gray-200 rounded w-2/3 animate-pulse"></div>
+                                <div class="h-6 bg-gray-200 rounded w-12 animate-pulse"></div>
+                            </div>
+                            <div class="h-4 bg-gray-200 rounded w-1/3 animate-pulse"></div>
+                        </div>
+                    </div>
+                </div>
                 <div v-if="!isLoading && assignments.length === 0" class="text-center py-4 font-bold opacity-50">No
                     pending chores!</div>
 
-                <div v-for="assignment in assignments" :key="assignment.id"
+                <div v-if="!isLoading" v-for="assignment in assignments" :key="assignment.id"
                     class="group relative bg-white border-[3px] border-background-dark rounded-xl p-0 shadow-neobrutalism transition-all hover:bg-gray-50 overflow-hidden">
 
                     <div class="flex p-4 gap-4 items-start">
@@ -171,5 +203,12 @@ onMounted(() => {
                 <span class="material-symbols-outlined text-4xl font-bold">autorenew</span>
             </NuxtLink>
         </div>
+
+        <Toast
+            v-model="showToast"
+            :title="toastTitle"
+            :message="toastMessage"
+            :variant="toastVariant"
+        />
     </div>
 </template>
