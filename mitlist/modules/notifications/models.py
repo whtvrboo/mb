@@ -1,12 +1,11 @@
 """Notifications module ORM models."""
 
 from datetime import datetime, time
-from typing import Optional
 
 from sqlalchemy import ForeignKey, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from mitlist.db.base import Base, BaseModel, TimestampMixin
+from mitlist.db.base import BaseModel, TimestampMixin
 
 
 class NotificationChannel(str):
@@ -55,8 +54,8 @@ class NotificationPreference(BaseModel, TimestampMixin):
     event_type: Mapped[str] = mapped_column(String(100), nullable=False)
     channel: Mapped[str] = mapped_column(String(20), nullable=False)
     enabled: Mapped[bool] = mapped_column(default=True, nullable=False)
-    advance_notice_hours: Mapped[Optional[int]] = mapped_column(nullable=True)
-    quiet_hours_start: Mapped[Optional[time]] = mapped_column(nullable=True)
+    advance_notice_hours: Mapped[int | None] = mapped_column(nullable=True)
+    quiet_hours_start: Mapped[time | None] = mapped_column(nullable=True)
 
 
 class Notification(BaseModel, TimestampMixin):
@@ -68,15 +67,15 @@ class Notification(BaseModel, TimestampMixin):
     )
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    group_id: Mapped[Optional[int]] = mapped_column(ForeignKey("groups.id"), nullable=True)
+    group_id: Mapped[int | None] = mapped_column(ForeignKey("groups.id"), nullable=True)
     type: Mapped[str] = mapped_column(String(100), nullable=False)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     body: Mapped[str] = mapped_column(Text, nullable=False)
-    link_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    link_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     priority: Mapped[str] = mapped_column(String(20), default="MEDIUM", nullable=False)
     is_read: Mapped[bool] = mapped_column(default=False, nullable=False)
-    read_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
-    delivered_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    read_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    delivered_at: Mapped[datetime | None] = mapped_column(nullable=True)
 
 
 class Comment(BaseModel, TimestampMixin):
@@ -92,12 +91,16 @@ class Comment(BaseModel, TimestampMixin):
     parent_id: Mapped[int] = mapped_column(nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     is_edited: Mapped[bool] = mapped_column(default=False, nullable=False)
-    edited_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
-    deleted_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    edited_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(nullable=True)
 
     # Relationships
-    reactions: Mapped[list["Reaction"]] = relationship("Reaction", back_populates="comment", cascade="all, delete-orphan")
-    mentions: Mapped[list["Mention"]] = relationship("Mention", back_populates="comment", cascade="all, delete-orphan")
+    reactions: Mapped[list["Reaction"]] = relationship(
+        "Reaction", back_populates="comment", cascade="all, delete-orphan"
+    )
+    mentions: Mapped[list["Mention"]] = relationship(
+        "Mention", back_populates="comment", cascade="all, delete-orphan"
+    )
 
 
 class Reaction(BaseModel, TimestampMixin):
@@ -114,10 +117,12 @@ class Reaction(BaseModel, TimestampMixin):
     emoji_code: Mapped[str] = mapped_column(String(20), nullable=False)
 
     # For comments specifically
-    comment_id: Mapped[Optional[int]] = mapped_column(ForeignKey("comments.id"), nullable=True)
+    comment_id: Mapped[int | None] = mapped_column(
+        ForeignKey("comments.id"), nullable=True, index=True
+    )
 
     # Relationships
-    comment: Mapped[Optional["Comment"]] = relationship("Comment", back_populates="reactions")
+    comment: Mapped[Comment | None] = relationship("Comment", back_populates="reactions")
 
 
 class Mention(BaseModel, TimestampMixin):
@@ -130,4 +135,4 @@ class Mention(BaseModel, TimestampMixin):
     is_read: Mapped[bool] = mapped_column(default=False, nullable=False)
 
     # Relationships
-    comment: Mapped["Comment"] = relationship("Comment", back_populates="mentions")
+    comment: Mapped[Comment] = relationship("Comment", back_populates="mentions")
