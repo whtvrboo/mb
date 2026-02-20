@@ -136,6 +136,14 @@ async def verify_access_token(token: str) -> VerifiedToken:
             issuer=settings.zitadel_issuer if verify_iss else None,
             options=options,
         )
+
+        # Manually verify iat is not in the future (plus skew)
+        iat = claims.get("iat")
+        if iat and isinstance(iat, (int, float)):
+            now = time.time()
+            if iat > now + settings.ZITADEL_CLOCK_SKEW_SECONDS:
+                raise ZitadelTokenError("Token issued in the future (iat check failed).")
+
         return VerifiedToken(token=token, claims=claims)
     except (ExpiredSignatureError, JWTClaimsError, JWTError) as e:
         raise ZitadelTokenError(f"Invalid token: {e}") from e
