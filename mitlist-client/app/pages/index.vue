@@ -9,7 +9,7 @@ import type { ChoreAssignmentWithChoreResponse } from '~/types/chores'
 
 const { getMe } = useAuth()
 // const { listItems } = useLists() // Could add bills here later
-const { listAssignments } = useChores()
+const { listAssignments, completeAssignment } = useChores()
 
 const user = ref<UserResponse | null>(null)
 const feedChores = ref<ChoreAssignmentWithChoreResponse[]>([])
@@ -33,15 +33,25 @@ onMounted(() => {
 
 const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
 
-const isTrashChoreCompleted = ref(false)
+const completingChores = ref(new Set<number>())
 
-const handleChoreChange = () => {
-  if (isTrashChoreCompleted.value) {
+const handleChoreChange = async (choreId: number, assignmentId: number) => {
+  if (completingChores.value.has(assignmentId)) return
+
+  completingChores.value.add(assignmentId)
+
+  try {
+    await completeAssignment(assignmentId, {})
     confetti({
       particleCount: 100,
       spread: 70,
       origin: { y: 0.6 },
     })
+    // Remove from list or move to bottom
+    feedChores.value = feedChores.value.filter(c => c.id !== assignmentId)
+  } catch (e) {
+    console.error('Failed to complete chore', e)
+    completingChores.value.delete(assignmentId)
   }
 }
 </script>
@@ -110,15 +120,21 @@ const handleChoreChange = () => {
           </div>
           <label class="relative cursor-pointer">
             <input
-              v-model="isTrashChoreCompleted"
+              :checked="completingChores.has(chore.id)"
+              :disabled="completingChores.has(chore.id)"
               class="peer sr-only"
               type="checkbox"
-              aria-label="Mark Take Out Trash as done"
-              @change="handleChoreChange" />
+              :aria-label="'Mark ' + chore.chore.name + ' as done'"
+              @change="handleChoreChange(chore.chore.id, chore.id)" />
             <div
-              class="size-12 bg-white border-[3px] border-background-dark rounded-xl shadow-[3px_3px_0px_0px_#221f10] peer-checked:shadow-none peer-checked:translate-x-1 peer-checked:translate-y-1 peer-checked:bg-sage transition-all flex items-center justify-center">
+              class="size-12 bg-white border-[3px] border-background-dark rounded-xl shadow-[3px_3px_0px_0px_#221f10] peer-checked:shadow-none peer-checked:translate-x-1 peer-checked:translate-y-1 peer-checked:bg-green-500 transition-all flex items-center justify-center">
               <span
+                v-if="!completingChores.has(chore.id)"
                 class="material-symbols-outlined text-[28px] opacity-0 peer-checked:opacity-100 transition-opacity">check</span>
+              <svg v-else class="animate-spin h-6 w-6 text-background-dark" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
             </div>
           </label>
         </div>

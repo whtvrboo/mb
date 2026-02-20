@@ -1,7 +1,9 @@
-## 2026-01-30 - Accessible Checkbox Label Pattern
-**Learning:** When visual design requires separating the input and label text (e.g., in a complex flex layout), wrapping them in a `<label>` isn't always feasible or semantic if it includes non-label content.
-**Action:** Use Vue 3.5's `useId()` to generate a unique ID for the label text element and link it to the input via `aria-labelledby`. This maintains accessibility without compromising the visual layout.
+# Palette's Journal
 
-## 2026-01-31 - Secure ID Generation
-**Learning:** Using `Math.random()` for ID generation causes hydration mismatches in Nuxt/SSR applications and potential ID collisions.
-**Action:** Replace all instances of `Math.random()` with Vue 3.5's `useId()` composable for stable, unique, and accessible ID generation.
+## 2025-05-20 - Static Analysis for UX Testing
+**Learning:** When full component mounting is difficult due to complex environment dependencies (like `nuxt-auth-utils`), `fs` based static analysis in Vitest is a powerful way to enforce UX rules (like `aria-label` presence or specific class usage).
+**Action:** Use `fs.readFileSync` + `expect(content).toContain(...)` to verify critical a11y attributes in `.vue` files without needing a running browser or mocked context.
+
+## 2025-05-20 - Shared State in v-for Loops
+**Learning:** Using a single `ref(boolean)` with `v-model` inside a `v-for` loop causes all items to share state. This is a common anti-pattern in list components.
+**Prevention:** Always use `Set<ID>` or `Map<ID, State>` to track individual item states in lists.
