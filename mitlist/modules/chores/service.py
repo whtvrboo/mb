@@ -230,7 +230,7 @@ async def list_chore_history(
         select(ChoreAssignment)
         .join(Chore, ChoreAssignment.chore_id == Chore.id)
         .where(and_(Chore.group_id == group_id, ChoreAssignment.status == "COMPLETED"))
-        .options(selectinload(ChoreAssignment.chore))
+        .options(contains_eager(ChoreAssignment.chore))
         .order_by(ChoreAssignment.completed_at.desc())
         .limit(limit)
         .offset(offset)
