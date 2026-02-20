@@ -9,19 +9,19 @@ import type { ChoreAssignmentWithChoreResponse } from '~/types/chores'
 
 const { getMe } = useAuth()
 // const { listItems } = useLists() // Could add bills here later
-const { listAssignments } = useChores()
+const { listAssignments, completeAssignment } = useChores()
 
 const user = ref<UserResponse | null>(null)
 const feedChores = ref<ChoreAssignmentWithChoreResponse[]>([])
 
 const fetchData = async () => {
   try {
-    const [userData, choresData] = await Promise.all([
+    const [userRes, choresRes] = await Promise.all([
       getMe(),
       listAssignments({ status_filter: 'pending' }) // Fetch pending chores
     ])
-    user.value = userData
-    feedChores.value = choresData.slice(0, 3) // Only show top 3
+    user.value = userRes.data.value
+    feedChores.value = choresRes.data.value?.slice(0, 3) || [] // Only show top 3
   } catch (e) {
     console.error('Failed to fetch dashboard data', e)
   }
@@ -33,15 +33,31 @@ onMounted(() => {
 
 const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
 
-const isTrashChoreCompleted = ref(false)
+const completedChores = ref(new Set<number>())
 
-const handleChoreChange = () => {
-  if (isTrashChoreCompleted.value) {
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-    })
+const handleChoreChange = async (choreId: number) => {
+  if (completedChores.value.has(choreId)) return
+
+  // Optimistic update
+  completedChores.value.add(choreId)
+
+  confetti({
+    particleCount: 100,
+    spread: 70,
+    origin: { y: 0.6 },
+  })
+
+  try {
+    await completeAssignment(choreId, { completed_at: new Date().toISOString() })
+
+    // Wait for animation then remove from list
+    setTimeout(() => {
+      feedChores.value = feedChores.value.filter(c => c.id !== choreId)
+      completedChores.value.delete(choreId) // Cleanup Set
+    }, 500)
+  } catch (e) {
+    console.error('Failed to complete chore', e)
+    completedChores.value.delete(choreId) // Revert state
   }
 }
 </script>
@@ -110,13 +126,13 @@ const handleChoreChange = () => {
           </div>
           <label class="relative cursor-pointer">
             <input
-              v-model="isTrashChoreCompleted"
+              :checked="completedChores.has(chore.id)"
               class="peer sr-only"
               type="checkbox"
-              aria-label="Mark Take Out Trash as done"
-              @change="handleChoreChange" />
+              :aria-label="`Mark ${chore.chore.name} as done`"
+              @change="handleChoreChange(chore.id)" />
             <div
-              class="size-12 bg-white border-[3px] border-background-dark rounded-xl shadow-[3px_3px_0px_0px_#221f10] peer-checked:shadow-none peer-checked:translate-x-1 peer-checked:translate-y-1 peer-checked:bg-sage transition-all flex items-center justify-center">
+              class="size-12 bg-white border-[3px] border-background-dark rounded-xl shadow-[3px_3px_0px_0px_#221f10] peer-checked:shadow-none peer-checked:translate-x-1 peer-checked:translate-y-1 peer-checked:bg-green-500 transition-all flex items-center justify-center">
               <span
                 class="material-symbols-outlined text-[28px] opacity-0 peer-checked:opacity-100 transition-opacity">check</span>
             </div>
