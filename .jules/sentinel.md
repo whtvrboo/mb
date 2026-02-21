@@ -12,3 +12,8 @@
 **Vulnerability:** The finance module schemas (`ExpenseCreate`, `SplitPresetCreate`) accepted lists (`splits`, `members`) without a `max_length` constraint. This allowed attackers to send massive payloads (e.g., 100k+ items), potentially causing memory exhaustion or DB bottlenecks.
 **Learning:** Pydantic's `list[T]` does not imply any size limit. It defaults to unbounded, which is dangerous for public APIs.
 **Prevention:** Always define `max_length` for `list` fields in Pydantic models that accept user input. Use `Field(..., max_length=N)`.
+
+## 2026-02-02 - [JWKS Refresh DoS Vulnerability]
+**Vulnerability:** Attackers could force the authentication service to repeatedly fetch the JWKS (JSON Web Key Set) from the identity provider by sending tokens with random, non-existent `kid` (Key ID) headers. This bypasses the local cache because the cache is invalidated on every "key not found" event to handle key rotation.
+**Learning:** Caching strategies that invalidate on "miss" are vulnerable to cache-busting DoS attacks if the "miss" condition can be triggered cheaply by an attacker.
+**Prevention:** Implement a rate limit or cooldown period (e.g., 10 seconds) on cache invalidation/refresh operations. Even if a key is missing, do not reach out to the external service if we just refreshed recently.
