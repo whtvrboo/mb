@@ -37,6 +37,7 @@ class ZitadelTokenError(Exception):
 
 _discovery_cache: dict[str, Any] = {"expires_at": 0.0, "value": None}
 _jwks_cache: dict[str, Any] = {"expires_at": 0.0, "value": None}
+_pem_cache: dict[str, str] = {}
 
 
 async def _fetch_json(url: str) -> dict[str, Any]:
@@ -76,6 +77,8 @@ async def get_jwks() -> dict[str, Any]:
     jwks = await _fetch_json(jwks_uri)
     _jwks_cache["value"] = jwks
     _jwks_cache["expires_at"] = now + max(30, settings.ZITADEL_JWKS_CACHE_TTL_SECONDS)
+    # Clear PEM cache when keys are refreshed to avoid unbounded growth
+    _pem_cache.clear()
     return jwks
 
 
@@ -88,19 +91,27 @@ def _jwk_to_public_pem(key_dict: dict[str, Any]) -> str:
 
 
 async def _get_public_key_for_kid(kid: str) -> str:
+    # 1. Check cache
+    if kid in _pem_cache:
+        return _pem_cache[kid]
+
     jwks = await get_jwks()
     keys = jwks.get("keys", [])
     for k in keys:
         if k.get("kid") == kid:
-            return _jwk_to_public_pem(k)
+            pem = _jwk_to_public_pem(k)
+            _pem_cache[kid] = pem
+            return pem
 
     # key rotation: refresh once
     _jwks_cache["expires_at"] = 0.0
-    jwks = await get_jwks()
+    jwks = await get_jwks()  # This clears _pem_cache
     keys = jwks.get("keys", [])
     for k in keys:
         if k.get("kid") == kid:
-            return _jwk_to_public_pem(k)
+            pem = _jwk_to_public_pem(k)
+            _pem_cache[kid] = pem
+            return pem
 
     raise ZitadelTokenError(f"Unknown signing key (kid={kid}).")
 

@@ -9,3 +9,7 @@
 ## 2024-05-24 - Redundant Indexing with Composite Indexes
 **Learning:** When adding a composite index `(col_a, col_b)` to optimize `WHERE col_a = ? ORDER BY col_b`, the existing index on `col_a` becomes redundant as the composite index can serve queries on `col_a` alone.
 **Action:** Remove `index=True` from the leading column of a new composite index to save storage and write overhead.
+
+## 2024-05-25 - Expensive JWK Conversion
+**Learning:** `jose.jwk.construct()` and `.to_pem()` are surprisingly expensive operations, taking ~0.6ms per call. In high-throughput paths like authentication middleware, re-converting the same public key repeatedly causes significant CPU overhead.
+**Action:** Cache the resulting PEM string keyed by the `kid` (Key ID), as public keys are immutable for a given ID.
