@@ -141,7 +141,7 @@ onMounted(() => {
                     <label class="cursor-pointer group relative">
                         <input type="radio" value="ROUND_ROBIN" v-model="rotationLogic" class="peer sr-only" />
                         <div
-                            class="h-full flex flex-col gap-3 p-4 bg-white border-[3px] border-background-dark rounded-xl shadow-neobrutalism transition-transform peer-checked:bg-primary peer-checked:translate-x-[2px] peer-checked:translate-y-[2px] peer-checked:shadow-none hover:shadow-neobrutalism-sm active:shadow-none active:translate-y-1 active:translate-x-1">
+                            class="h-full flex flex-col gap-3 p-4 bg-white border-[3px] border-background-dark rounded-xl shadow-neobrutalism transition-transform peer-checked:bg-primary peer-checked:translate-x-[2px] peer-checked:translate-y-[2px] peer-checked:shadow-none hover:shadow-neobrutalism-sm active:shadow-none active:translate-y-1 active:translate-x-1 peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-background-dark">
                             <div class="flex justify-between items-start">
                                 <span class="material-symbols-outlined text-[32px]">sync</span>
                                 <div
@@ -162,7 +162,7 @@ onMounted(() => {
                     <label class="cursor-pointer group relative">
                         <input type="radio" value="LEAST_BUSY" v-model="rotationLogic" class="peer sr-only" />
                         <div
-                            class="h-full flex flex-col gap-3 p-4 bg-white border-[3px] border-background-dark rounded-xl shadow-neobrutalism transition-transform hover:bg-gray-50 peer-checked:bg-primary peer-checked:translate-x-[2px] peer-checked:translate-y-[2px] peer-checked:shadow-none active:shadow-none active:translate-y-1 active:translate-x-1">
+                            class="h-full flex flex-col gap-3 p-4 bg-white border-[3px] border-background-dark rounded-xl shadow-neobrutalism transition-transform hover:bg-gray-50 peer-checked:bg-primary peer-checked:translate-x-[2px] peer-checked:translate-y-[2px] peer-checked:shadow-none active:shadow-none active:translate-y-1 active:translate-x-1 peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-background-dark">
                             <div class="flex justify-between items-start">
                                 <span class="material-symbols-outlined text-[32px]">balance</span>
                                 <div
@@ -192,7 +192,7 @@ onMounted(() => {
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" v-model="skipAway" class="sr-only peer">
                             <div
-                                class="w-16 h-9 bg-white peer-focus:outline-none border-[3px] border-background-dark rounded-full peer peer-checked:bg-sage transition-colors shadow-neobrutalism-sm">
+                                class="w-16 h-9 bg-white peer-focus:outline-none border-[3px] border-background-dark rounded-full peer peer-checked:bg-sage transition-colors shadow-neobrutalism-sm peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-background-dark">
                             </div>
                             <div
                                 class="absolute left-[5px] top-[5px] bg-background-dark border border-background-dark h-6 w-6 rounded-full transition-all peer-checked:translate-x-[28px] peer-checked:bg-white peer-checked:border-background-dark">
@@ -208,7 +208,7 @@ onMounted(() => {
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" v-model="autoReassign" class="sr-only peer">
                             <div
-                                class="w-16 h-9 bg-white peer-focus:outline-none border-[3px] border-background-dark rounded-full peer peer-checked:bg-sage transition-colors shadow-neobrutalism-sm">
+                                class="w-16 h-9 bg-white peer-focus:outline-none border-[3px] border-background-dark rounded-full peer peer-checked:bg-sage transition-colors shadow-neobrutalism-sm peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-background-dark">
                             </div>
                             <div
                                 class="absolute left-[5px] top-[5px] bg-white border-[3px] border-background-dark h-6 w-6 rounded-full transition-all peer-checked:translate-x-[28px]">
