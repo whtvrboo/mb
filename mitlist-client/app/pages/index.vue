@@ -116,7 +116,7 @@ const handleChoreChange = () => {
               aria-label="Mark Take Out Trash as done"
               @change="handleChoreChange" />
             <div
-              class="size-12 bg-white border-[3px] border-background-dark rounded-xl shadow-[3px_3px_0px_0px_#221f10] peer-checked:shadow-none peer-checked:translate-x-1 peer-checked:translate-y-1 peer-checked:bg-sage transition-all flex items-center justify-center">
+              class="size-12 bg-white border-[3px] border-background-dark rounded-xl shadow-[3px_3px_0px_0px_#221f10] peer-checked:shadow-none peer-checked:translate-x-1 peer-checked:translate-y-1 peer-checked:bg-sage transition-all flex items-center justify-center peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-background-dark">
               <span
                 class="material-symbols-outlined text-[28px] opacity-0 peer-checked:opacity-100 transition-opacity">check</span>
             </div>

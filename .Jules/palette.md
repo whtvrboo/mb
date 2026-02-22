@@ -5,3 +5,7 @@
 ## 2026-01-31 - Secure ID Generation
 **Learning:** Using `Math.random()` for ID generation causes hydration mismatches in Nuxt/SSR applications and potential ID collisions.
 **Action:** Replace all instances of `Math.random()` with Vue 3.5's `useId()` composable for stable, unique, and accessible ID generation.
+
+## 2026-02-03 - Focus Visibility on Custom Inputs
+**Learning:** Using `sr-only` inputs with custom visual replacements (like `div`s) removes the default browser focus ring, making the element inaccessible to keyboard users unless the visual replacement explicitly handles `:focus-visible` or `peer-focus-visible`.
+**Action:** Always add `peer-focus-visible:ring-2` (or similar focus styles) to the visual sibling element of any `sr-only` input to ensure keyboard navigability is visually indicated.

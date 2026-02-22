@@ -124,7 +124,7 @@ onMounted(() => {
                                     @change="handleComplete(assignment.id)"
                                 />
                                 <div
-                                    class="size-7 border-[3px] border-background-dark rounded bg-white peer-checked:bg-primary transition-colors flex items-center justify-center hover:bg-gray-100">
+                                    class="size-7 border-[3px] border-background-dark rounded bg-white peer-checked:bg-primary transition-colors flex items-center justify-center hover:bg-gray-100 peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-background-dark">
                                     <span
                                         class="material-symbols-outlined text-sm opacity-0 peer-checked:opacity-100 font-bold">check</span>
                                 </div>
