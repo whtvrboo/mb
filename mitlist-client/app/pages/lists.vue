@@ -128,6 +128,7 @@ onMounted(() => {
         class="shrink-0 bg-background-light dark:bg-background-dark pt-6 pb-2 px-5 z-10 border-b-[3px] border-background-dark">
         <div class="flex items-center justify-between mb-4">
           <NuxtLink to="/"
+            aria-label="Back to dashboard"
             class="flex items-center justify-center size-10 rounded-full border-[2px] border-background-dark hover:bg-background-dark hover:text-white transition-colors active:translate-y-[2px] active:translate-x-[2px] active:shadow-none shadow-neobrutalism-sm bg-white text-background-dark">
             <span class="material-symbols-outlined font-bold">arrow_back</span>
           </NuxtLink>
@@ -160,7 +161,7 @@ onMounted(() => {
 
         <div v-if="items.length === 0 && !isLoading" class="flex flex-col items-center justify-center py-10 opacity-60">
           <span class="material-symbols-outlined text-6xl mb-2">shopping_basket</span>
-          <p class="font-bold">List is empty</p>
+          <p class="font-bold">List is empty. Add an item below!</p>
         </div>
 
         <!-- Active Items -->
@@ -194,10 +195,12 @@ onMounted(() => {
         <div class="flex gap-3">
           <div class="relative flex-1">
             <input v-model="newItemName" @keyup.enter="handleAddItem" :disabled="isLoading || !currentListId"
+              aria-label="New item name"
               class="w-full h-14 bg-white border-[3px] border-background-dark rounded-lg px-4 text-lg font-medium placeholder:text-gray-400 shadow-neobrutalism-sm focus:outline-none focus:ring-0 focus:shadow-neobrutalism focus:-translate-y-1 transition-all disabled:opacity-50"
               placeholder="Add new item..." type="text" />
           </div>
           <button @click="handleAddItem" :disabled="isLoading || !currentListId"
+            aria-label="Add item"
             class="size-14 bg-primary border-[3px] border-background-dark rounded-lg shadow-neobrutalism-sm flex items-center justify-center hover:bg-[#ffe14f] active:shadow-none active:translate-y-[2px] active:translate-x-[2px] transition-all disabled:opacity-50">
             <span class="material-symbols-outlined text-background-dark text-3xl font-bold">add</span>
           </button>
