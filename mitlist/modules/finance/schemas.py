@@ -296,7 +296,7 @@ class SplitPresetUpdate(BaseModel):
     method: Optional[str] = Field(
         None, pattern="^(EQUAL|PERCENTAGE|FIXED_AMOUNT|BY_INCOME)$"
     )
-    members: Optional[list[SplitPresetMemberInput]] = None
+    members: Optional[list[SplitPresetMemberInput]] = Field(None, max_length=100)
 
 
 class SplitPresetMemberResponse(BaseModel):
