@@ -1,16 +1,15 @@
 """Lists module ORM models."""
 
 from datetime import datetime
-from enum import Enum
-from typing import Optional
+from enum import StrEnum
 
 from sqlalchemy import ForeignKey, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from mitlist.db.base import Base, BaseModel, TimestampMixin, VersionMixin
+from mitlist.db.base import BaseModel, TimestampMixin, VersionMixin
 
 
-class ListType(str, Enum):
+class ListType(StrEnum):
     """List type enumeration."""
 
     SHOPPING = "SHOPPING"
@@ -26,23 +25,26 @@ class List(BaseModel, TimestampMixin):
 
     __tablename__ = "lists"
 
-    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False, index=True)
+    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     type: Mapped[ListType] = mapped_column(String(20), nullable=False)
-    created_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
-    deadline: Mapped[Optional[datetime]] = mapped_column(nullable=True)
-    store_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    estimated_total: Mapped[Optional[float]] = mapped_column(nullable=True)
+    created_by_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    deadline: Mapped[datetime | None] = mapped_column(nullable=True)
+    store_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    estimated_total: Mapped[float | None] = mapped_column(nullable=True)
     is_archived: Mapped[bool] = mapped_column(default=False, nullable=False)
-    archived_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    archived_at: Mapped[datetime | None] = mapped_column(nullable=True)
 
     # Optimistic locking
     version_id: Mapped[int] = mapped_column(nullable=False, default=1)
 
     __mapper_args__ = {"version_id_col": version_id}
+    __table_args__ = (Index("ix_lists_group_id_id", "group_id", "id"),)
 
     # Relationships
-    items: Mapped[list["Item"]] = relationship("Item", back_populates="list", cascade="all, delete-orphan")
+    items: Mapped[list["Item"]] = relationship(
+        "Item", back_populates="list", cascade="all, delete-orphan"
+    )
 
 
 class ListShare(BaseModel, TimestampMixin):
@@ -53,7 +55,7 @@ class ListShare(BaseModel, TimestampMixin):
     list_id: Mapped[int] = mapped_column(ForeignKey("lists.id"), nullable=False, index=True)
     share_code: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
     can_edit: Mapped[bool] = mapped_column(default=False, nullable=False)
-    expires_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    expires_at: Mapped[datetime | None] = mapped_column(nullable=True)
 
 
 class InventoryItem(BaseModel, TimestampMixin):
@@ -61,14 +63,18 @@ class InventoryItem(BaseModel, TimestampMixin):
 
     __tablename__ = "inventory_items"
 
-    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False, index=True)
-    location_id: Mapped[Optional[int]] = mapped_column(ForeignKey("locations.id"), nullable=True)
-    concept_id: Mapped[Optional[int]] = mapped_column(ForeignKey("common_item_concepts.id"), nullable=True)
-    quantity_value: Mapped[Optional[float]] = mapped_column(nullable=True)
-    quantity_unit: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    expiration_date: Mapped[Optional[datetime]] = mapped_column(nullable=True)
-    opened_date: Mapped[Optional[datetime]] = mapped_column(nullable=True)
-    restock_threshold: Mapped[Optional[float]] = mapped_column(nullable=True)
+    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False)
+    location_id: Mapped[int | None] = mapped_column(ForeignKey("locations.id"), nullable=True)
+    concept_id: Mapped[int | None] = mapped_column(
+        ForeignKey("common_item_concepts.id"), nullable=True
+    )
+    quantity_value: Mapped[float | None] = mapped_column(nullable=True)
+    quantity_unit: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    expiration_date: Mapped[datetime | None] = mapped_column(nullable=True)
+    opened_date: Mapped[datetime | None] = mapped_column(nullable=True)
+    restock_threshold: Mapped[float | None] = mapped_column(nullable=True)
+
+    __table_args__ = (Index("ix_inventory_items_group_id_id", "group_id", "id"),)
 
 
 class Item(BaseModel, TimestampMixin, VersionMixin):
@@ -82,16 +88,18 @@ class Item(BaseModel, TimestampMixin, VersionMixin):
 
     list_id: Mapped[int] = mapped_column(ForeignKey("lists.id"), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    quantity_value: Mapped[Optional[float]] = mapped_column(nullable=True)
-    quantity_unit: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    concept_id: Mapped[Optional[int]] = mapped_column(ForeignKey("common_item_concepts.id"), nullable=True)
+    quantity_value: Mapped[float | None] = mapped_column(nullable=True)
+    quantity_unit: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    concept_id: Mapped[int | None] = mapped_column(
+        ForeignKey("common_item_concepts.id"), nullable=True
+    )
     is_checked: Mapped[bool] = mapped_column(default=False, nullable=False)
-    checked_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
-    price_estimate: Mapped[Optional[float]] = mapped_column(nullable=True)
-    priority: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)  # HIGH, MEDIUM, LOW
-    added_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
-    assigned_to_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
-    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    checked_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    price_estimate: Mapped[float | None] = mapped_column(nullable=True)
+    priority: Mapped[str | None] = mapped_column(String(20), nullable=True)  # HIGH, MEDIUM, LOW
+    added_by_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    assigned_to_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Optimistic locking
     version_id: Mapped[int] = mapped_column(nullable=False, default=1)
