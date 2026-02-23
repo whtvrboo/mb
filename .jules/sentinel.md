@@ -12,3 +12,8 @@
 **Vulnerability:** The finance module schemas (`ExpenseCreate`, `SplitPresetCreate`) accepted lists (`splits`, `members`) without a `max_length` constraint. This allowed attackers to send massive payloads (e.g., 100k+ items), potentially causing memory exhaustion or DB bottlenecks.
 **Learning:** Pydantic's `list[T]` does not imply any size limit. It defaults to unbounded, which is dangerous for public APIs.
 **Prevention:** Always define `max_length` for `list` fields in Pydantic models that accept user input. Use `Field(..., max_length=N)`.
+
+## 2026-03-01 - [Unbounded List Input Persistence]
+**Vulnerability:** Found `list` fields without `max_length` in Recipes and Governance modules, identical to the Finance module issue.
+**Learning:** Fixes for vulnerability patterns are often not applied globally. Pydantic's default behavior (unbounded lists) is a recurring pitfall in this codebase.
+**Prevention:** When fixing a pattern-based vulnerability, grep the entire codebase for similar occurrences immediately. Consider introducing a `LimitedList` type alias to enforce limits by default.

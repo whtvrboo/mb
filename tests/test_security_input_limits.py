@@ -4,6 +4,9 @@ from pydantic import ValidationError
 from mitlist.modules.auth.schemas import LocationBase, ServiceContactBase, InviteAcceptRequest, UserCreate, UserLoginRequest
 from mitlist.modules.lists.schemas import ItemBase
 from mitlist.modules.documents.schemas import SharedCredentialBase, DocumentSearchRequest
+from mitlist.modules.finance.schemas import SplitPresetUpdate, SplitPresetMemberInput
+from mitlist.modules.recipes.schemas import RecipeCreate, RecipeIngredientInput, RecipeStepInput
+from mitlist.modules.governance.schemas import ProposalCreate, BallotOptionInput
 
 def test_location_base_notes_limit():
     """Test LocationBase notes max_length."""
@@ -88,3 +91,51 @@ def test_user_password_limits():
             password="a" * 129
         )
     assert "String should have at most 128 characters" in str(exc.value)
+
+def test_split_preset_update_members_limit():
+    """Test SplitPresetUpdate members max_length."""
+    members = [SplitPresetMemberInput(user_id=i) for i in range(101)]
+    with pytest.raises(ValidationError) as exc:
+        SplitPresetUpdate(members=members)
+    assert "List should have at most 100 items" in str(exc.value)
+
+def test_recipe_create_limits():
+    """Test RecipeCreate ingredients and steps max_length."""
+    # Ingredients
+    ingredients = [RecipeIngredientInput(name=f"Ingredient {i}") for i in range(101)]
+    with pytest.raises(ValidationError) as exc:
+        RecipeCreate(
+            group_id=1,
+            title="Test",
+            prep_time_minutes=10,
+            cook_time_minutes=20,
+            servings=4,
+            ingredients=ingredients
+        )
+    assert "List should have at most 100 items" in str(exc.value)
+
+    # Steps
+    steps = [RecipeStepInput(step_number=i+1, instruction="Stir") for i in range(101)]
+    with pytest.raises(ValidationError) as exc:
+        RecipeCreate(
+            group_id=1,
+            title="Test",
+            prep_time_minutes=10,
+            cook_time_minutes=20,
+            servings=4,
+            steps=steps
+        )
+    assert "List should have at most 100 items" in str(exc.value)
+
+def test_proposal_create_ballot_options_limit():
+    """Test ProposalCreate ballot_options max_length."""
+    options = [BallotOptionInput(text=f"Option {i}") for i in range(51)]
+    with pytest.raises(ValidationError) as exc:
+        ProposalCreate(
+            group_id=1,
+            title="Test",
+            type="GENERAL",
+            strategy="SIMPLE_MAJORITY",
+            ballot_options=options
+        )
+    assert "List should have at most 50 items" in str(exc.value)
