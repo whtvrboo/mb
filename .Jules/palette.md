@@ -5,3 +5,7 @@
 ## 2026-01-31 - Secure ID Generation
 **Learning:** Using `Math.random()` for ID generation causes hydration mismatches in Nuxt/SSR applications and potential ID collisions.
 **Action:** Replace all instances of `Math.random()` with Vue 3.5's `useId()` composable for stable, unique, and accessible ID generation.
+
+## 2026-02-23 - Nuxt Auth in Test
+**Learning:** `useAuth` and `nuxt-auth-utils` require specific environment configuration (`NUXT_PUBLIC_DEV_AUTH=true`) to bypass external auth providers (Zitadel) during local testing/verification. This enables a "Sign in as test user" flow via `/auth/dev`.
+**Action:** Always set `NUXT_PUBLIC_DEV_AUTH=true` when running frontend verification scripts that require authentication.
