@@ -36,7 +36,7 @@ class ZitadelTokenError(Exception):
 
 
 _discovery_cache: dict[str, Any] = {"expires_at": 0.0, "value": None}
-_jwks_cache: dict[str, Any] = {"expires_at": 0.0, "value": None}
+_jwks_cache: dict[str, Any] = {"expires_at": 0.0, "value": None, "last_refreshed": 0.0}
 
 
 async def _fetch_json(url: str) -> dict[str, Any]:
@@ -95,8 +95,15 @@ async def _get_public_key_for_kid(kid: str) -> str:
             return _jwk_to_public_pem(k)
 
     # key rotation: refresh once
+    last_refreshed = _jwks_cache.get("last_refreshed", 0.0)
+    now = time.time()
+    if now - last_refreshed < 10.0:
+        raise ZitadelTokenError(f"Unknown signing key (kid={kid}).")
+
     _jwks_cache["expires_at"] = 0.0
     jwks = await get_jwks()
+    _jwks_cache["last_refreshed"] = now
+
     keys = jwks.get("keys", [])
     for k in keys:
         if k.get("kid") == kid:
@@ -172,4 +179,3 @@ async def require_active_token(token: str) -> dict[str, Any]:
     if not data.get("active"):
         raise ZitadelTokenError("Token is not active (revoked or expired).")
     return data
-
