@@ -61,7 +61,7 @@ class InventoryItem(BaseModel, TimestampMixin):
 
     __tablename__ = "inventory_items"
 
-    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False, index=True)
+    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False)
     location_id: Mapped[Optional[int]] = mapped_column(ForeignKey("locations.id"), nullable=True)
     concept_id: Mapped[Optional[int]] = mapped_column(ForeignKey("common_item_concepts.id"), nullable=True)
     quantity_value: Mapped[Optional[float]] = mapped_column(nullable=True)
@@ -69,6 +69,8 @@ class InventoryItem(BaseModel, TimestampMixin):
     expiration_date: Mapped[Optional[datetime]] = mapped_column(nullable=True)
     opened_date: Mapped[Optional[datetime]] = mapped_column(nullable=True)
     restock_threshold: Mapped[Optional[float]] = mapped_column(nullable=True)
+
+    __table_args__ = (Index("ix_inventory_items_group_id_id", "group_id", "id"),)
 
 
 class Item(BaseModel, TimestampMixin, VersionMixin):

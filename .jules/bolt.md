@@ -9,3 +9,7 @@
 ## 2024-05-24 - Redundant Indexing with Composite Indexes
 **Learning:** When adding a composite index `(col_a, col_b)` to optimize `WHERE col_a = ? ORDER BY col_b`, the existing index on `col_a` becomes redundant as the composite index can serve queries on `col_a` alone.
 **Action:** Remove `index=True` from the leading column of a new composite index to save storage and write overhead.
+
+## 2026-02-15 - Implicit Primary Key Sorting
+**Learning:** SQLite secondary indexes implicitly include the primary key (ROWID) at the end, making `(group_id)` effectively `(group_id, id)`. This can mask sorting performance issues that only appear in production databases like PostgreSQL, which do not include the PK in secondary indexes by default.
+**Action:** When optimizing `ORDER BY id` queries, always explicitly add the ID to the index `(filter_col, id)` even if local SQLite tests don't show a massive speedup, to ensure correctness and performance on Postgres.
