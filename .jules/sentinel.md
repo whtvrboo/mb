@@ -12,3 +12,8 @@
 **Vulnerability:** The finance module schemas (`ExpenseCreate`, `SplitPresetCreate`) accepted lists (`splits`, `members`) without a `max_length` constraint. This allowed attackers to send massive payloads (e.g., 100k+ items), potentially causing memory exhaustion or DB bottlenecks.
 **Learning:** Pydantic's `list[T]` does not imply any size limit. It defaults to unbounded, which is dangerous for public APIs.
 **Prevention:** Always define `max_length` for `list` fields in Pydantic models that accept user input. Use `Field(..., max_length=N)`.
+
+## 2025-05-20 - [JWKS Cache Busting Protection]
+**Vulnerability:** A DoS vector existed where an attacker could force infinite JWKS refreshes by sending tokens with random 'kid' headers, bypassing the cache.
+**Learning:** Caching strategies that invalidate on "miss" without rate limiting are vulnerable to cache busting attacks.
+**Prevention:** Always implement a negative cache or a cooldown period (e.g., 10s) before allowing a forced refresh of external resources.
