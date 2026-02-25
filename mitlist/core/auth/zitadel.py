@@ -6,6 +6,7 @@ Critical strategy: validate locally + check revocation via introspection.
 
 from __future__ import annotations
 
+import asyncio
 import time
 from dataclasses import dataclass
 from typing import Any, Optional
@@ -36,7 +37,8 @@ class ZitadelTokenError(Exception):
 
 
 _discovery_cache: dict[str, Any] = {"expires_at": 0.0, "value": None}
-_jwks_cache: dict[str, Any] = {"expires_at": 0.0, "value": None}
+_jwks_cache: dict[str, Any] = {"expires_at": 0.0, "last_refreshed": 0.0, "value": None}
+_jwks_lock = asyncio.Lock()
 
 
 async def _fetch_json(url: str) -> dict[str, Any]:
@@ -76,6 +78,7 @@ async def get_jwks() -> dict[str, Any]:
     jwks = await _fetch_json(jwks_uri)
     _jwks_cache["value"] = jwks
     _jwks_cache["expires_at"] = now + max(30, settings.ZITADEL_JWKS_CACHE_TTL_SECONDS)
+    _jwks_cache["last_refreshed"] = now
     return jwks
 
 
@@ -95,12 +98,29 @@ async def _get_public_key_for_kid(kid: str) -> str:
             return _jwk_to_public_pem(k)
 
     # key rotation: refresh once
-    _jwks_cache["expires_at"] = 0.0
-    jwks = await get_jwks()
-    keys = jwks.get("keys", [])
-    for k in keys:
-        if k.get("kid") == kid:
-            return _jwk_to_public_pem(k)
+    async with _jwks_lock:
+        now = time.time()
+        last_refreshed = _jwks_cache.get("last_refreshed", 0.0)
+
+        # Check if recently refreshed (possibly by another request while we waited for lock)
+        if now - last_refreshed < 10.0:
+            # If refreshed recently, check if the key is now available in the fresh cache
+            jwks = await get_jwks()
+            keys = jwks.get("keys", [])
+            for k in keys:
+                if k.get("kid") == kid:
+                    return _jwk_to_public_pem(k)
+
+            # Still not found? Then it's truly unknown or invalid.
+            # Prevent DoS via JWKS flooding
+            raise ZitadelTokenError(f"Unknown signing key (kid={kid}). Cooldown active.")
+
+        _jwks_cache["expires_at"] = 0.0
+        jwks = await get_jwks()
+        keys = jwks.get("keys", [])
+        for k in keys:
+            if k.get("kid") == kid:
+                return _jwk_to_public_pem(k)
 
     raise ZitadelTokenError(f"Unknown signing key (kid={kid}).")
 
