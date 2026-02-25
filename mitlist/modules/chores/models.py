@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import CheckConstraint, ForeignKey, Integer, String, Text
+from sqlalchemy import CheckConstraint, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from mitlist.db.base import Base, BaseModel, TimestampMixin
@@ -85,7 +85,7 @@ class ChoreAssignment(BaseModel, TimestampMixin):
 
     __tablename__ = "chore_assignments"
 
-    chore_id: Mapped[int] = mapped_column(ForeignKey("chores.id"), nullable=False, index=True)
+    chore_id: Mapped[int] = mapped_column(ForeignKey("chores.id"), nullable=False)
     assigned_to_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
     due_date: Mapped[datetime] = mapped_column(nullable=False, index=True)
     completed_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
@@ -103,6 +103,7 @@ class ChoreAssignment(BaseModel, TimestampMixin):
 
     __table_args__ = (
         CheckConstraint("quality_rating IS NULL OR (quality_rating >= 1 AND quality_rating <= 5)", name="ck_chore_rating"),
+        Index("ix_chore_assignments_chore_id_due_date", "chore_id", "due_date"),
     )
 
 
