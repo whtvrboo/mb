@@ -12,3 +12,8 @@
 **Vulnerability:** The finance module schemas (`ExpenseCreate`, `SplitPresetCreate`) accepted lists (`splits`, `members`) without a `max_length` constraint. This allowed attackers to send massive payloads (e.g., 100k+ items), potentially causing memory exhaustion or DB bottlenecks.
 **Learning:** Pydantic's `list[T]` does not imply any size limit. It defaults to unbounded, which is dangerous for public APIs.
 **Prevention:** Always define `max_length` for `list` fields in Pydantic models that accept user input. Use `Field(..., max_length=N)`.
+
+## 2026-02-25 - [Weak Filename Sanitization]
+**Vulnerability:** `generate_presigned_upload_url` in `documents/service.py` only replaced spaces and forward slashes, allowing backslashes, control characters, and potentially misleading filenames.
+**Learning:** Simple `replace()` chains are insufficient for security sanitization. They often miss edge cases like backslashes (Windows paths), null bytes, or non-printable characters.
+**Prevention:** Use an allowlist approach (regex `[^a-zA-Z0-9._-]`) instead of a blocklist. Normalize unicode and handle empty strings explicitly.
