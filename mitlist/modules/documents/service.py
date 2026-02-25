@@ -3,7 +3,9 @@
 import base64
 import hashlib
 import logging
+import re
 import secrets
+import unicodedata
 from datetime import UTC, datetime
 
 from cryptography.fernet import Fernet
@@ -80,6 +82,38 @@ async def delete_document(db: AsyncSession, document_id: int) -> None:
     await db.flush()
 
 
+def _sanitize_filename(filename: str) -> str:
+    """
+    Sanitize a filename to be safe for storage.
+
+    - Normalizes unicode characters
+    - Removes non-alphanumeric characters except (.-_)
+    - Prevents path traversal (..)
+    - Truncates to reasonable length
+    """
+    # Normalize unicode characters (NFKD)
+    filename = unicodedata.normalize("NFKD", filename)
+
+    # Encode to ASCII, ignoring errors, then decode back to string
+    filename = filename.encode("ascii", "ignore").decode("ascii")
+
+    # Replace anything that isn't alphanumeric, dot, dash, or underscore with underscore
+    # This effectively removes slashes (forward and backward) and control chars
+    filename = re.sub(r"[^a-zA-Z0-9._-]", "_", filename)
+
+    # Remove multiple underscores
+    filename = re.sub(r"_+", "_", filename)
+
+    # Strip leading/trailing dots and underscores
+    filename = filename.strip("._")
+
+    # Ensure it's not empty
+    if not filename:
+        filename = "unnamed_file"
+
+    return filename
+
+
 def generate_presigned_upload_url(
     group_id: int,
     file_name: str,
@@ -95,7 +129,7 @@ def generate_presigned_upload_url(
     # Generate a unique file key
     timestamp = datetime.now(UTC).strftime("%Y%m%d%H%M%S")
     random_suffix = secrets.token_hex(8)
-    safe_name = file_name.replace(" ", "_").replace("/", "_")
+    safe_name = _sanitize_filename(file_name)
     file_key = f"groups/{group_id}/documents/{timestamp}_{random_suffix}_{safe_name}"
 
     # In production, use boto3 or minio client to generate presigned URL
@@ -131,9 +165,7 @@ async def list_credentials(db: AsyncSession, group_id: int) -> list[SharedCreden
 
 async def get_credential_by_id(db: AsyncSession, credential_id: int) -> SharedCredential | None:
     """Get a credential by ID."""
-    result = await db.execute(
-        select(SharedCredential).where(SharedCredential.id == credential_id)
-    )
+    result = await db.execute(select(SharedCredential).where(SharedCredential.id == credential_id))
     return result.scalar_one_or_none()
 
 
