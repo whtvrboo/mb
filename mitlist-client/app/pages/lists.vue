@@ -16,6 +16,7 @@ const items = ref<ItemResponse[]>([])
 const members = ref<GroupMemberResponse[]>([])
 const newItemName = ref('')
 const isLoading = ref(true)
+const isAdding = ref(false)
 
 // Fetch Data
 const fetchData = async () => {
@@ -23,11 +24,13 @@ const fetchData = async () => {
   try {
     // 1. Fetch group members for user resolution
     if (groupId.value) {
-      members.value = await listGroupMembers(groupId.value)
+      const { data: membersData } = await listGroupMembers(groupId.value)
+      members.value = membersData.value || []
     }
 
     // 2. Fetch Lists
-    lists.value = await listLists()
+    const { data: listsData } = await listLists()
+    lists.value = listsData.value || []
 
     // 3. Select first list or create default if none
     if (lists.value.length === 0 && groupId.value) {
@@ -46,7 +49,8 @@ const fetchData = async () => {
 
     // 4. Fetch Items for current list
     if (currentListId.value) {
-      items.value = await listItems(currentListId.value)
+      const { data: itemsData } = await listItems(currentListId.value)
+      items.value = itemsData.value || []
     }
   } catch (error) {
     console.error('Failed to fetch list data', error)
@@ -59,6 +63,7 @@ const fetchData = async () => {
 const handleAddItem = async () => {
   if (!newItemName.value || !currentListId.value || !groupId.value) return
 
+  isAdding.value = true
   try {
     const newItem = await addItem(currentListId.value, {
       list_id: currentListId.value,
@@ -70,6 +75,8 @@ const handleAddItem = async () => {
     newItemName.value = ''
   } catch (e) {
     console.error('Failed to add item', e)
+  } finally {
+    isAdding.value = false
   }
 }
 
@@ -193,13 +200,16 @@ onMounted(() => {
         class="fixed md:absolute bottom-0 left-0 w-full bg-background-light p-4 z-20 border-t-[3px] border-background-dark max-w-md mx-auto">
         <div class="flex gap-3">
           <div class="relative flex-1">
-            <input v-model="newItemName" @keyup.enter="handleAddItem" :disabled="isLoading || !currentListId"
+            <input v-model="newItemName" @keyup.enter="handleAddItem" :disabled="isLoading || isAdding || !currentListId"
               class="w-full h-14 bg-white border-[3px] border-background-dark rounded-lg px-4 text-lg font-medium placeholder:text-gray-400 shadow-neobrutalism-sm focus:outline-none focus:ring-0 focus:shadow-neobrutalism focus:-translate-y-1 transition-all disabled:opacity-50"
-              placeholder="Add new item..." type="text" />
+              placeholder="Add new item..." type="text" aria-label="New item name" />
           </div>
-          <button @click="handleAddItem" :disabled="isLoading || !currentListId"
-            class="size-14 bg-primary border-[3px] border-background-dark rounded-lg shadow-neobrutalism-sm flex items-center justify-center hover:bg-[#ffe14f] active:shadow-none active:translate-y-[2px] active:translate-x-[2px] transition-all disabled:opacity-50">
-            <span class="material-symbols-outlined text-background-dark text-3xl font-bold">add</span>
+          <button @click="handleAddItem" :disabled="isLoading || isAdding || !currentListId"
+            class="size-14 bg-primary border-[3px] border-background-dark rounded-lg shadow-neobrutalism-sm flex items-center justify-center hover:bg-[#ffe14f] active:shadow-none active:translate-y-[2px] active:translate-x-[2px] transition-all disabled:opacity-50"
+            aria-label="Add item">
+            <span v-if="!isAdding" class="material-symbols-outlined text-background-dark text-3xl font-bold">add</span>
+            <div v-else
+              class="size-6 border-2 border-background-dark border-t-transparent rounded-full animate-spin"></div>
           </button>
         </div>
         <!-- Bottom safe area spacer -->
