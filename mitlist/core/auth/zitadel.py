@@ -6,9 +6,10 @@ Critical strategy: validate locally + check revocation via introspection.
 
 from __future__ import annotations
 
+import asyncio
 import time
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 from jose import jwk, jwt
@@ -23,11 +24,11 @@ class VerifiedToken:
     claims: dict[str, Any]
 
     @property
-    def sub(self) -> Optional[str]:
+    def sub(self) -> str | None:
         return self.claims.get("sub")
 
     @property
-    def email(self) -> Optional[str]:
+    def email(self) -> str | None:
         return self.claims.get("email")
 
 
@@ -36,7 +37,8 @@ class ZitadelTokenError(Exception):
 
 
 _discovery_cache: dict[str, Any] = {"expires_at": 0.0, "value": None}
-_jwks_cache: dict[str, Any] = {"expires_at": 0.0, "value": None}
+_jwks_cache: dict[str, Any] = {"expires_at": 0.0, "value": None, "last_refreshed": 0.0}
+_jwks_lock = asyncio.Lock()
 
 
 async def _fetch_json(url: str) -> dict[str, Any]:
@@ -88,19 +90,37 @@ def _jwk_to_public_pem(key_dict: dict[str, Any]) -> str:
 
 
 async def _get_public_key_for_kid(kid: str) -> str:
+    # 1. Optimistic check
     jwks = await get_jwks()
     keys = jwks.get("keys", [])
     for k in keys:
         if k.get("kid") == kid:
             return _jwk_to_public_pem(k)
 
-    # key rotation: refresh once
-    _jwks_cache["expires_at"] = 0.0
-    jwks = await get_jwks()
-    keys = jwks.get("keys", [])
-    for k in keys:
-        if k.get("kid") == kid:
-            return _jwk_to_public_pem(k)
+    # 2. Key rotation: refresh with lock and rate limiting
+    async with _jwks_lock:
+        # Double-check: maybe another request refreshed it while we waited
+        jwks = await get_jwks()
+        keys = jwks.get("keys", [])
+        for k in keys:
+            if k.get("kid") == kid:
+                return _jwk_to_public_pem(k)
+
+        # Check rate limit to prevent flooding
+        now = time.time()
+        last_refreshed = _jwks_cache.get("last_refreshed", 0.0)
+        if now - last_refreshed < 10.0:
+            raise ZitadelTokenError(f"Unknown signing key (kid={kid}). Rate limited.")
+
+        # Force refresh
+        _jwks_cache["expires_at"] = 0.0
+        jwks = await get_jwks()
+        _jwks_cache["last_refreshed"] = time.time()
+
+        keys = jwks.get("keys", [])
+        for k in keys:
+            if k.get("kid") == kid:
+                return _jwk_to_public_pem(k)
 
     raise ZitadelTokenError(f"Unknown signing key (kid={kid}).")
 
@@ -172,4 +192,3 @@ async def require_active_token(token: str) -> dict[str, Any]:
     if not data.get("active"):
         raise ZitadelTokenError("Token is not active (revoked or expired).")
     return data
-
