@@ -5,3 +5,7 @@
 ## 2026-01-31 - Secure ID Generation
 **Learning:** Using `Math.random()` for ID generation causes hydration mismatches in Nuxt/SSR applications and potential ID collisions.
 **Action:** Replace all instances of `Math.random()` with Vue 3.5's `useId()` composable for stable, unique, and accessible ID generation.
+
+## 2026-02-01 - Granular Loading States
+**Learning:** Relying on a single global `isLoading` state for all async actions (like adding an item) disables the entire interface or provides no feedback for specific actions, degrading perceived performance.
+**Action:** Introduce local `isAdding` or `isAction` states to show spinners specifically on the button triggering the action, keeping the rest of the UI interactive and providing immediate contextual feedback.
