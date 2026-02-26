@@ -12,3 +12,8 @@
 **Vulnerability:** The finance module schemas (`ExpenseCreate`, `SplitPresetCreate`) accepted lists (`splits`, `members`) without a `max_length` constraint. This allowed attackers to send massive payloads (e.g., 100k+ items), potentially causing memory exhaustion or DB bottlenecks.
 **Learning:** Pydantic's `list[T]` does not imply any size limit. It defaults to unbounded, which is dangerous for public APIs.
 **Prevention:** Always define `max_length` for `list` fields in Pydantic models that accept user input. Use `Field(..., max_length=N)`.
+
+## 2026-02-02 - [JWKS Flooding DoS]
+**Vulnerability:** The JWKS refresh logic in `mitlist/core/auth/zitadel.py` triggered an immediate network fetch for every token with an unknown `kid`. An attacker could flood the service with tokens containing random `kid`s, causing the server to hammer the Identity Provider, leading to resource exhaustion or rate limiting.
+**Learning:** Caching mechanisms that refresh on "miss" must be rate-limited, especially when the input (like `kid`) is attacker-controlled.
+**Prevention:** Implement a cooldown period (e.g., 10s) and request coalescing (using locks) for cache refreshes triggered by user input.
