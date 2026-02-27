@@ -105,6 +105,7 @@ onMounted(() => {
                         </div>
                     </div>
                     <button @click="handleReveal(secret)"
+                        :aria-label="'Reveal ' + secret.name"
                         class="bg-white text-background-dark size-10 rounded border border-background-dark flex items-center justify-center hover:bg-primary transition-colors">
                         <span class="material-symbols-outlined">visibility</span>
                     </button>
