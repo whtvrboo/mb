@@ -197,7 +197,7 @@ onMounted(() => {
               class="w-full h-14 bg-white border-[3px] border-background-dark rounded-lg px-4 text-lg font-medium placeholder:text-gray-400 shadow-neobrutalism-sm focus:outline-none focus:ring-0 focus:shadow-neobrutalism focus:-translate-y-1 transition-all disabled:opacity-50"
               placeholder="Add new item..." type="text" />
           </div>
-          <button @click="handleAddItem" :disabled="isLoading || !currentListId"
+          <button aria-label="Add item" @click="handleAddItem" :disabled="isLoading || !currentListId"
             class="size-14 bg-primary border-[3px] border-background-dark rounded-lg shadow-neobrutalism-sm flex items-center justify-center hover:bg-[#ffe14f] active:shadow-none active:translate-y-[2px] active:translate-x-[2px] transition-all disabled:opacity-50">
             <span class="material-symbols-outlined text-background-dark text-3xl font-bold">add</span>
           </button>
