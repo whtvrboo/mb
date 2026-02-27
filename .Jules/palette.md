@@ -5,3 +5,7 @@
 ## 2026-01-31 - Secure ID Generation
 **Learning:** Using `Math.random()` for ID generation causes hydration mismatches in Nuxt/SSR applications and potential ID collisions.
 **Action:** Replace all instances of `Math.random()` with Vue 3.5's `useId()` composable for stable, unique, and accessible ID generation.
+
+## 2026-02-01 - Missing ARIA Labels on Icon-Only Actions
+**Learning:** The application heavily relies on icon-only buttons (like `arrow_back`, `add`, `delete`) and inputs that use `placeholder` text instead of explicit `<label>` elements for its neobrutalist design. These lack accessible names, breaking screen reader compatibility.
+**Action:** Always verify that every `NuxtLink`, `button`, or `input` without visible text content includes a descriptive `aria-label` attribute.
