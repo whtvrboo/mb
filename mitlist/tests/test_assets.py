@@ -1,6 +1,6 @@
 import pytest
 from httpx import AsyncClient
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 
 @pytest.mark.asyncio
 async def test_assets_lifecycle(authed_client: AsyncClient, auth_headers: dict):
