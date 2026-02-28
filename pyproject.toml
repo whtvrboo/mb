@@ -10,7 +10,6 @@ dependencies = [
     "uvicorn[standard]>=0.30.0",
     "pydantic-settings>=2.5.0",
     "python-jose[cryptography]>=3.3.0",
-    "aiosqlite>=0.20.0",
     "asgi-lifespan>=2.1.0",
     "sqlalchemy>=2.0.0",
     "asyncpg>=0.29.0",
@@ -53,3 +52,8 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+
+[dependency-groups]
+dev = [
+    "aiosqlite>=0.22.1",
+]
