@@ -1,0 +1,3 @@
+## 2024-03-01 - [ARIA Labels and Landmarks for Neobrutalist UI]
+**Learning:** This application heavily relies on icon-only interactive elements (using `material-symbols-outlined`) within its neobrutalist design. These frequently lack explicit `aria-label` attributes (e.g., in pagination and modals), causing accessibility issues for screen readers. Furthermore, interactive groups like Pagination are missing proper semantic `<nav>` landmarks.
+**Action:** Always ensure any icon-only button or link has an explicit `aria-label`. When building groups of navigation links, wrap them in a `<nav aria-label="...">` to provide clear semantic meaning, and use `aria-current="page"` to indicate active states. Use `aria-busy="loading"` on loading buttons.
