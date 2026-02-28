@@ -1,0 +1,3 @@
+## 2024-03-01 - Icon-Only Buttons Missing ARIA Labels
+**Learning:** Found a recurring pattern where icon-only buttons (using material-symbols-outlined) lacked `aria-label` attributes across multiple pages (pets, documents, finance, mates). This causes screen readers to announce these interactive elements as "button" or read the icon ligature text instead of their actual function.
+**Action:** Always verify that buttons containing only an icon explicitly define their purpose using `aria-label="..."`.

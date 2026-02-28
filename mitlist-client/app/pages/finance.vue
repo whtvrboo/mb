@@ -57,7 +57,7 @@ onMounted(() => {
             </div>
             <h1 class="text-xl font-bold tracking-tight uppercase">Settlement</h1>
             <div class="size-10 flex items-center justify-end">
-                <button class="flex items-center justify-center size-10 rounded-lg hover:bg-black/5 transition-colors">
+                <button aria-label="More options" class="flex items-center justify-center size-10 rounded-lg hover:bg-black/5 transition-colors">
                     <span class="material-symbols-outlined text-[24px]">more_horiz</span>
                 </button>
             </div>

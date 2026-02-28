@@ -140,6 +140,7 @@ onMounted(() => {
                             </div>
                         </div>
                         <button v-if="house.id !== currentHouseId"
+                            aria-label="View house details"
                             class="size-10 flex items-center justify-center border-[2px] border-background-dark rounded-lg hover:bg-gray-100">
                             <span class="material-symbols-outlined">arrow_forward</span>
                         </button>

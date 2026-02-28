@@ -97,6 +97,7 @@ const getPetIcon = (species: string) => {
                         </div>
                     </div>
                     <button
+                        aria-label="Edit pet"
                         class="size-8 rounded border-[2px] border-background-dark flex items-center justify-center hover:bg-gray-100">
                         <span class="material-symbols-outlined">edit</span>
                     </button>
@@ -118,6 +119,7 @@ const getPetIcon = (species: string) => {
                             <span class="text-xs opacity-60 font-bold">{{ task.frequency_cron || 'Daily' }}</span>
                         </div>
                         <button
+                            aria-label="Complete task"
                             class="bg-primary size-8 rounded border-[2px] border-background-dark flex items-center justify-center hover:scale-105 transition-transform">
                             <span class="material-symbols-outlined text-sm font-bold">check</span>
                         </button>
