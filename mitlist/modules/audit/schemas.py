@@ -201,7 +201,7 @@ class TagAssignmentWithTagResponse(TagAssignmentResponse):
 class BulkTagAssignmentRequest(BaseModel):
     """Schema for bulk tag assignment."""
 
-    tag_ids: list[int] = Field(..., min_length=1)
+    tag_ids: list[int] = Field(..., min_length=1, max_length=50)
     entity_type: str = Field(..., max_length=50)
     entity_id: int
 
