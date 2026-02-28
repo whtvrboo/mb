@@ -36,9 +36,10 @@ const goToPage = (page: number) => {
 </script>
 
 <template>
-    <div class="flex items-center justify-center gap-2" v-if="totalPages > 1">
+    <nav aria-label="Pagination" class="flex items-center justify-center gap-2" v-if="totalPages > 1">
         <!-- Previous Button -->
         <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+            aria-label="Previous page"
             class="flex items-center justify-center size-10 rounded-lg border-[2px] border-background-dark bg-white shadow-[2px_2px_0px_0px_#221f10] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all">
             <span class="material-symbols-outlined">chevron_left</span>
         </button>
@@ -46,6 +47,8 @@ const goToPage = (page: number) => {
         <!-- Page Numbers -->
         <div class="flex items-center gap-1 mx-2">
             <button v-for="page in pages" :key="page" @click="goToPage(page)"
+                :aria-label="'Page ' + page"
+                :aria-current="page === currentPage ? 'page' : undefined"
                 class="flex items-center justify-center size-10 rounded-lg border-[2px] font-bold transition-all"
                 :class="page === currentPage
                     ? 'bg-primary border-background-dark shadow-[2px_2px_0px_0px_#221f10] -translate-y-0.5'
@@ -56,8 +59,9 @@ const goToPage = (page: number) => {
 
         <!-- Next Button -->
         <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+            aria-label="Next page"
             class="flex items-center justify-center size-10 rounded-lg border-[2px] border-background-dark bg-white shadow-[2px_2px_0px_0px_#221f10] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all">
             <span class="material-symbols-outlined">chevron_right</span>
         </button>
-    </div>
+    </nav>
 </template>

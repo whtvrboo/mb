@@ -40,6 +40,7 @@ const close = () => {
                             {{ title }}
                         </h3>
                         <button v-if="closeable"
+                            aria-label="Close modal"
                             class="ml-auto flex items-center justify-center size-8 rounded-lg hover:bg-black/5 transition-colors"
                             @click="close">
                             <span class="material-symbols-outlined font-bold">close</span>

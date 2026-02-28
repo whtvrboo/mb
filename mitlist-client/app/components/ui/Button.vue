@@ -58,6 +58,7 @@ const classes = computed(() => {
   <button
     :type="type"
     :disabled="disabled || loading"
+    :aria-busy="loading"
     :class="classes"
   >
     <span v-if="loading" class="mr-2">
