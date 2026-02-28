@@ -48,8 +48,8 @@ class RecipeCreate(RecipeBase):
     """Schema for creating a recipe."""
 
     group_id: int
-    ingredients: list[RecipeIngredientInput] = Field(default_factory=list)
-    steps: list[RecipeStepInput] = Field(default_factory=list)
+    ingredients: list[RecipeIngredientInput] = Field(default_factory=list, max_length=100)
+    steps: list[RecipeStepInput] = Field(default_factory=list, max_length=100)
 
 
 class RecipeUpdate(BaseModel):
@@ -244,7 +244,7 @@ class MealPlanShoppingSyncResponse(MealPlanShoppingSyncBase):
 class GenerateShoppingListRequest(BaseModel):
     """Schema for generating shopping list from meal plans."""
 
-    meal_plan_ids: list[int] = Field(..., min_length=1)
+    meal_plan_ids: list[int] = Field(..., min_length=1, max_length=100)
     list_name: Optional[str] = Field(None, max_length=255)
     combine_duplicates: bool = True
 

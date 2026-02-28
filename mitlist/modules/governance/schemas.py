@@ -37,7 +37,7 @@ class ProposalCreate(ProposalBase):
     """Schema for creating a proposal."""
 
     group_id: int
-    ballot_options: list[BallotOptionInput] = Field(default_factory=list)
+    ballot_options: list[BallotOptionInput] = Field(default_factory=list, max_length=50)
     linked_expense_id: Optional[int] = None
     linked_chore_id: Optional[int] = None
     linked_pet_id: Optional[int] = None
@@ -123,7 +123,7 @@ class RankedVoteCreate(BaseModel):
     """Schema for creating ranked choice votes."""
 
     proposal_id: int
-    ranked_choices: list[RankedVoteInput] = Field(..., min_length=1)
+    ranked_choices: list[RankedVoteInput] = Field(..., min_length=1, max_length=50)
     is_anonymous: bool = False
 
 
