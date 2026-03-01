@@ -17,7 +17,7 @@ async def test_proposals_list_empty(authed_client: AsyncClient, auth_headers: di
 async def test_proposal_create_get_and_vote(authed_client: AsyncClient, auth_headers: dict):
     """Create a proposal, get it, open for voting, cast vote, get results."""
     group_id = int(auth_headers["X-Group-ID"])
-    deadline = (datetime.now(timezone.utc) + timedelta(days=7)).isoformat() + "Z"
+    deadline = (datetime.now(timezone.utc) + timedelta(days=7)).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
     # Create proposal with ballot options
     create_data = {
