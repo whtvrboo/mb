@@ -88,3 +88,54 @@ def test_user_password_limits():
             password="a" * 129
         )
     assert "String should have at most 128 characters" in str(exc.value)
+
+def test_recipe_create_limits():
+    """Test RecipeCreate lists max_length."""
+    from mitlist.modules.recipes.schemas import RecipeCreate, RecipeIngredientInput, RecipeStepInput
+
+    # Ingredients
+    with pytest.raises(ValidationError) as exc:
+        RecipeCreate(
+            title="Massive Recipe",
+            prep_time_minutes=10,
+            cook_time_minutes=20,
+            servings=4,
+            group_id=1,
+            ingredients=[RecipeIngredientInput(name=f"Ingredient {i}") for i in range(101)]
+        )
+    assert "List should have at most 100 items" in str(exc.value)
+
+    # Steps
+    with pytest.raises(ValidationError) as exc:
+        RecipeCreate(
+            title="Massive Recipe",
+            prep_time_minutes=10,
+            cook_time_minutes=20,
+            servings=4,
+            group_id=1,
+            steps=[RecipeStepInput(step_number=i+1, instruction=f"Step {i}") for i in range(101)]
+        )
+    assert "List should have at most 100 items" in str(exc.value)
+
+def test_proposal_create_limits():
+    """Test ProposalCreate ballot_options max_length."""
+    from mitlist.modules.governance.schemas import ProposalCreate, BallotOptionInput
+
+    with pytest.raises(ValidationError) as exc:
+        ProposalCreate(
+            title="Massive Proposal",
+            description="Testing max options",
+            group_id=1,
+            ballot_options=[BallotOptionInput(text=f"Option {i}") for i in range(51)]
+        )
+    assert "List should have at most 50 items" in str(exc.value)
+
+def test_bulk_notification_preference_update_limits():
+    """Test BulkNotificationPreferenceUpdate preferences max_length."""
+    from mitlist.modules.notifications.schemas import BulkNotificationPreferenceUpdate, NotificationPreferenceCreate
+
+    with pytest.raises(ValidationError) as exc:
+        BulkNotificationPreferenceUpdate(
+            preferences=[NotificationPreferenceCreate(event_type=f"EVENT_{i}", channel="EMAIL") for i in range(51)]
+        )
+    assert "List should have at most 50 items" in str(exc.value)
