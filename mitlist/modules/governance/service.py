@@ -230,8 +230,12 @@ async def cast_vote(
         )
 
     # Check deadline
-    if proposal.deadline_at and proposal.deadline_at < datetime.now(timezone.utc):
-        raise ConflictError(code="PROPOSAL_EXPIRED", detail="Proposal deadline has passed")
+    if proposal.deadline_at:
+        deadline = proposal.deadline_at
+        if deadline.tzinfo is None:
+            deadline = deadline.replace(tzinfo=timezone.utc)
+        if deadline < datetime.now(timezone.utc):
+            raise ConflictError(code="PROPOSAL_EXPIRED", detail="Proposal deadline has passed")
 
     # Ensure user is a group member
     await require_member(db, proposal.group_id, user_id)
