@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import JSON, ForeignKey, String, Text
+from sqlalchemy import JSON, ForeignKey, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from mitlist.db.base import Base, BaseModel, TimestampMixin
@@ -33,11 +33,15 @@ class AuditLog(BaseModel, TimestampMixin):
 
     __tablename__ = "audit_logs"
 
+    __table_args__ = (
+        Index("ix_audit_logs_entity_type_id_time", "entity_type", "entity_id", "occurred_at"),
+    )
+
     group_id: Mapped[Optional[int]] = mapped_column(ForeignKey("groups.id"), nullable=True, index=True)
     user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
     action: Mapped[str] = mapped_column(String(50), nullable=False)
     entity_type: Mapped[str] = mapped_column(String(50), nullable=False)
-    entity_id: Mapped[int] = mapped_column(nullable=False, index=True)
+    entity_id: Mapped[int] = mapped_column(nullable=False)
     old_values: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     new_values: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     ip_address: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
