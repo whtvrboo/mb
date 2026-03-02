@@ -12,3 +12,8 @@
 **Vulnerability:** The finance module schemas (`ExpenseCreate`, `SplitPresetCreate`) accepted lists (`splits`, `members`) without a `max_length` constraint. This allowed attackers to send massive payloads (e.g., 100k+ items), potentially causing memory exhaustion or DB bottlenecks.
 **Learning:** Pydantic's `list[T]` does not imply any size limit. It defaults to unbounded, which is dangerous for public APIs.
 **Prevention:** Always define `max_length` for `list` fields in Pydantic models that accept user input. Use `Field(..., max_length=N)`.
+
+## 2025-02-17 - [DoS Risk via Unbounded Pydantic Lists]
+**Vulnerability:** Found multiple Pydantic input schemas using `list[T]` (e.g., `attendee_ids: list[int] = Field(default_factory=list)`) without a `max_length` parameter constraint.
+**Learning:** Pydantic's `list[T]` type natively does not enforce any size limit constraint. Without a `max_length` limit, the application is vulnerable to Denial of Service (DoS) attacks if an attacker submits an excessively large array payload, forcing the server to parse and instantiate massive lists in memory.
+**Prevention:** Always define a maximum size limit using `Field(..., max_length=X)` for any array fields in input models (e.g., `Field(default_factory=list, max_length=100)`) to restrict the payload size and protect memory.
