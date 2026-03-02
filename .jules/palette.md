@@ -1,0 +1,3 @@
+## 2024-XX-XX - Pagination component a11y improvements
+**Learning:** The Pagination component is an interactive group used to navigate multiple pages. The current implementation uses a standard `div` as a container, which limits semantic meaning for screen readers. Buttons have no distinct ARIA labels (e.g. "Previous page" or "Next page" vs visual chevrons), and active pages lack the `aria-current="page"` indicator.
+**Action:** Use the `<nav aria-label="Pagination">` semantic landmark for pagination containers. Add explicit `aria-label`s to prev/next buttons and to individual page buttons (e.g., `aria-label="Go to page X"`). Ensure the currently active page receives `aria-current="page"`.
