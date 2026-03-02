@@ -47,7 +47,7 @@ class NotificationPreferenceResponse(NotificationPreferenceBase):
 class BulkNotificationPreferenceUpdate(BaseModel):
     """Schema for bulk updating notification preferences."""
 
-    preferences: list[NotificationPreferenceCreate]
+    preferences: list[NotificationPreferenceCreate] = Field(..., max_length=100)
 
 
 # ====================
@@ -88,7 +88,7 @@ class NotificationResponse(NotificationBase):
 class NotificationMarkReadRequest(BaseModel):
     """Schema for marking notifications as read."""
 
-    notification_ids: list[int] = Field(..., min_length=1)
+    notification_ids: list[int] = Field(..., min_length=1, max_length=100)
 
 
 class NotificationMarkAllReadRequest(BaseModel):
@@ -114,7 +114,7 @@ class CommentBase(BaseModel):
 class CommentCreate(CommentBase):
     """Schema for creating a comment."""
 
-    mentioned_user_ids: list[int] = Field(default_factory=list)
+    mentioned_user_ids: list[int] = Field(default_factory=list, max_length=100)
 
 
 class CommentUpdate(BaseModel):
@@ -212,7 +212,7 @@ class ReactionToggleResponse(BaseModel):
 class MentionMarkReadRequest(BaseModel):
     """Schema for marking mentions as read."""
 
-    mention_ids: list[int] = Field(..., min_length=1)
+    mention_ids: list[int] = Field(..., min_length=1, max_length=100)
 
 
 # ====================
