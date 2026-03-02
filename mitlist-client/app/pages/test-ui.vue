@@ -68,14 +68,18 @@ const currentPage = ref(1)
         <section class="space-y-4">
             <h2 class="text-xl font-bold uppercase text-gray-500">Toast</h2>
             <div class="flex gap-2">
-                <Button @click="{ showToast = true; toastVariant = 'success' }"
-                    class="bg-sage text-white border-sage">Success</Button>
-                <Button @click="{ showToast = true; toastVariant = 'error' }"
-                    class="bg-red-200 text-red-900 border-red-900">Error</Button>
-                <Button @click="{ showToast = true; toastVariant = 'warning' }"
-                    class="bg-orange-200 text-orange-900 border-orange-900">Warning</Button>
+                <Button
+class="bg-sage text-white border-sage"
+                    @click="{ showToast = true; toastVariant = 'success' }">Success</Button>
+                <Button
+class="bg-red-200 text-red-900 border-red-900"
+                    @click="{ showToast = true; toastVariant = 'error' }">Error</Button>
+                <Button
+class="bg-orange-200 text-orange-900 border-orange-900"
+                    @click="{ showToast = true; toastVariant = 'warning' }">Warning</Button>
             </div>
-            <Toast v-model="showToast" :variant="toastVariant" title="Notification"
+            <Toast
+v-model="showToast" :variant="toastVariant" title="Notification"
                 message="This is a toast message component." />
         </section>
 
@@ -124,7 +128,7 @@ const currentPage = ref(1)
         <!-- Pagination -->
         <section class="space-y-4">
             <h2 class="text-xl font-bold uppercase text-gray-500">Pagination</h2>
-            <Pagination v-model:currentPage="currentPage" :totalPages="10" />
+            <Pagination v-model:current-page="currentPage" :total-pages="10" />
             <p class="text-center text-sm font-mono mt-2">Page: {{ currentPage }}</p>
         </section>
     </div>
