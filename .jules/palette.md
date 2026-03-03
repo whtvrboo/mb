@@ -1,0 +1,3 @@
+## 2024-05-24 - Semantic ARIA landmarks and states
+**Learning:** The application heavily relies on custom UI components for a neobrutalist aesthetic, often omitting semantic HTML tags (like `<nav>` for pagination) and necessary ARIA attributes (`aria-label`, `aria-current`, `aria-busy`) on interactive elements. This causes screen readers to misinterpret interactive states and limits keyboard navigability context.
+**Action:** When working with or creating new interactive components in the design system, ensure appropriate semantic landmarks are used. Explicitly add `aria-busy="true"` for loading states, `aria-current="page"` for active indicators, and always provide `aria-label` to icon-only buttons to bridge the gap between visual styling and accessibility.
