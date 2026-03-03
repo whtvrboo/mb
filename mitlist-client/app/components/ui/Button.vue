@@ -1,57 +1,51 @@
 <script setup lang="ts">
 interface Props {
-  type?: 'button' | 'submit' | 'reset'
-  disabled?: boolean
-  loading?: boolean
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost'
-  block?: boolean
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
+  loading?: boolean;
+  variant?: "primary" | "secondary" | "outline" | "ghost";
+  block?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  type: 'button',
+  type: "button",
   disabled: false,
   loading: false,
-  variant: 'primary',
+  variant: "primary",
   block: false,
-})
+});
 
 const classes = computed(() => {
   const base = [
-    'inline-flex items-center justify-center px-4 py-2 rounded-lg font-bold text-lg',
-    'border-[3px] border-background-dark',
-    'shadow-neobrutalism active:translate-x-1 active:translate-y-1 active:shadow-none',
-    'focus:outline-none focus:ring-2 focus:ring-offset-2',
-    'disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0',
-    'transition-all duration-200',
-  ]
+    "inline-flex items-center justify-center px-4 py-2 rounded-lg font-bold text-lg",
+    "border-[3px] border-background-dark",
+    "shadow-neobrutalism active:translate-x-1 active:translate-y-1 active:shadow-none",
+    "focus:outline-none focus:ring-2 focus:ring-offset-2",
+    "disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0",
+    "transition-all duration-200",
+  ];
 
   const variants = {
     primary: [
-      'bg-primary text-background-dark',
-      'hover:bg-[#dPb325]', // Slight darken for hover if needed, or just rely on partial transparency
+      "bg-primary text-background-dark",
+      "hover:bg-[#dPb325]", // Slight darken for hover if needed, or just rely on partial transparency
     ],
-    secondary: [
-      'bg-white text-background-dark',
-      'hover:bg-gray-50',
-    ],
-    outline: [
-      'bg-transparent text-background-dark',
-      'hover:bg-gray-50',
-    ],
+    secondary: ["bg-white text-background-dark", "hover:bg-gray-50"],
+    outline: ["bg-transparent text-background-dark", "hover:bg-gray-50"],
     ghost: [
-      'border-transparent shadow-none',
-      'text-background-dark',
-      'hover:bg-gray-100',
-      'active:translate-x-0 active:translate-y-0',
+      "border-transparent shadow-none",
+      "text-background-dark",
+      "hover:bg-gray-100",
+      "active:translate-x-0 active:translate-y-0",
     ],
-  }
+  };
 
   return [
     ...base,
-    ...variants[props.variant || 'primary'],
-    props.block ? 'w-full' : '',
-  ]
-})
+    ...variants[props.variant || "primary"],
+    props.block ? "w-full" : "",
+  ];
+});
 </script>
 
 <template>
@@ -59,8 +53,9 @@ const classes = computed(() => {
     :type="type"
     :disabled="disabled || loading"
     :class="classes"
+    :aria-busy="loading ? 'true' : undefined"
   >
-    <span v-if="loading" class="mr-2">
+    <span v-if="loading" class="mr-2" aria-hidden="true">
       <svg
         class="animate-spin h-4 w-4"
         xmlns="http://www.w3.org/2000/svg"
