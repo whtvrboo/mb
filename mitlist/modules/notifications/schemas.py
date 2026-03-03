@@ -114,7 +114,7 @@ class CommentBase(BaseModel):
 class CommentCreate(CommentBase):
     """Schema for creating a comment."""
 
-    mentioned_user_ids: list[int] = Field(default_factory=list)
+    mentioned_user_ids: list[int] = Field(default_factory=list, max_length=100)
 
 
 class CommentUpdate(BaseModel):
