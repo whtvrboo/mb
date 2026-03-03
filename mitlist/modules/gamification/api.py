@@ -121,7 +121,7 @@ async def get_leaderboard_endpoint(
     db: AsyncSession = Depends(get_db),
 ):
     """Get group leaderboard."""
-    from datetime import datetime
+    from datetime import datetime, timezone
 
     entries = await get_leaderboard(db, group_id, period_type, metric)
 
