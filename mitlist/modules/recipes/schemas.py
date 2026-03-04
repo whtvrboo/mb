@@ -48,8 +48,8 @@ class RecipeCreate(RecipeBase):
     """Schema for creating a recipe."""
 
     group_id: int
-    ingredients: list[RecipeIngredientInput] = Field(default_factory=list)
-    steps: list[RecipeStepInput] = Field(default_factory=list)
+    ingredients: list[RecipeIngredientInput] = Field(default_factory=list, max_length=100)
+    steps: list[RecipeStepInput] = Field(default_factory=list, max_length=100)
 
 
 class RecipeUpdate(BaseModel):
