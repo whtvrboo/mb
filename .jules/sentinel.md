@@ -12,3 +12,8 @@
 **Vulnerability:** The finance module schemas (`ExpenseCreate`, `SplitPresetCreate`) accepted lists (`splits`, `members`) without a `max_length` constraint. This allowed attackers to send massive payloads (e.g., 100k+ items), potentially causing memory exhaustion or DB bottlenecks.
 **Learning:** Pydantic's `list[T]` does not imply any size limit. It defaults to unbounded, which is dangerous for public APIs.
 **Prevention:** Always define `max_length` for `list` fields in Pydantic models that accept user input. Use `Field(..., max_length=N)`.
+
+## 2024-03-04 - [Missing Length Limits on Pydantic Input Lists]
+**Vulnerability:** Several input schemas (like `GenerateShoppingListRequest`, `BulkTagAssignmentRequest`, `RecipeCreate`, etc) across multiple modules had unbounded `list` fields (e.g., `meal_plan_ids`, `ingredients`).
+**Learning:** Even though `ExpenseCreate` and `SplitPresetCreate` were previously fixed to include `max_length=100`, this vulnerability pattern (DoS via memory exhaustion/DB bottlenecks) remained in other models. Unbounded arrays in request payloads are a widespread vulnerability in Fastapi/Pydantic projects.
+**Prevention:** Apply a `max_length` limit (typically `100`) to any `list` field on all Pydantic schemas that parse incoming user requests, especially bulk operations or models with complex nested objects. Only skip `max_length` if there is a deliberate reason and specific pagination/chunking logic is implemented on the backend.
