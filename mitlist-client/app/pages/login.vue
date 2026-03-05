@@ -40,9 +40,10 @@ const handleDevLogin = () => {
     <!-- Header -->
     <header class="relative z-10 px-6 pt-8 pb-2 flex items-center justify-between">
       <NuxtLink to="/"
+                    aria-label="Back to dashboard"
         class="flex items-center justify-center size-12 bg-white border-[3px] border-background-dark rounded-xl shadow-neobrutalism-sm active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all group">
         <span
-          class="material-symbols-outlined text-[24px] group-hover:-translate-x-0.5 transition-transform">home</span>
+          class="material-symbols-outlined text-[24px] group-hover:-translate-x-0.5 transition-transform" aria-hidden="true">home</span>
       </NuxtLink>
     </header>
 
@@ -140,7 +141,7 @@ const handleDevLogin = () => {
       <button v-if="devAuthEnabled" type="button" @click="handleDevLogin"
         class="group w-full bg-amber-50 border-[3px] border-amber-400 rounded-xl p-4 shadow-neobrutalism flex items-center justify-between active:translate-x-[2px] active:translate-y-[2px] active:shadow-neobrutalism-sm transition-all text-left relative">
         <span class="font-bold text-lg text-amber-800">Sign in as test user</span>
-        <span class="material-symbols-outlined text-2xl text-amber-600">bug_report</span>
+        <span class="material-symbols-outlined text-2xl text-amber-600" aria-hidden="true">bug_report</span>
       </button>
 
       <div class="relative py-8 flex items-center justify-center">
@@ -155,13 +156,13 @@ const handleDevLogin = () => {
       <button @click="handleZitadelLogin"
         class="group w-full bg-white border-[3px] border-background-dark rounded-xl p-4 shadow-neobrutalism flex items-center justify-between active:translate-x-[2px] active:translate-y-[2px] active:shadow-neobrutalism-sm transition-all text-left relative">
         <span class="font-bold text-lg">Sign in with Zitadel</span>
-        <span class="material-symbols-outlined text-2xl">lock</span>
+        <span class="material-symbols-outlined text-2xl" aria-hidden="true">lock</span>
       </button>
 
       <button @click="handleZitadelRegister"
         class="group w-full bg-primary border-[3px] border-background-dark rounded-xl p-4 shadow-neobrutalism flex items-center justify-between active:translate-x-[2px] active:translate-y-[2px] active:shadow-neobrutalism-sm transition-all text-left relative">
         <span class="font-bold text-lg text-background-dark">Sign up with Zitadel</span>
-        <span class="material-symbols-outlined text-2xl text-background-dark">person_add</span>
+        <span class="material-symbols-outlined text-2xl text-background-dark" aria-hidden="true">person_add</span>
       </button>
 
       <div class="mt-auto pt-8 mb-2 text-center">
