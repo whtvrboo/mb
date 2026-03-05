@@ -9,3 +9,7 @@
 ## 2024-05-24 - Redundant Indexing with Composite Indexes
 **Learning:** When adding a composite index `(col_a, col_b)` to optimize `WHERE col_a = ? ORDER BY col_b`, the existing index on `col_a` becomes redundant as the composite index can serve queries on `col_a` alone.
 **Action:** Remove `index=True` from the leading column of a new composite index to save storage and write overhead.
+
+## 2024-05-24 - Polymorphic History Fetching Indexing
+**Learning:** `get_entity_history` queries by `entity_type` and `entity_id` and then sorts by `occurred_at DESC`. A single index on `entity_id` forces the database to sort results in memory after fetching.
+**Action:** Add a composite index `(entity_type, entity_id, occurred_at)` for optimal history-fetching scenarios, replacing the standalone `entity_id` index to avoid redundancy.
