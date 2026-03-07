@@ -9,3 +9,7 @@
 ## 2024-05-24 - Redundant Indexing with Composite Indexes
 **Learning:** When adding a composite index `(col_a, col_b)` to optimize `WHERE col_a = ? ORDER BY col_b`, the existing index on `col_a` becomes redundant as the composite index can serve queries on `col_a` alone.
 **Action:** Remove `index=True` from the leading column of a new composite index to save storage and write overhead.
+
+## 2026-02-14 - Polymorphic Indexing
+**Learning:** For polymorphic models (e.g., `AuditLog` and `TagAssignment` with `entity_type` and `entity_id`) frequently queried and sorted by a timestamp, use a composite index `(entity_type, entity_id, timestamp_col)` and remove standalone single-column indexes on `entity_id` to prevent expensive in-memory database sorting.
+**Action:** Always check polymorphic associations for composite indexes `(type, id)` or `(type, id, sort_col)` instead of `id` alone.
