@@ -34,7 +34,7 @@ class CalendarEventCreate(CalendarEventBase):
     linked_user_id: Optional[int] = None  # For birthdays
     linked_asset_id: Optional[int] = None  # For maintenance
     linked_pet_id: Optional[int] = None  # For vet appointments
-    attendee_ids: list[int] = Field(default_factory=list)
+    attendee_ids: list[int] = Field(default_factory=list, max_length=100)
 
 
 class CalendarEventUpdate(BaseModel):
@@ -176,7 +176,7 @@ class CalendarRangeRequest(BaseModel):
     group_id: int
     start_date: datetime
     end_date: datetime
-    categories: Optional[list[str]] = None
+    categories: Optional[list[str]] = Field(None, max_length=50)
     include_cancelled: bool = False
 
 
