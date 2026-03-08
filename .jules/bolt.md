@@ -9,3 +9,6 @@
 ## 2024-05-24 - Redundant Indexing with Composite Indexes
 **Learning:** When adding a composite index `(col_a, col_b)` to optimize `WHERE col_a = ? ORDER BY col_b`, the existing index on `col_a` becomes redundant as the composite index can serve queries on `col_a` alone.
 **Action:** Remove `index=True` from the leading column of a new composite index to save storage and write overhead.
+## 2024-05-24 - TimestampMixin Constraints
+**Learning:** Models inheriting from `TimestampMixin` (such as `AuditLog`) may still explicitly define their own custom timestamp columns (e.g., `occurred_at`). Do not assume `created_at` or `updated_at` are the only timestamp fields present.
+**Action:** Always verify the model's mapped columns before referencing them in index creation.
