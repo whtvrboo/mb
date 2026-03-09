@@ -47,7 +47,7 @@ class NotificationPreferenceResponse(NotificationPreferenceBase):
 class BulkNotificationPreferenceUpdate(BaseModel):
     """Schema for bulk updating notification preferences."""
 
-    preferences: list[NotificationPreferenceCreate]
+    preferences: list[NotificationPreferenceCreate] = Field(..., max_length=100)
 
 
 # ====================
