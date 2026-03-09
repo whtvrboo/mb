@@ -503,6 +503,7 @@ async def get_user_stats(db: AsyncSession, group_id: int, user_id: int) -> dict:
     """Get stats for a specific user in a group."""
     from sqlalchemy import func
 
+    # Optimize: Calculate all user stats (including effort) in a single query
     result = await db.execute(
         select(
             func.count(ChoreAssignment.id),
@@ -510,30 +511,18 @@ async def get_user_stats(db: AsyncSession, group_id: int, user_id: int) -> dict:
             func.sum(case((ChoreAssignment.status == "PENDING", 1), else_=0)),
             func.sum(case((ChoreAssignment.status == "SKIPPED", 1), else_=0)),
             func.avg(ChoreAssignment.quality_rating),
+            func.sum(case((ChoreAssignment.status == "COMPLETED", Chore.effort_value), else_=0)),
         )
         .join(Chore)
         .where(and_(Chore.group_id == group_id, ChoreAssignment.assigned_to_id == user_id))
     )
-    total, completed, pending, skipped, avg_rating = result.one()
+    total, completed, pending, skipped, avg_rating, total_effort = result.one()
 
     total = total or 0
     completed = completed or 0
     pending = pending or 0
     skipped = skipped or 0
-
-    # Calculate effort points (sum of chore.effort_value for completed assignments)
-    result_effort = await db.execute(
-        select(func.sum(Chore.effort_value))
-        .join(ChoreAssignment, Chore.id == ChoreAssignment.chore_id)
-        .where(
-            and_(
-                Chore.group_id == group_id,
-                ChoreAssignment.assigned_to_id == user_id,
-                ChoreAssignment.status == "COMPLETED",
-            )
-        )
-    )
-    total_effort = result_effort.scalar() or 0
+    total_effort = total_effort or 0
 
     completion_rate = 0.0
     if total > 0:
