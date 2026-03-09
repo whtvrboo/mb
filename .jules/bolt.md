@@ -9,3 +9,7 @@
 ## 2024-05-24 - Redundant Indexing with Composite Indexes
 **Learning:** When adding a composite index `(col_a, col_b)` to optimize `WHERE col_a = ? ORDER BY col_b`, the existing index on `col_a` becomes redundant as the composite index can serve queries on `col_a` alone.
 **Action:** Remove `index=True` from the leading column of a new composite index to save storage and write overhead.
+
+## 2024-05-25 - Avoid N+1 Queries in Decrementing/Incrementing Database Rows
+**Learning:** Performing arithmetic updates (like `vote_count = max(0, vote_count - weight)`) on numerous records by iterating, selecting the current record, updating in Python, and then flushing causes a classic N+1 database query problem and degrades performance rapidly.
+**Action:** Use single bulk `update()` statements with SQL mathematical functions (like `func.greatest(0, col - weight)`) inside `db.execute()` to offload the calculations entirely to the database engine and prevent iterative trips across the network.

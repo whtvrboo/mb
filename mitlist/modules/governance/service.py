@@ -3,7 +3,7 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -342,13 +342,13 @@ async def cast_ranked_votes(
     )
     existing_votes = existing_votes_result.scalars().all()
     for vote in existing_votes:
-        # Decrement vote count
-        opt_result = await db.execute(
-            select(BallotOption).where(BallotOption.id == vote.ballot_option_id)
+        # Decrement vote count efficiently
+        await db.execute(
+            update(BallotOption)
+            .where(BallotOption.id == vote.ballot_option_id)
+            # Use func.max for cross-database compatibility (SQLite/Postgres)
+            .values(vote_count=func.max(0, BallotOption.vote_count - vote.weight))
         )
-        opt = opt_result.scalar_one_or_none()
-        if opt:
-            opt.vote_count = max(0, opt.vote_count - vote.weight)
         await db.delete(vote)
 
     # Create new ranked votes
@@ -366,14 +366,13 @@ async def cast_ranked_votes(
         db.add(vote)
         votes.append(vote)
 
-        # Update vote count (for first choice only in ranked choice)
+        # Update vote count efficiently (for first choice only in ranked choice)
         if choice.get("rank") == 1:
-            opt_result = await db.execute(
-                select(BallotOption).where(BallotOption.id == choice["ballot_option_id"])
+            await db.execute(
+                update(BallotOption)
+                .where(BallotOption.id == choice["ballot_option_id"])
+                .values(vote_count=BallotOption.vote_count + 1)
             )
-            opt = opt_result.scalar_one_or_none()
-            if opt:
-                opt.vote_count += 1
 
     await db.flush()
     for vote in votes:
