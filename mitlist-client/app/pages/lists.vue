@@ -127,7 +127,7 @@ onMounted(() => {
       <header
         class="shrink-0 bg-background-light dark:bg-background-dark pt-6 pb-2 px-5 z-10 border-b-[3px] border-background-dark">
         <div class="flex items-center justify-between mb-4">
-          <NuxtLink to="/"
+          <NuxtLink to="/" aria-label="Go back to home page"
             class="flex items-center justify-center size-10 rounded-full border-[2px] border-background-dark hover:bg-background-dark hover:text-white transition-colors active:translate-y-[2px] active:translate-x-[2px] active:shadow-none shadow-neobrutalism-sm bg-white text-background-dark">
             <span class="material-symbols-outlined font-bold">arrow_back</span>
           </NuxtLink>
