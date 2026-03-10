@@ -39,7 +39,7 @@ const handleDevLogin = () => {
 
     <!-- Header -->
     <header class="relative z-10 px-6 pt-8 pb-2 flex items-center justify-between">
-      <NuxtLink to="/"
+      <NuxtLink to="/" aria-label="Go back to home page"
         class="flex items-center justify-center size-12 bg-white border-[3px] border-background-dark rounded-xl shadow-neobrutalism-sm active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all group">
         <span
           class="material-symbols-outlined text-[24px] group-hover:-translate-x-0.5 transition-transform">home</span>
