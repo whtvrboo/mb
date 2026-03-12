@@ -52,14 +52,15 @@ const getPetIcon = (species: string) => {
             class="sticky top-0 z-50 bg-background-light border-b-[3px] border-background-dark px-5 h-16 flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-3">
                 <NuxtLink to="/"
-                    class="flex items-center justify-center size-10 rounded-lg border-[2px] border-transparent hover:border-background-dark hover:bg-black/5 transition-colors">
-                    <span class="material-symbols-outlined text-[28px]">arrow_back</span>
+                    class="flex items-center justify-center size-10 rounded-lg border-[2px] border-transparent hover:border-background-dark hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-background-dark focus-visible:ring-offset-1 outline-none transition-colors"
+                    aria-label="Back to dashboard">
+                    <span class="material-symbols-outlined text-[28px]" aria-hidden="true">arrow_back</span>
                 </NuxtLink>
             </div>
             <h1 class="text-xl font-bold tracking-tight uppercase">Pet Care</h1>
-            <div class="size-10 flex items-center justify-end">
-                <span class="material-symbols-outlined text-[24px]">add_circle</span>
-            </div>
+            <button class="size-10 flex items-center justify-end hover:opacity-80 focus-visible:ring-2 focus-visible:ring-background-dark focus-visible:ring-offset-1 rounded outline-none transition-opacity" aria-label="Add new pet">
+                <span class="material-symbols-outlined text-[24px]" aria-hidden="true">add_circle</span>
+            </button>
         </header>
 
         <main class="flex flex-col gap-6 p-5 max-w-lg mx-auto w-full">
@@ -67,7 +68,7 @@ const getPetIcon = (species: string) => {
             <!-- Alerts -->
             <div v-if="alerts.length > 0"
                 class="bg-red-100 border-[3px] border-red-500 rounded-xl p-4 flex items-start gap-3 shadow-neobrutalism-sm">
-                <span class="material-symbols-outlined text-red-600">warning</span>
+                <span class="material-symbols-outlined text-red-600" aria-hidden="true">warning</span>
                 <div class="flex flex-col">
                     <h3 class="font-bold text-red-700 uppercase">Vaccines Due</h3>
                     <ul class="text-sm font-bold text-red-600/80 list-disc list-inside">
@@ -89,7 +90,7 @@ const getPetIcon = (species: string) => {
                     <div class="flex items-center gap-3">
                         <div
                             class="size-12 rounded-full border-[2px] border-background-dark bg-gray-100 flex items-center justify-center overflow-hidden">
-                            <span class="material-symbols-outlined text-2xl">{{ getPetIcon(pet.species) }}</span>
+                            <span class="material-symbols-outlined text-2xl" aria-hidden="true">{{ getPetIcon(pet.species) }}</span>
                         </div>
                         <div class="flex flex-col">
                             <h2 class="font-bold text-xl leading-none">{{ pet.name }}</h2>
@@ -97,8 +98,9 @@ const getPetIcon = (species: string) => {
                         </div>
                     </div>
                     <button
-                        class="size-8 rounded border-[2px] border-background-dark flex items-center justify-center hover:bg-gray-100">
-                        <span class="material-symbols-outlined">edit</span>
+                        class="size-8 rounded border-[2px] border-background-dark flex items-center justify-center hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-background-dark focus-visible:ring-offset-1 outline-none"
+                        :aria-label="`Edit ${pet.name}`">
+                        <span class="material-symbols-outlined" aria-hidden="true">edit</span>
                     </button>
                 </div>
 
@@ -118,8 +120,9 @@ const getPetIcon = (species: string) => {
                             <span class="text-xs opacity-60 font-bold">{{ task.frequency_cron || 'Daily' }}</span>
                         </div>
                         <button
-                            class="bg-primary size-8 rounded border-[2px] border-background-dark flex items-center justify-center hover:scale-105 transition-transform">
-                            <span class="material-symbols-outlined text-sm font-bold">check</span>
+                            class="bg-primary size-8 rounded border-[2px] border-background-dark flex items-center justify-center hover:scale-105 focus-visible:ring-2 focus-visible:ring-background-dark focus-visible:ring-offset-1 outline-none transition-transform"
+                            :aria-label="`Mark ${task.task_type} as completed`">
+                            <span class="material-symbols-outlined text-sm font-bold" aria-hidden="true">check</span>
                         </button>
                     </div>
                 </div>
