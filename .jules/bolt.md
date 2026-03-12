@@ -9,3 +9,7 @@
 ## 2024-05-24 - Redundant Indexing with Composite Indexes
 **Learning:** When adding a composite index `(col_a, col_b)` to optimize `WHERE col_a = ? ORDER BY col_b`, the existing index on `col_a` becomes redundant as the composite index can serve queries on `col_a` alone.
 **Action:** Remove `index=True` from the leading column of a new composite index to save storage and write overhead.
+
+## 2025-03-12 - Audit Polymorphic Indexing
+**Learning:** `AuditLog` and `TagAssignment` used a polymorphic relationship (`entity_type`, `entity_id`) but only had a single column index on `entity_id`. This causes inefficient index scans when `entity_id` values collide across different entity types.
+**Action:** Removed single column `entity_id` indexes and added composite indexes `(entity_type, entity_id)` and `(entity_type, entity_id, sort_col)` for polymorphic relationships.
