@@ -13,6 +13,7 @@ const chores = ref<ChoreResponse[]>([])
 const members = ref<GroupMemberResponse[]>([])
 const currentUser = ref<UserResponse | null>(null)
 const isLoading = ref(true)
+const isSaving = ref(false)
 
 // Settings
 const rotationLogic = ref('ROUND_ROBIN')
@@ -59,6 +60,8 @@ const fetchData = async () => {
 }
 
 const handleSave = async () => {
+    if (isSaving.value) return
+    isSaving.value = true
     // Batch update all rotating chores to the new strategy
     const rotatingChores = chores.value.filter(c => c.is_rotating)
 
@@ -71,6 +74,8 @@ const handleSave = async () => {
     } catch (e) {
         console.error('Failed to save settings', e)
         alert('Failed to save settings.')
+    } finally {
+        isSaving.value = false
     }
 }
 
@@ -292,9 +297,12 @@ onMounted(() => {
         <div
             class="fixed bottom-0 left-0 w-full p-5 bg-white/95 backdrop-blur-sm border-t-[3px] border-background-dark z-50">
             <button @click="handleSave"
-                class="w-full h-14 bg-background-dark text-white rounded-xl font-bold text-lg shadow-[4px_4px_0px_0px_#8E9DB3] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2">
-                <span class="material-symbols-outlined">save</span>
-                Save Settings
+                :disabled="isSaving"
+                :class="isSaving ? 'opacity-70 cursor-not-allowed shadow-none translate-x-0.5 translate-y-0.5' : 'active:translate-x-0.5 active:translate-y-0.5 active:shadow-none'"
+                class="w-full h-14 bg-background-dark text-white rounded-xl font-bold text-lg shadow-[4px_4px_0px_0px_#8E9DB3] transition-all flex items-center justify-center gap-2">
+                <span v-if="!isSaving" class="material-symbols-outlined">save</span>
+                <span v-else class="material-symbols-outlined animate-spin">refresh</span>
+                {{ isSaving ? 'Saving...' : 'Save Settings' }}
             </button>
         </div>
     </div>
