@@ -46,8 +46,9 @@ onMounted(() => {
             class="sticky top-0 z-50 bg-background-light border-b-[3px] border-background-dark px-5 h-16 flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-3">
                 <NuxtLink to="/"
+                    aria-label="Back to dashboard"
                     class="flex items-center justify-center size-10 rounded-lg border-[2px] border-transparent hover:border-background-dark hover:bg-black/5 transition-colors">
-                    <span class="material-symbols-outlined text-[28px]">arrow_back</span>
+                    <span class="material-symbols-outlined text-[28px]" aria-hidden="true">arrow_back</span>
                 </NuxtLink>
             </div>
             <h1 class="text-xl font-bold tracking-tight uppercase">Documents</h1>
