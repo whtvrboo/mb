@@ -128,8 +128,9 @@ onMounted(() => {
         class="shrink-0 bg-background-light dark:bg-background-dark pt-6 pb-2 px-5 z-10 border-b-[3px] border-background-dark">
         <div class="flex items-center justify-between mb-4">
           <NuxtLink to="/"
+                    aria-label="Back to dashboard"
             class="flex items-center justify-center size-10 rounded-full border-[2px] border-background-dark hover:bg-background-dark hover:text-white transition-colors active:translate-y-[2px] active:translate-x-[2px] active:shadow-none shadow-neobrutalism-sm bg-white text-background-dark">
-            <span class="material-symbols-outlined font-bold">arrow_back</span>
+            <span class="material-symbols-outlined font-bold" aria-hidden="true">arrow_back</span>
           </NuxtLink>
 
           <!-- Avatar Stack -->
