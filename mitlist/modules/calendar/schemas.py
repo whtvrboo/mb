@@ -34,7 +34,7 @@ class CalendarEventCreate(CalendarEventBase):
     linked_user_id: Optional[int] = None  # For birthdays
     linked_asset_id: Optional[int] = None  # For maintenance
     linked_pet_id: Optional[int] = None  # For vet appointments
-    attendee_ids: list[int] = Field(default_factory=list)
+    attendee_ids: list[int] = Field(default_factory=list, max_length=100)
 
 
 class CalendarEventUpdate(BaseModel):
