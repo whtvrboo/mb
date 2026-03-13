@@ -1,0 +1,3 @@
+## 2024-05-24 - Pagination Accessibility Pattern
+**Learning:** The application extensively uses `material-symbols-outlined` spans within buttons. Without explicitly wrapping list-like navigation controls in a semantic `<nav aria-label="...">` and providing individual button `aria-label`s, screen readers announce generic "chevron_left" ligatures instead of actionable meaning, and lack context for which number is the current page.
+**Action:** Always wrap pagination components in `<nav>`, set `aria-current="page"` for active elements, provide explicit text for icon-only buttons (`aria-label`), and hide the ligature text via `aria-hidden="true"`.
