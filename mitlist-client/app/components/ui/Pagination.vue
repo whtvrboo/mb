@@ -38,14 +38,16 @@ const goToPage = (page: number) => {
 <template>
     <div class="flex items-center justify-center gap-2" v-if="totalPages > 1">
         <!-- Previous Button -->
-        <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+        <button aria-label="Previous Page" @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
             class="flex items-center justify-center size-10 rounded-lg border-[2px] border-background-dark bg-white shadow-[2px_2px_0px_0px_#221f10] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all">
-            <span class="material-symbols-outlined">chevron_left</span>
+            <span aria-hidden="true" class="material-symbols-outlined">chevron_left</span>
         </button>
 
         <!-- Page Numbers -->
         <div class="flex items-center gap-1 mx-2">
             <button v-for="page in pages" :key="page" @click="goToPage(page)"
+                :aria-label="page === currentPage ? `Page ${page}, Current Page` : `Go to Page ${page}`"
+                :aria-current="page === currentPage ? 'page' : undefined"
                 class="flex items-center justify-center size-10 rounded-lg border-[2px] font-bold transition-all"
                 :class="page === currentPage
                     ? 'bg-primary border-background-dark shadow-[2px_2px_0px_0px_#221f10] -translate-y-0.5'
@@ -55,9 +57,9 @@ const goToPage = (page: number) => {
         </div>
 
         <!-- Next Button -->
-        <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+        <button aria-label="Next Page" @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
             class="flex items-center justify-center size-10 rounded-lg border-[2px] border-background-dark bg-white shadow-[2px_2px_0px_0px_#221f10] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all">
-            <span class="material-symbols-outlined">chevron_right</span>
+            <span aria-hidden="true" class="material-symbols-outlined">chevron_right</span>
         </button>
     </div>
 </template>
