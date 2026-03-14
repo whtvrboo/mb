@@ -1,0 +1,3 @@
+## 2024-03-14 - Pagination Component Semantics
+**Learning:** Custom pagination widgets using neobrutalist icon buttons (like `Pagination.vue`) often lack semantic structure in Vue templates. Without an explicit `<nav>` role, hidden ligatures for Material icons (`aria-hidden="true"` on the `<span>`), and `aria-current="page"` for active state identification, screen readers announce raw ligature text and miss the context of the list of pages.
+**Action:** When creating or reviewing pagination components, wrap them in `<nav aria-label="Pagination">`, hide decorative icon text from screen readers, explicitly label the control buttons (e.g., `aria-label="Previous page"`), and use `aria-current` to denote the active page index.
